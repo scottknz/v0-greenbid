@@ -15,7 +15,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,6 +48,9 @@ import {
   AlertCircle,
   Upload,
   ExternalLink,
+  ChevronDown,
+  Plus,
+  X,
 } from "lucide-react"
 
 // Mock data - in production this would come from an API
@@ -58,11 +69,36 @@ const tenderData = {
     "Delivery vehicles must meet Euro 6 emission standards",
   ],
   evaluationCriteria: [
-    { name: "Completeness", weight: 15 },
-    { name: "Quality", weight: 25 },
-    { name: "Capability", weight: 20 },
-    { name: "Price", weight: 20 },
-    { name: "Sustainability", weight: 20 },
+    { 
+      name: "Completeness", 
+      weight: 15,
+      subcategories: ["Documentation completeness", "Response coverage", "Compliance with requirements"]
+    },
+    { 
+      name: "Quality", 
+      weight: 20,
+      subcategories: ["Product/service quality", "Quality certifications", "Quality management processes"]
+    },
+    { 
+      name: "Capability", 
+      weight: 15,
+      subcategories: ["Technical expertise", "Relevant experience", "Team qualifications", "Infrastructure"]
+    },
+    { 
+      name: "Price", 
+      weight: 20,
+      subcategories: ["Base pricing", "Value for money", "Payment terms", "Total cost of ownership"]
+    },
+    { 
+      name: "Sustainability", 
+      weight: 20,
+      subcategories: ["Environmental impact", "Carbon footprint", "Ethical sourcing", "Social responsibility"]
+    },
+    { 
+      name: "Risk", 
+      weight: 10,
+      subcategories: ["Financial stability", "Supply chain reliability", "Business continuity", "Insurance coverage"]
+    },
   ],
   budget: 125000,
   deadline: "Apr 15, 2026",
@@ -85,6 +121,7 @@ const submissionsData = [
       capability: 92,
       price: 85,
       sustainability: 90,
+      risk: 87,
     },
     weightedScore: 89,
     documents: [
@@ -106,6 +143,7 @@ const submissionsData = [
       capability: 88,
       price: 92,
       sustainability: 86,
+      risk: 91,
     },
     weightedScore: 90,
     documents: [
@@ -126,6 +164,7 @@ const submissionsData = [
       capability: 90,
       price: 78,
       sustainability: 94,
+      risk: 82,
     },
     weightedScore: 87,
     documents: [
@@ -196,6 +235,53 @@ export default function TenderDetailPage() {
   const params = useParams()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("overview")
+  const [criteriaEditOpen, setCriteriaEditOpen] = useState(false)
+  const [editableCriteria, setEditableCriteria] = useState(tenderData.evaluationCriteria)
+  const [expandedCriteria, setExpandedCriteria] = useState<string[]>([])
+
+  const toggleCriteriaExpand = (name: string) => {
+    setExpandedCriteria(prev => 
+      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
+    )
+  }
+
+  const updateCriteriaWeight = (index: number, weight: number) => {
+    setEditableCriteria(prev => prev.map((c, i) => 
+      i === index ? { ...c, weight: Math.max(0, Math.min(100, weight)) } : c
+    ))
+  }
+
+  const addSubcategory = (criteriaIndex: number) => {
+    setEditableCriteria(prev => prev.map((c, i) => 
+      i === criteriaIndex 
+        ? { ...c, subcategories: [...c.subcategories, "New subcategory"] }
+        : c
+    ))
+  }
+
+  const updateSubcategory = (criteriaIndex: number, subIndex: number, value: string) => {
+    setEditableCriteria(prev => prev.map((c, i) => 
+      i === criteriaIndex 
+        ? { ...c, subcategories: c.subcategories.map((s, si) => si === subIndex ? value : s) }
+        : c
+    ))
+  }
+
+  const removeSubcategory = (criteriaIndex: number, subIndex: number) => {
+    setEditableCriteria(prev => prev.map((c, i) => 
+      i === criteriaIndex 
+        ? { ...c, subcategories: c.subcategories.filter((_, si) => si !== subIndex) }
+        : c
+    ))
+  }
+
+  const saveCriteria = () => {
+    // In production, this would save to the API
+    console.log("[v0] Saving criteria:", editableCriteria)
+    setCriteriaEditOpen(false)
+  }
+
+  const totalWeight = editableCriteria.reduce((sum, c) => sum + c.weight, 0)
 
   const statusConfig = {
     draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
@@ -405,20 +491,128 @@ export default function TenderDetailPage() {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* ESG Criteria */}
+              {/* Evaluation Criteria */}
               <Card className="border-[#E5E7EB] bg-white">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-lg">Evaluation Criteria</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {tenderData.evaluationCriteria.map((criteria, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-[#6B7280]">{criteria.name}</span>
-                        <span className="font-medium text-[#111827]">{criteria.weight}%</span>
+                  <Dialog open={criteriaEditOpen} onOpenChange={setCriteriaEditOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 border-[#E5E7EB]">
+                        <Pencil className="size-3 mr-1" />
+                        Edit
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Edit Evaluation Criteria</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-[#6B7280]">Total Weight:</span>
+                          <span className={`font-semibold ${totalWeight === 100 ? 'text-[#16A34A]' : 'text-red-600'}`}>
+                            {totalWeight}%
+                          </span>
+                        </div>
+                        {totalWeight !== 100 && (
+                          <p className="text-xs text-red-600">Weights must sum to 100%</p>
+                        )}
+                        
+                        {editableCriteria.map((criteria, criteriaIndex) => (
+                          <div key={criteria.name} className="border border-[#E5E7EB] rounded-lg p-3 space-y-3">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1">
+                                <Label className="text-sm font-medium text-[#111827]">{criteria.name}</Label>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="number"
+                                  value={criteria.weight}
+                                  onChange={(e) => updateCriteriaWeight(criteriaIndex, parseInt(e.target.value) || 0)}
+                                  className="w-16 h-8 text-center text-sm"
+                                  min={0}
+                                  max={100}
+                                />
+                                <span className="text-sm text-[#6B7280]">%</span>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label className="text-xs text-[#6B7280]">Subcategories</Label>
+                              {criteria.subcategories.map((sub, subIndex) => (
+                                <div key={subIndex} className="flex items-center gap-2">
+                                  <Input
+                                    value={sub}
+                                    onChange={(e) => updateSubcategory(criteriaIndex, subIndex, e.target.value)}
+                                    className="flex-1 h-8 text-sm"
+                                  />
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-8 p-0 text-[#6B7280] hover:text-red-600"
+                                    onClick={() => removeSubcategory(criteriaIndex, subIndex)}
+                                  >
+                                    <X className="size-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs text-[#6B7280] hover:text-[#16A34A]"
+                                onClick={() => addSubcategory(criteriaIndex)}
+                              >
+                                <Plus className="size-3 mr-1" />
+                                Add subcategory
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <Progress value={criteria.weight} className="h-2" />
-                    </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setCriteriaEditOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={saveCriteria} 
+                          className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                          disabled={totalWeight !== 100}
+                        >
+                          Save Changes
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {editableCriteria.map((criteria, index) => (
+                    <Collapsible 
+                      key={index}
+                      open={expandedCriteria.includes(criteria.name)}
+                      onOpenChange={() => toggleCriteriaExpand(criteria.name)}
+                    >
+                      <div className="space-y-2">
+                        <CollapsibleTrigger className="w-full">
+                          <div className="flex items-center justify-between text-sm hover:bg-[#F3F4F6] rounded p-1 -mx-1 transition-colors">
+                            <div className="flex items-center gap-2">
+                              <ChevronDown className={`size-4 text-[#6B7280] transition-transform ${expandedCriteria.includes(criteria.name) ? 'rotate-180' : ''}`} />
+                              <span className="text-[#6B7280]">{criteria.name}</span>
+                            </div>
+                            <span className="font-medium text-[#111827]">{criteria.weight}%</span>
+                          </div>
+                        </CollapsibleTrigger>
+                        <Progress value={criteria.weight} className="h-2" />
+                        <CollapsibleContent>
+                          <ul className="mt-2 ml-6 space-y-1">
+                            {criteria.subcategories.map((sub, subIndex) => (
+                              <li key={subIndex} className="text-xs text-[#6B7280] flex items-center gap-2">
+                                <span className="size-1 rounded-full bg-[#D1D5DB]" />
+                                {sub}
+                              </li>
+                            ))}
+                          </ul>
+                        </CollapsibleContent>
+                      </div>
+                    </Collapsible>
                   ))}
                 </CardContent>
               </Card>
@@ -470,6 +664,7 @@ export default function TenderDetailPage() {
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Capability</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Sustainability</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Risk</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Docs</th>
                       <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Actions</th>
@@ -525,6 +720,13 @@ export default function TenderDetailPage() {
                         <td className="px-2 py-3 text-center">
                           {submission.scores ? (
                             <span className="font-medium text-[#111827]">{submission.scores.sustainability}</span>
+                          ) : (
+                            <span className="text-[#D1D5DB]">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-3 text-center">
+                          {submission.scores ? (
+                            <span className="font-medium text-[#111827]">{submission.scores.risk}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
                           )}
@@ -641,10 +843,14 @@ export default function TenderDetailPage() {
                         <span className="text-[#6B7280]">Price</span>
                         <span className="font-medium text-[#111827]">{submission.scores?.price}</span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#6B7280]">Sustainability</span>
-                        <span className="font-medium text-[#111827]">{submission.scores?.sustainability}</span>
-                      </div>
+<div className="flex items-center justify-between">
+                      <span className="text-[#6B7280]">Sustainability</span>
+                      <span className="font-medium text-[#111827]">{submission.scores?.sustainability}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[#6B7280]">Risk</span>
+                      <span className="font-medium text-[#111827]">{submission.scores?.risk}</span>
+                    </div>
                     </div>
                     <div className="pt-2 flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1 border-[#E5E7EB]">
