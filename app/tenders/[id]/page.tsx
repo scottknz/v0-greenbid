@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Collapsible,
   CollapsibleContent,
@@ -72,31 +73,37 @@ const tenderData = {
     { 
       name: "Completeness", 
       weight: 15,
+      instructions: "Assess whether the supplier has provided all required documentation and addressed all sections of the tender. Look for completeness of responses and adherence to submission guidelines.",
       subcategories: ["Documentation completeness", "Response coverage", "Compliance with requirements"]
     },
     { 
       name: "Quality", 
       weight: 20,
+      instructions: "Evaluate the quality of proposed products/services, certifications held, and quality management processes in place. Consider track record and quality assurance measures.",
       subcategories: ["Product/service quality", "Quality certifications", "Quality management processes"]
     },
     { 
       name: "Capability", 
       weight: 15,
+      instructions: "Review technical expertise, relevant project experience, team qualifications, and infrastructure capacity to deliver the requirements at scale.",
       subcategories: ["Technical expertise", "Relevant experience", "Team qualifications", "Infrastructure"]
     },
     { 
       name: "Price", 
       weight: 20,
+      instructions: "Analyze pricing competitiveness, value for money, payment terms offered, and total cost of ownership including any hidden costs or long-term implications.",
       subcategories: ["Base pricing", "Value for money", "Payment terms", "Total cost of ownership"]
     },
     { 
       name: "Sustainability", 
       weight: 20,
+      instructions: "Assess environmental impact, carbon footprint reduction measures, ethical sourcing practices, and social responsibility initiatives aligned with our ESG goals.",
       subcategories: ["Environmental impact", "Carbon footprint", "Ethical sourcing", "Social responsibility"]
     },
     { 
       name: "Risk", 
       weight: 10,
+      instructions: "Evaluate financial stability, supply chain reliability, business continuity plans, and insurance coverage to minimize procurement risks.",
       subcategories: ["Financial stability", "Supply chain reliability", "Business continuity", "Insurance coverage"]
     },
   ],
@@ -238,6 +245,7 @@ export default function TenderDetailPage() {
   const [criteriaEditOpen, setCriteriaEditOpen] = useState(false)
   const [editableCriteria, setEditableCriteria] = useState(tenderData.evaluationCriteria)
   const [expandedCriteria, setExpandedCriteria] = useState<string[]>([])
+  const [expandedEvalCriteria, setExpandedEvalCriteria] = useState<string[]>([])
 
   const toggleCriteriaExpand = (name: string) => {
     setExpandedCriteria(prev => 
@@ -275,10 +283,30 @@ export default function TenderDetailPage() {
     ))
   }
 
+  const updateCriteriaInstructions = (index: number, instructions: string) => {
+    setEditableCriteria(prev => prev.map((c, i) => 
+      i === index ? { ...c, instructions } : c
+    ))
+  }
+
+  const toggleEvalCriteriaExpand = (name: string) => {
+    setExpandedEvalCriteria(prev => 
+      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
+    )
+  }
+
   const saveCriteria = () => {
     // In production, this would save to the API
-    console.log("[v0] Saving criteria:", editableCriteria)
     setCriteriaEditOpen(false)
+  }
+
+  const makeWeights100 = () => {
+    if (totalWeight === 0) return
+    const factor = 100 / totalWeight
+    setEditableCriteria(prev => prev.map(c => ({
+      ...c,
+      weight: Math.round(c.weight * factor)
+    })))
   }
 
   const totalWeight = editableCriteria.reduce((sum, c) => sum + c.weight, 0)
@@ -509,13 +537,34 @@ export default function TenderDetailPage() {
                       <div className="space-y-4 py-4">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-[#6B7280]">Total Weight:</span>
-                          <span className={`font-semibold ${totalWeight === 100 ? 'text-[#16A34A]' : 'text-red-600'}`}>
-                            {totalWeight}%
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`font-semibold ${totalWeight === 100 ? 'text-[#16A34A]' : 'text-red-600'}`}>
+                              {totalWeight}%
+                            </span>
+                            {totalWeight !== 100 && totalWeight > 0 && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-6 text-xs border-[#E5E7EB]"
+                                onClick={makeWeights100}
+                              >
+                                Make 100%
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        {totalWeight !== 100 && (
-                          <p className="text-xs text-red-600">Weights must sum to 100%</p>
-                        )}
+                        
+                        <Button
+                          variant="link"
+                          className="h-auto p-0 text-sm text-[#16A34A] hover:text-[#15803D]"
+                          onClick={() => {
+                            setCriteriaEditOpen(false)
+                            setActiveTab("evaluation")
+                          }}
+                        >
+                          Open full Evaluation tab for detailed instructions
+                          <ExternalLink className="size-3 ml-1" />
+                        </Button>
                         
                         {editableCriteria.map((criteria, criteriaIndex) => (
                           <div key={criteria.name} className="border border-[#E5E7EB] rounded-lg p-3 space-y-3">
@@ -791,9 +840,125 @@ export default function TenderDetailPage() {
 
         {activeTab === "evaluation" && (
           <div className="space-y-6">
+            {/* Evaluation Criteria Configuration */}
+            <Card className="border-[#E5E7EB] bg-white">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle className="text-lg">Evaluation Criteria</CardTitle>
+                  <CardDescription>Configure weightings and instructions for each evaluation category</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-[#6B7280]">Total:</span>
+                    <span className={`font-semibold ${totalWeight === 100 ? 'text-[#16A34A]' : 'text-red-600'}`}>
+                      {totalWeight}%
+                    </span>
+                    {totalWeight !== 100 && totalWeight > 0 && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-7 text-xs border-[#E5E7EB]"
+                        onClick={makeWeights100}
+                      >
+                        Make 100%
+                      </Button>
+                    )}
+                  </div>
+                  <Button 
+                    onClick={saveCriteria}
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                    disabled={totalWeight !== 100}
+                  >
+                    Save Changes
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {editableCriteria.map((criteria, criteriaIndex) => (
+                  <Collapsible
+                    key={criteria.name}
+                    open={expandedEvalCriteria.includes(criteria.name)}
+                    onOpenChange={() => toggleEvalCriteriaExpand(criteria.name)}
+                  >
+                    <div className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                      <CollapsibleTrigger className="w-full">
+                        <div className="flex items-center justify-between p-4 bg-[#F8F9FA] hover:bg-[#F3F4F6] transition-colors">
+                          <div className="flex items-center gap-3">
+                            <ChevronDown className={`size-4 text-[#6B7280] transition-transform ${expandedEvalCriteria.includes(criteria.name) ? 'rotate-180' : ''}`} />
+                            <span className="font-medium text-[#111827]">{criteria.name}</span>
+                            <span className="text-xs text-[#6B7280]">({criteria.subcategories.length} subcategories)</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                              <Input
+                                type="number"
+                                value={criteria.weight}
+                                onChange={(e) => updateCriteriaWeight(criteriaIndex, parseInt(e.target.value) || 0)}
+                                className="w-16 h-8 text-center text-sm"
+                                min={0}
+                                max={100}
+                              />
+                              <span className="text-sm text-[#6B7280]">%</span>
+                            </div>
+                            <Progress value={criteria.weight} className="w-24 h-2" />
+                          </div>
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="p-4 space-y-4 border-t border-[#E5E7EB]">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-[#111827]">Evaluation Instructions</Label>
+                            <Textarea
+                              value={criteria.instructions}
+                              onChange={(e) => updateCriteriaInstructions(criteriaIndex, e.target.value)}
+                              placeholder="Describe what evaluators should look for when assessing this criteria..."
+                              className="min-h-[80px] text-sm"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-[#111827]">Subcategories</Label>
+                            <div className="space-y-2">
+                              {criteria.subcategories.map((sub, subIndex) => (
+                                <div key={subIndex} className="flex items-center gap-2">
+                                  <Input
+                                    value={sub}
+                                    onChange={(e) => updateSubcategory(criteriaIndex, subIndex, e.target.value)}
+                                    className="flex-1 h-9 text-sm"
+                                  />
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="size-9 p-0 text-[#6B7280] hover:text-red-600"
+                                    onClick={() => removeSubcategory(criteriaIndex, subIndex)}
+                                  >
+                                    <X className="size-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs border-dashed border-[#E5E7EB] text-[#6B7280] hover:text-[#16A34A] hover:border-[#16A34A]"
+                                onClick={() => addSubcategory(criteriaIndex)}
+                              >
+                                <Plus className="size-3 mr-1" />
+                                Add subcategory
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </div>
+                  </Collapsible>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Evaluation Progress */}
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-[#111827]">Evaluation Progress</h3>
+                <h3 className="text-lg font-semibold text-[#111827]">Submissions</h3>
                 <p className="text-sm text-[#6B7280]">
                   {submissionsData.filter(s => s.weightedScore).length} of {tenderData.submissions} submissions evaluated
                 </p>
