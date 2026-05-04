@@ -119,7 +119,7 @@ export default function BuyerDashboard() {
         </div>
 
         {/* Top Row: Metric Cards */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-4">
           <MetricCard
             title="Open Tenders"
             value="5"
@@ -137,6 +137,14 @@ export default function BuyerDashboard() {
             iconBg="bg-amber-50"
           />
           <MetricCard
+            title="In Evaluation"
+            value="8"
+            description="Awaiting review"
+            icon={AlertCircle}
+            iconColor="text-blue-600"
+            iconBg="bg-blue-50"
+          />
+          <MetricCard
             title="Closed"
             value="45"
             description="This quarter"
@@ -147,7 +155,7 @@ export default function BuyerDashboard() {
         </div>
 
         {/* Main Content: Left Column (Actions + Activity) | Right Column (Recent Tenders) */}
-        <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-4">
           {/* Left Column */}
           <div className="flex flex-col gap-4">
             {/* Actions Required */}
@@ -214,7 +222,7 @@ export default function BuyerDashboard() {
           </div>
 
           {/* Right Column: Recent Tenders Table */}
-          <Card className="border-[#E5E7EB] bg-white lg:col-span-2">
+          <Card className="border-[#E5E7EB] bg-white lg:col-span-3">
             <CardHeader className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
               <CardTitle className="text-lg font-semibold text-[#111827]">
                 Recent Tenders
