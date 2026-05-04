@@ -58,10 +58,11 @@ const tenderData = {
     "Delivery vehicles must meet Euro 6 emission standards",
   ],
   evaluationCriteria: [
-    { name: "Completeness", weight: 20 },
-    { name: "Quality", weight: 30 },
-    { name: "Capability", weight: 25 },
-    { name: "Price", weight: 25 },
+    { name: "Completeness", weight: 15 },
+    { name: "Quality", weight: 25 },
+    { name: "Capability", weight: 20 },
+    { name: "Price", weight: 20 },
+    { name: "Sustainability", weight: 20 },
   ],
   budget: 125000,
   deadline: "Apr 15, 2026",
@@ -83,8 +84,8 @@ const submissionsData = [
       quality: 88,
       capability: 92,
       price: 85,
+      sustainability: 90,
     },
-    unweightedScore: 90,
     weightedScore: 89,
     documents: [
       { name: "Company Profile.pdf", size: "1.2 MB" },
@@ -104,8 +105,8 @@ const submissionsData = [
       quality: 85,
       capability: 88,
       price: 92,
+      sustainability: 86,
     },
-    unweightedScore: 91,
     weightedScore: 90,
     documents: [
       { name: "Company Overview.pdf", size: "2.1 MB" },
@@ -124,8 +125,8 @@ const submissionsData = [
       quality: 95,
       capability: 90,
       price: 78,
+      sustainability: 94,
     },
-    unweightedScore: 88,
     weightedScore: 87,
     documents: [
       { name: "Executive Summary.pdf", size: "890 KB" },
@@ -142,7 +143,6 @@ const submissionsData = [
     submittedDate: "Mar 22, 2026",
     status: "pending",
     scores: null,
-    unweightedScore: null,
     weightedScore: null,
     documents: [
       { name: "Proposal Document.pdf", size: "2.8 MB" },
@@ -156,7 +156,6 @@ const submissionsData = [
     submittedDate: "Mar 25, 2026",
     status: "pending",
     scores: null,
-    unweightedScore: null,
     weightedScore: null,
     documents: [
       { name: "Full Proposal.pdf", size: "4.1 MB" },
@@ -466,12 +465,12 @@ export default function TenderDetailPage() {
                     <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
                       <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Status</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Complete</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Completeness</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Quality</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Capability</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide bg-[#F0FDF4]">Unweighted</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide bg-[#F0FDF4]">Weighted</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Sustainability</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Docs</th>
                       <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Actions</th>
                     </tr>
@@ -523,16 +522,16 @@ export default function TenderDetailPage() {
                             <span className="text-[#D1D5DB]">-</span>
                           )}
                         </td>
-                        <td className="px-2 py-3 text-center bg-[#FAFDFB]">
-                          {submission.unweightedScore ? (
-                            <span className="font-semibold text-[#111827]">{submission.unweightedScore}</span>
+                        <td className="px-2 py-3 text-center">
+                          {submission.scores ? (
+                            <span className="font-medium text-[#111827]">{submission.scores.sustainability}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
                           )}
                         </td>
-                        <td className="px-2 py-3 text-center bg-[#FAFDFB]">
+                        <td className="px-2 py-3 text-center">
                           {submission.weightedScore ? (
-                            <span className="font-semibold text-[#16A34A]">{submission.weightedScore}</span>
+                            <span className="font-semibold text-[#111827]">{submission.weightedScore}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
                           )}
@@ -625,7 +624,7 @@ export default function TenderDetailPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="space-y-1 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-[#6B7280]">Completeness</span>
                         <span className="font-medium text-[#111827]">{submission.scores?.completeness}</span>
@@ -642,10 +641,10 @@ export default function TenderDetailPage() {
                         <span className="text-[#6B7280]">Price</span>
                         <span className="font-medium text-[#111827]">{submission.scores?.price}</span>
                       </div>
-                    </div>
-                    <div className="pt-2 border-t border-[#E5E7EB] flex items-center justify-between text-sm">
-                      <span className="text-[#6B7280]">Unweighted Score</span>
-                      <span className="font-semibold text-[#111827]">{submission.unweightedScore}</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#6B7280]">Sustainability</span>
+                        <span className="font-medium text-[#111827]">{submission.scores?.sustainability}</span>
+                      </div>
                     </div>
                     <div className="pt-2 flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1 border-[#E5E7EB]">
