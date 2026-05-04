@@ -1,7 +1,7 @@
 import { DashboardShell } from "@/components/shell/DashboardShell"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Clock, CheckCircle, AlertCircle } from "lucide-react"
+import { FileText, CheckCircle, AlertCircle } from "lucide-react"
 
 export default function BuyerDashboard() {
   return (
@@ -18,7 +18,39 @@ export default function BuyerDashboard() {
         </div>
 
         {/* Metric Cards */}
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 h-[100px]">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+          {/* Actions Required - larger card */}
+          <Card className="border-[#E5E7EB] bg-white md:row-span-1">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-[#6B7280]">
+                  Actions Required
+                </CardTitle>
+                <div className="rounded-md p-1.5 bg-red-50">
+                  <AlertCircle className="size-4 text-red-600" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <ActionItem
+                title="Review supplier submissions"
+                tender="Green IT Equipment Procurement"
+                dueDate="May 8, 2026"
+              />
+              <ActionItem
+                title="Approve evaluation criteria"
+                tender="Sustainable Office Supplies"
+                dueDate="May 10, 2026"
+              />
+              <ActionItem
+                title="Finalize contract terms"
+                tender="Carbon-Neutral Logistics"
+                dueDate="May 12, 2026"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Active Tenders */}
           <MetricCard
             title="Active Tenders"
             value="12"
@@ -27,14 +59,8 @@ export default function BuyerDashboard() {
             iconColor="text-[#16A34A]"
             iconBg="bg-[#F0FDF4]"
           />
-          <MetricCard
-            title="Pending Submissions"
-            value="24"
-            description="8 require review"
-            icon={Clock}
-            iconColor="text-amber-600"
-            iconBg="bg-amber-50"
-          />
+
+          {/* Completed */}
           <MetricCard
             title="Completed"
             value="45"
@@ -42,14 +68,6 @@ export default function BuyerDashboard() {
             icon={CheckCircle}
             iconColor="text-[#16A34A]"
             iconBg="bg-[#F0FDF4]"
-          />
-          <MetricCard
-            title="Action Required"
-            value="5"
-            description="Awaiting your input"
-            icon={AlertCircle}
-            iconColor="text-red-600"
-            iconBg="bg-red-50"
           />
         </div>
 
@@ -120,6 +138,28 @@ export default function BuyerDashboard() {
         </Card>
       </div>
     </DashboardShell>
+  )
+}
+
+function ActionItem({
+  title,
+  tender,
+  dueDate,
+}: {
+  title: string
+  tender: string
+  dueDate: string
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 p-3 rounded-lg bg-[#F8F9FA] border border-[#E5E7EB]">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-[#111827]">{title}</p>
+        <p className="text-xs text-[#6B7280] truncate">{tender}</p>
+      </div>
+      <div className="flex-shrink-0 text-right">
+        <p className="text-xs font-medium text-red-600">{dueDate}</p>
+      </div>
+    </div>
   )
 }
 
