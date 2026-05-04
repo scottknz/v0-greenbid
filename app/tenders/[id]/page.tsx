@@ -10,6 +10,13 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -29,12 +36,10 @@ import {
   Clock,
   FileText,
   Download,
-  Eye,
-  Star,
   CheckCircle,
   AlertCircle,
   Upload,
-  MessageSquare,
+  ExternalLink,
 } from "lucide-react"
 
 // Mock data - in production this would come from an API
@@ -52,11 +57,11 @@ const tenderData = {
     "Products must meet EU Ecolabel or equivalent standards",
     "Delivery vehicles must meet Euro 6 emission standards",
   ],
-  esgCriteria: [
-    { name: "Environmental Impact", weight: 40 },
-    { name: "Social Responsibility", weight: 25 },
-    { name: "Governance & Ethics", weight: 15 },
-    { name: "Price Competitiveness", weight: 20 },
+  evaluationCriteria: [
+    { name: "Completeness", weight: 20 },
+    { name: "Quality", weight: 30 },
+    { name: "Capability", weight: 25 },
+    { name: "Price", weight: 25 },
   ],
   budget: 125000,
   deadline: "Apr 15, 2026",
@@ -73,50 +78,92 @@ const submissionsData = [
     supplierName: "EcoSupply Co.",
     submittedDate: "Mar 15, 2026",
     status: "under_review",
-    esgScore: 92,
-    priceScore: 85,
-    overallScore: 89,
-    documents: 5,
+    scores: {
+      completeness: 95,
+      quality: 88,
+      capability: 92,
+      price: 85,
+    },
+    unweightedScore: 90,
+    weightedScore: 89,
+    documents: [
+      { name: "Company Profile.pdf", size: "1.2 MB" },
+      { name: "Technical Proposal.pdf", size: "3.4 MB" },
+      { name: "Pricing Schedule.xlsx", size: "245 KB" },
+      { name: "Certifications.pdf", size: "890 KB" },
+      { name: "References.pdf", size: "156 KB" },
+    ],
   },
   {
     id: "s2",
     supplierName: "GreenOffice Ltd",
     submittedDate: "Mar 18, 2026",
     status: "evaluated",
-    esgScore: 88,
-    priceScore: 92,
-    overallScore: 90,
-    documents: 4,
+    scores: {
+      completeness: 100,
+      quality: 85,
+      capability: 88,
+      price: 92,
+    },
+    unweightedScore: 91,
+    weightedScore: 90,
+    documents: [
+      { name: "Company Overview.pdf", size: "2.1 MB" },
+      { name: "Solution Proposal.pdf", size: "4.2 MB" },
+      { name: "Cost Breakdown.xlsx", size: "312 KB" },
+      { name: "ISO Certificates.pdf", size: "1.1 MB" },
+    ],
   },
   {
     id: "s3",
     supplierName: "Sustainable Solutions Inc",
     submittedDate: "Mar 20, 2026",
     status: "under_review",
-    esgScore: 95,
-    priceScore: 78,
-    overallScore: 87,
-    documents: 6,
+    scores: {
+      completeness: 90,
+      quality: 95,
+      capability: 90,
+      price: 78,
+    },
+    unweightedScore: 88,
+    weightedScore: 87,
+    documents: [
+      { name: "Executive Summary.pdf", size: "890 KB" },
+      { name: "Technical Specifications.pdf", size: "5.6 MB" },
+      { name: "Pricing Proposal.xlsx", size: "178 KB" },
+      { name: "Case Studies.pdf", size: "3.2 MB" },
+      { name: "Team CVs.pdf", size: "2.4 MB" },
+      { name: "Quality Certifications.pdf", size: "1.8 MB" },
+    ],
   },
   {
     id: "s4",
     supplierName: "EarthFirst Supplies",
     submittedDate: "Mar 22, 2026",
     status: "pending",
-    esgScore: null,
-    priceScore: null,
-    overallScore: null,
-    documents: 3,
+    scores: null,
+    unweightedScore: null,
+    weightedScore: null,
+    documents: [
+      { name: "Proposal Document.pdf", size: "2.8 MB" },
+      { name: "Pricing.xlsx", size: "145 KB" },
+      { name: "Company Info.pdf", size: "1.4 MB" },
+    ],
   },
   {
     id: "s5",
     supplierName: "CleanTech Office",
     submittedDate: "Mar 25, 2026",
     status: "pending",
-    esgScore: null,
-    priceScore: null,
-    overallScore: null,
-    documents: 4,
+    scores: null,
+    unweightedScore: null,
+    weightedScore: null,
+    documents: [
+      { name: "Full Proposal.pdf", size: "4.1 MB" },
+      { name: "Cost Analysis.xlsx", size: "267 KB" },
+      { name: "References.pdf", size: "890 KB" },
+      { name: "Certifications.pdf", size: "1.2 MB" },
+    ],
   },
 ]
 
@@ -365,7 +412,7 @@ export default function TenderDetailPage() {
                   <CardTitle className="text-lg">Evaluation Criteria</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {tenderData.esgCriteria.map((criteria, index) => (
+                  {tenderData.evaluationCriteria.map((criteria, index) => (
                     <div key={index} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-[#6B7280]">{criteria.name}</span>
@@ -417,64 +464,120 @@ export default function TenderDetailPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
-                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Submitted</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Status</th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">ESG Score</th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price Score</th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Overall</th>
-                      <th className="px-4 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Docs</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Actions</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Status</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Complete</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Quality</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Capability</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide bg-[#F0FDF4]">Unweighted</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide bg-[#F0FDF4]">Weighted</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Docs</th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E5E7EB]">
                     {submissionsData.map(submission => (
                       <tr key={submission.id} className="hover:bg-[#F3F4F6] transition-colors">
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="size-8">
+                        <td className="px-3 py-3">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="size-7">
                               <AvatarFallback className="bg-[#F0FDF4] text-[#16A34A] text-xs">
                                 {submission.supplierName.split(" ").map(n => n[0]).join("").slice(0, 2)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="font-medium text-[#111827]">{submission.supplierName}</span>
+                            <div>
+                              <span className="font-medium text-[#111827] text-sm">{submission.supplierName}</span>
+                              <p className="text-xs text-[#9CA3AF]">{submission.submittedDate}</p>
+                            </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-[#6B7280]">{submission.submittedDate}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-3">
                           <SubmissionStatusBadge status={submission.status} />
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          {submission.esgScore ? (
-                            <span className="font-medium text-[#16A34A]">{submission.esgScore}</span>
+                        <td className="px-2 py-3 text-center">
+                          {submission.scores ? (
+                            <span className="font-medium text-[#111827]">{submission.scores.completeness}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          {submission.priceScore ? (
-                            <span className="font-medium text-[#111827]">{submission.priceScore}</span>
+                        <td className="px-2 py-3 text-center">
+                          {submission.scores ? (
+                            <span className="font-medium text-[#111827]">{submission.scores.quality}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          {submission.overallScore ? (
-                            <span className="font-semibold text-[#111827]">{submission.overallScore}</span>
+                        <td className="px-2 py-3 text-center">
+                          {submission.scores ? (
+                            <span className="font-medium text-[#111827]">{submission.scores.capability}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-center text-[#6B7280]">{submission.documents}</td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="sm" className="size-8 p-0">
-                              <Eye className="size-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="size-8 p-0">
-                              <Star className="size-4" />
-                            </Button>
-                          </div>
+                        <td className="px-2 py-3 text-center">
+                          {submission.scores ? (
+                            <span className="font-medium text-[#111827]">{submission.scores.price}</span>
+                          ) : (
+                            <span className="text-[#D1D5DB]">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-3 text-center bg-[#FAFDFB]">
+                          {submission.unweightedScore ? (
+                            <span className="font-semibold text-[#111827]">{submission.unweightedScore}</span>
+                          ) : (
+                            <span className="text-[#D1D5DB]">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-3 text-center bg-[#FAFDFB]">
+                          {submission.weightedScore ? (
+                            <span className="font-semibold text-[#16A34A]">{submission.weightedScore}</span>
+                          ) : (
+                            <span className="text-[#D1D5DB]">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-3 text-center">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-[#6B7280] hover:text-[#111827]">
+                                <FileText className="size-3 mr-1" />
+                                {submission.documents.length}
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Documents - {submission.supplierName}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-2 mt-4">
+                                {submission.documents.map((doc, idx) => (
+                                  <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-[#F8F9FA] border border-[#E5E7EB]">
+                                    <div className="flex items-center gap-3">
+                                      <FileText className="size-4 text-[#6B7280]" />
+                                      <div>
+                                        <p className="text-sm font-medium text-[#111827]">{doc.name}</p>
+                                        <p className="text-xs text-[#6B7280]">{doc.size}</p>
+                                      </div>
+                                    </div>
+                                    <Button variant="ghost" size="sm" className="size-8 p-0">
+                                      <Download className="size-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </td>
+                        <td className="px-3 py-3 text-right">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-7 px-3 text-xs border-[#E5E7EB]"
+                            onClick={() => window.location.href = `/tenders/${tenderData.id}/submissions/${submission.id}`}
+                          >
+                            <ExternalLink className="size-3 mr-1" />
+                            Open
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -490,7 +593,9 @@ export default function TenderDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-[#111827]">Evaluation Progress</h3>
-                <p className="text-sm text-[#6B7280]">2 of {tenderData.submissions} submissions evaluated</p>
+                <p className="text-sm text-[#6B7280]">
+                  {submissionsData.filter(s => s.weightedScore).length} of {tenderData.submissions} submissions evaluated
+                </p>
               </div>
               <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
                 Start Evaluation
@@ -498,7 +603,7 @@ export default function TenderDetailPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {submissionsData.filter(s => s.overallScore).map(submission => (
+              {submissionsData.filter(s => s.weightedScore).map(submission => (
                 <Card key={submission.id} className="border-[#E5E7EB] bg-white">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
@@ -514,22 +619,34 @@ export default function TenderDetailPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-[#16A34A]">{submission.overallScore}</p>
-                        <p className="text-xs text-[#6B7280]">Overall Score</p>
+                        <p className="text-2xl font-bold text-[#16A34A]">{submission.weightedScore}</p>
+                        <p className="text-xs text-[#6B7280]">Weighted Score</p>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-[#6B7280]">ESG Score</span>
-                      <span className="font-medium text-[#111827]">{submission.esgScore}/100</span>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#6B7280]">Completeness</span>
+                        <span className="font-medium text-[#111827]">{submission.scores?.completeness}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#6B7280]">Quality</span>
+                        <span className="font-medium text-[#111827]">{submission.scores?.quality}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#6B7280]">Capability</span>
+                        <span className="font-medium text-[#111827]">{submission.scores?.capability}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#6B7280]">Price</span>
+                        <span className="font-medium text-[#111827]">{submission.scores?.price}</span>
+                      </div>
                     </div>
-                    <Progress value={submission.esgScore || 0} className="h-2" />
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-[#6B7280]">Price Score</span>
-                      <span className="font-medium text-[#111827]">{submission.priceScore}/100</span>
+                    <div className="pt-2 border-t border-[#E5E7EB] flex items-center justify-between text-sm">
+                      <span className="text-[#6B7280]">Unweighted Score</span>
+                      <span className="font-semibold text-[#111827]">{submission.unweightedScore}</span>
                     </div>
-                    <Progress value={submission.priceScore || 0} className="h-2" />
                     <div className="pt-2 flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1 border-[#E5E7EB]">
                         View Details
@@ -543,7 +660,7 @@ export default function TenderDetailPage() {
               ))}
 
               {/* Pending Evaluations */}
-              {submissionsData.filter(s => !s.overallScore).map(submission => (
+              {submissionsData.filter(s => !s.weightedScore).map(submission => (
                 <Card key={submission.id} className="border-[#E5E7EB] bg-white border-dashed">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between">
