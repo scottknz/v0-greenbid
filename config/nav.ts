@@ -9,9 +9,10 @@ export interface NavItem {
 
 export const buyerNav: NavItem[] = [
   { label: 'Dashboard', href: '/', icon: 'LayoutDashboard', section: 'main' },
-  { label: 'New Tender', href: '/tenders/new', icon: 'FileText', section: 'main', badge: true },
-  { label: 'Evaluate Tender', href: '/evaluate', icon: 'ClipboardList', section: 'main' },
-  { label: 'Audit History', href: '/audit', icon: 'Shield', section: 'main' },
+  { label: 'Tenders', href: '/tenders', icon: 'FileText', section: 'main' },
+  { label: 'Suppliers', href: '/suppliers', icon: 'Users', section: 'main' },
+  { label: 'Messages', href: '/messages', icon: 'Mail', section: 'main' },
+  { label: 'Evaluations', href: '/evaluations', icon: 'ClipboardList', section: 'main' },
   { label: 'AI Copilot', href: '#', icon: 'MessageSquare', section: 'secondary', isChatTrigger: true },
   { label: 'Marketplace', href: '/marketplace', icon: 'Library', section: 'secondary' },
   { label: 'Settings', href: '/settings', icon: 'Settings', section: 'secondary' },
