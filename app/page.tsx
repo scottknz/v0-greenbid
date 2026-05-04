@@ -434,7 +434,7 @@ function TenderRow({
 
   return (
     <tr className="hover:bg-[#F3F4F6] transition-colors cursor-pointer">
-      <td className="px-4 py-3 font-medium text-[#111827] max-w-[200px] truncate">{name}</td>
+      <td className="px-4 py-3 font-medium text-[#111827] max-w-[180px] truncate" title={name}>{name}</td>
       <td className="px-3 py-3">
         <Badge
           variant="outline"
