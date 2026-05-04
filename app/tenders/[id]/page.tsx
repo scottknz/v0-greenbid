@@ -246,6 +246,8 @@ export default function TenderDetailPage() {
   const [editableCriteria, setEditableCriteria] = useState(tenderData.evaluationCriteria)
   const [expandedCriteria, setExpandedCriteria] = useState<string[]>([])
   const [expandedEvalCriteria, setExpandedEvalCriteria] = useState<string[]>([])
+  const [ownerEditOpen, setOwnerEditOpen] = useState(false)
+  const [editableOwner, setEditableOwner] = useState({ name: tenderData.owner, email: tenderData.ownerEmail })
 
   const toggleCriteriaExpand = (name: string) => {
     setExpandedCriteria(prev => 
@@ -518,7 +520,66 @@ export default function TenderDetailPage() {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-4">
+              {/* Owner */}
+              <Card className="border-[#E5E7EB] bg-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="size-9">
+                        <AvatarFallback className="bg-[#F0FDF4] text-[#16A34A] text-sm">
+                          {editableOwner.name.split(" ").map(n => n[0]).join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-sm font-medium text-[#111827]">{editableOwner.name}</p>
+                        <p className="text-xs text-[#6B7280]">{editableOwner.email}</p>
+                      </div>
+                    </div>
+                    <Dialog open={ownerEditOpen} onOpenChange={setOwnerEditOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-[#6B7280]">
+                          <Pencil className="size-3" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-sm">
+                        <DialogHeader>
+                          <DialogTitle>Change Tender Owner</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div className="space-y-2">
+                            <Label>Name</Label>
+                            <Input
+                              value={editableOwner.name}
+                              onChange={(e) => setEditableOwner(prev => ({ ...prev, name: e.target.value }))}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Email</Label>
+                            <Input
+                              type="email"
+                              value={editableOwner.email}
+                              onChange={(e) => setEditableOwner(prev => ({ ...prev, email: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setOwnerEditOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button 
+                            onClick={() => setOwnerEditOpen(false)}
+                            className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                          >
+                            Save
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Evaluation Criteria */}
               <Card className="border-[#E5E7EB] bg-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -666,26 +727,7 @@ export default function TenderDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Owner */}
-              <Card className="border-[#E5E7EB] bg-white">
-                <CardHeader>
-                  <CardTitle className="text-lg">Tender Owner</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarFallback className="bg-[#F0FDF4] text-[#16A34A]">
-                        {tenderData.owner.split(" ").map(n => n[0]).join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium text-[#111827]">{tenderData.owner}</p>
-                      <p className="text-sm text-[#6B7280]">{tenderData.ownerEmail}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+              </div>
           </div>
         )}
 
