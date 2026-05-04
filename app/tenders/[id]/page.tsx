@@ -53,6 +53,8 @@ import {
   Plus,
   X,
   Eye,
+  Trash2,
+  Star,
 } from "lucide-react"
 
 // Mock data - in production this would come from an API
@@ -522,6 +524,8 @@ export default function TenderDetailPage() {
   const [addNewMemberOpen, setAddNewMemberOpen] = useState(false)
   const [newMember, setNewMember] = useState({ name: "", email: "", companyTitle: "", projectRole: "" })
   const [selectedMemberRole, setSelectedMemberRole] = useState("")
+  const [editMemberOpen, setEditMemberOpen] = useState(false)
+  const [editingMember, setEditingMember] = useState<typeof teamMembersData[0] | null>(null)
 
   const addExistingMember = (member: typeof companyMembersData[0]) => {
     const newTeamMember = {
@@ -554,6 +558,28 @@ export default function TenderDetailPage() {
 
   const removeTeamMember = (id: string) => {
     setTeamMembers(prev => prev.filter(m => m.id !== id))
+  }
+
+  const startEditMember = (member: typeof teamMembersData[0]) => {
+    setEditingMember({ ...member })
+    setEditMemberOpen(true)
+  }
+
+  const saveEditMember = () => {
+    if (!editingMember) return
+    setTeamMembers(prev => prev.map(m => 
+      m.id === editingMember.id ? editingMember : m
+    ))
+    setEditMemberOpen(false)
+    setEditingMember(null)
+  }
+
+  const makeLead = (id: string) => {
+    setTeamMembers(prev => prev.map(m => ({
+      ...m,
+      isLead: m.id === id,
+      projectRole: m.id === id ? "Lead" : (m.isLead ? "Team Member" : m.projectRole)
+    })))
   }
 
   const availableCompanyMembers = companyMembersData.filter(
@@ -1249,16 +1275,34 @@ export default function TenderDetailPage() {
                           <td className="px-6 py-4 text-[#6B7280]">{member.projectRole}</td>
                           <td className="px-6 py-4 text-[#6B7280]">{member.email}</td>
                           <td className="px-6 py-4 text-right">
-                            {!member.isLead && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-8 px-2 text-[#6B7280] hover:text-red-600"
-                                onClick={() => removeTeamMember(member.id)}
-                              >
-                                <X className="size-4" />
-                              </Button>
-                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-[#6B7280]">
+                                  <MoreHorizontal className="size-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-40">
+                                <DropdownMenuItem onClick={() => startEditMember(member)}>
+                                  <Pencil className="size-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                {!member.isLead && (
+                                  <DropdownMenuItem onClick={() => makeLead(member.id)}>
+                                    <Star className="size-4 mr-2" />
+                                    Make Lead
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => removeTeamMember(member.id)}
+                                  className="text-red-600 focus:text-red-600"
+                                  disabled={member.isLead}
+                                >
+                                  <Trash2 className="size-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </td>
                         </tr>
                       ))}
@@ -1267,6 +1311,59 @@ export default function TenderDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Edit Member Dialog */}
+            <Dialog open={editMemberOpen} onOpenChange={setEditMemberOpen}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Edit Team Member</DialogTitle>
+                </DialogHeader>
+                {editingMember && (
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>Name</Label>
+                      <Input 
+                        value={editingMember.name}
+                        onChange={(e) => setEditingMember(prev => prev ? { ...prev, name: e.target.value } : null)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email</Label>
+                      <Input 
+                        type="email"
+                        value={editingMember.email}
+                        onChange={(e) => setEditingMember(prev => prev ? { ...prev, email: e.target.value } : null)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Company Title</Label>
+                      <Input 
+                        value={editingMember.companyTitle}
+                        onChange={(e) => setEditingMember(prev => prev ? { ...prev, companyTitle: e.target.value } : null)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Project Role</Label>
+                      <Input 
+                        value={editingMember.projectRole}
+                        onChange={(e) => setEditingMember(prev => prev ? { ...prev, projectRole: e.target.value } : null)}
+                      />
+                    </div>
+                  </div>
+                )}
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setEditMemberOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={saveEditMember}
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                  >
+                    Save Changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
 
