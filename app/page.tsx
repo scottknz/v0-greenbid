@@ -1,9 +1,111 @@
+"use client"
+
+import { useState, useMemo } from "react"
 import { DashboardShell } from "@/components/shell/DashboardShell"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { FileText, CheckCircle, AlertCircle } from "lucide-react"
+import { FileText, CheckCircle, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
+
+type SortField = "status" | "submissions" | "deadline" | "created" | "budget" | null
+type SortDirection = "asc" | "desc"
+
+type TenderData = {
+  name: string
+  status: "draft" | "active" | "evaluation" | "completed"
+  submissions: number
+  deadline: string
+  created: string
+  budget: number
+  owner: string
+}
+
+const tendersData: TenderData[] = [
+  {
+    name: "Sustainable Office Supplies 2026",
+    status: "active",
+    submissions: 8,
+    deadline: "Apr 15, 2026",
+    created: "Mar 1, 2026",
+    budget: 125000,
+    owner: "Sarah Chen",
+  },
+  {
+    name: "Green IT Equipment Procurement",
+    status: "evaluation",
+    submissions: 12,
+    deadline: "Mar 28, 2026",
+    created: "Feb 15, 2026",
+    budget: 450000,
+    owner: "James Wilson",
+  },
+  {
+    name: "Carbon-Neutral Logistics Services",
+    status: "draft",
+    submissions: 0,
+    deadline: "May 1, 2026",
+    created: "Apr 20, 2026",
+    budget: 280000,
+    owner: "Maria Garcia",
+  },
+  {
+    name: "Renewable Energy Supply Contract",
+    status: "completed",
+    submissions: 15,
+    deadline: "Mar 10, 2026",
+    created: "Jan 5, 2026",
+    budget: 1200000,
+    owner: "Sarah Chen",
+  },
+  {
+    name: "Eco-Friendly Packaging Materials",
+    status: "active",
+    submissions: 6,
+    deadline: "Apr 22, 2026",
+    created: "Mar 10, 2026",
+    budget: 95000,
+    owner: "James Wilson",
+  },
+]
 
 export default function BuyerDashboard() {
+  const [sortField, setSortField] = useState<SortField>(null)
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortDirection("asc")
+    }
+  }
+
+  const sortedTenders = useMemo(() => {
+    if (!sortField) return tendersData
+
+    return [...tendersData].sort((a, b) => {
+      let comparison = 0
+
+      switch (sortField) {
+        case "status":
+          const statusOrder = { draft: 0, active: 1, evaluation: 2, completed: 3 }
+          comparison = statusOrder[a.status] - statusOrder[b.status]
+          break
+        case "submissions":
+          comparison = a.submissions - b.submissions
+          break
+        case "deadline":
+        case "created":
+          comparison = new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime()
+          break
+        case "budget":
+          comparison = a.budget - b.budget
+          break
+      }
+
+      return sortDirection === "asc" ? comparison : -comparison
+    })
+  }, [sortField, sortDirection])
   return (
     <DashboardShell>
       <div className="space-y-6 p-5">
@@ -127,51 +229,62 @@ export default function BuyerDashboard() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
-                      <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
                         Tender Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                        Submissions
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                        Deadline
+                      <SortableHeader
+                        label="Status"
+                        field="status"
+                        currentField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
+                      />
+                      <SortableHeader
+                        label="Submissions"
+                        field="submissions"
+                        currentField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
+                      />
+                      <SortableHeader
+                        label="Created"
+                        field="created"
+                        currentField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
+                      />
+                      <SortableHeader
+                        label="Deadline"
+                        field="deadline"
+                        currentField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
+                      />
+                      <SortableHeader
+                        label="Budget"
+                        field="budget"
+                        currentField={sortField}
+                        direction={sortDirection}
+                        onSort={handleSort}
+                      />
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+                        Owner
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E5E7EB]">
-                    <TenderRow
-                      name="Sustainable Office Supplies 2026"
-                      status="active"
-                      submissions={8}
-                      deadline="Apr 15, 2026"
-                    />
-                    <TenderRow
-                      name="Green IT Equipment Procurement"
-                      status="evaluation"
-                      submissions={12}
-                      deadline="Mar 28, 2026"
-                    />
-                    <TenderRow
-                      name="Carbon-Neutral Logistics Services"
-                      status="draft"
-                      submissions={0}
-                      deadline="May 1, 2026"
-                    />
-                    <TenderRow
-                      name="Renewable Energy Supply Contract"
-                      status="completed"
-                      submissions={15}
-                      deadline="Mar 10, 2026"
-                    />
-                    <TenderRow
-                      name="Eco-Friendly Packaging Materials"
-                      status="active"
-                      submissions={6}
-                      deadline="Apr 22, 2026"
-                    />
+                    {sortedTenders.map((tender) => (
+                      <TenderRow
+                        key={tender.name}
+                        name={tender.name}
+                        status={tender.status}
+                        submissions={tender.submissions}
+                        created={tender.created}
+                        deadline={tender.deadline}
+                        budget={tender.budget}
+                        owner={tender.owner}
+                      />
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -180,6 +293,42 @@ export default function BuyerDashboard() {
         </div>
       </div>
     </DashboardShell>
+  )
+}
+
+function SortableHeader({
+  label,
+  field,
+  currentField,
+  direction,
+  onSort,
+}: {
+  label: string
+  field: SortField
+  currentField: SortField
+  direction: SortDirection
+  onSort: (field: SortField) => void
+}) {
+  const isActive = currentField === field
+
+  return (
+    <th
+      className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide cursor-pointer hover:bg-[#E5E7EB] transition-colors select-none"
+      onClick={() => onSort(field)}
+    >
+      <div className="flex items-center gap-1">
+        <span>{label}</span>
+        {isActive ? (
+          direction === "asc" ? (
+            <ArrowUp className="size-3" />
+          ) : (
+            <ArrowDown className="size-3" />
+          )
+        ) : (
+          <ArrowUpDown className="size-3 opacity-40" />
+        )}
+      </div>
+    </th>
   )
 }
 
@@ -265,12 +414,18 @@ function TenderRow({
   name,
   status,
   submissions,
+  created,
   deadline,
+  budget,
+  owner,
 }: {
   name: string
   status: "draft" | "active" | "evaluation" | "completed"
   submissions: number
+  created: string
   deadline: string
+  budget: number
+  owner: string
 }) {
   const statusConfig = {
     draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
@@ -281,19 +436,29 @@ function TenderRow({
 
   const { label, className } = statusConfig[status]
 
+  const formatBudget = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`
+    }
+    return `$${(value / 1000).toFixed(0)}K`
+  }
+
   return (
     <tr className="hover:bg-[#F3F4F6] transition-colors cursor-pointer">
-      <td className="px-6 py-4 font-medium text-[#111827]">{name}</td>
-      <td className="px-6 py-4">
+      <td className="px-4 py-3 font-medium text-[#111827] max-w-[200px] truncate">{name}</td>
+      <td className="px-3 py-3">
         <Badge
           variant="outline"
-          className={`rounded-full text-xs font-medium ${className}`}
+          className={`rounded-full text-xs font-medium whitespace-nowrap ${className}`}
         >
           {label}
         </Badge>
       </td>
-      <td className="px-6 py-4 text-[#6B7280] tabular-nums">{submissions} suppliers</td>
-      <td className="px-6 py-4 text-[#6B7280]">{deadline}</td>
+      <td className="px-3 py-3 text-[#6B7280] tabular-nums text-center">{submissions}</td>
+      <td className="px-3 py-3 text-[#6B7280] whitespace-nowrap">{created}</td>
+      <td className="px-3 py-3 text-[#6B7280] whitespace-nowrap">{deadline}</td>
+      <td className="px-3 py-3 text-[#6B7280] tabular-nums whitespace-nowrap">{formatBudget(budget)}</td>
+      <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">{owner}</td>
     </tr>
   )
 }
