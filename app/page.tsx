@@ -17,127 +17,190 @@ export default function BuyerDashboard() {
           </p>
         </div>
 
-        {/* Metric Cards */}
+        {/* Top Row: Metric Cards */}
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
-          {/* Actions Required - larger card */}
-          <Card className="border-[#E5E7EB] bg-white md:row-span-1">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-[#6B7280]">
-                  Actions Required
-                </CardTitle>
-                <div className="rounded-md p-1.5 bg-red-50">
-                  <AlertCircle className="size-4 text-red-600" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <ActionItem
-                title="Review supplier submissions"
-                tender="Green IT Equipment Procurement"
-                dueDate="May 8, 2026"
-              />
-              <ActionItem
-                title="Approve evaluation criteria"
-                tender="Sustainable Office Supplies"
-                dueDate="May 10, 2026"
-              />
-              <ActionItem
-                title="Finalize contract terms"
-                tender="Carbon-Neutral Logistics"
-                dueDate="May 12, 2026"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Active Tenders */}
+          <MetricCard
+            title="Open Tenders"
+            value="5"
+            description="Accepting submissions"
+            icon={FileText}
+            iconColor="text-[#16A34A]"
+            iconBg="bg-[#F0FDF4]"
+          />
           <MetricCard
             title="Active Tenders"
             value="12"
             description="3 closing this week"
             icon={FileText}
-            iconColor="text-[#16A34A]"
-            iconBg="bg-[#F0FDF4]"
+            iconColor="text-amber-600"
+            iconBg="bg-amber-50"
           />
-
-          {/* Completed */}
           <MetricCard
-            title="Completed"
+            title="Closed"
             value="45"
             description="This quarter"
             icon={CheckCircle}
-            iconColor="text-[#16A34A]"
-            iconBg="bg-[#F0FDF4]"
+            iconColor="text-[#6B7280]"
+            iconBg="bg-[#F3F4F6]"
           />
         </div>
 
-        {/* Recent Tenders Table */}
-        <Card className="border-[#E5E7EB] bg-white">
-          <CardHeader className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
-            <CardTitle className="text-lg font-semibold text-[#111827]">
-              Recent Tenders
-            </CardTitle>
-            <CardDescription className="text-[#6B7280]">
-              Your most recent procurement activities
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
-                    <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                      Tender Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                      Submissions
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                      Deadline
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E5E7EB]">
-                  <TenderRow
-                    name="Sustainable Office Supplies 2026"
-                    status="active"
-                    submissions={8}
-                    deadline="Apr 15, 2026"
-                  />
-                  <TenderRow
-                    name="Green IT Equipment Procurement"
-                    status="evaluation"
-                    submissions={12}
-                    deadline="Mar 28, 2026"
-                  />
-                  <TenderRow
-                    name="Carbon-Neutral Logistics Services"
-                    status="draft"
-                    submissions={0}
-                    deadline="May 1, 2026"
-                  />
-                  <TenderRow
-                    name="Renewable Energy Supply Contract"
-                    status="completed"
-                    submissions={15}
-                    deadline="Mar 10, 2026"
-                  />
-                  <TenderRow
-                    name="Eco-Friendly Packaging Materials"
-                    status="active"
-                    submissions={6}
-                    deadline="Apr 22, 2026"
-                  />
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Main Content: Left Column (Actions + Activity) | Right Column (Recent Tenders) */}
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
+          {/* Left Column */}
+          <div className="flex flex-col gap-4">
+            {/* Actions Required */}
+            <Card className="border-[#E5E7EB] bg-white flex-1">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium text-[#6B7280]">
+                    Actions Required
+                  </CardTitle>
+                  <div className="rounded-md p-1.5 bg-red-50">
+                    <AlertCircle className="size-4 text-red-600" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <ActionItem
+                  title="Review supplier submissions"
+                  tender="Green IT Equipment Procurement"
+                  dueDate="May 8, 2026"
+                />
+                <ActionItem
+                  title="Approve evaluation criteria"
+                  tender="Sustainable Office Supplies"
+                  dueDate="May 10, 2026"
+                />
+                <ActionItem
+                  title="Finalize contract terms"
+                  tender="Carbon-Neutral Logistics"
+                  dueDate="May 12, 2026"
+                />
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card className="border-[#E5E7EB] bg-white flex-1">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-[#6B7280]">
+                  Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <ActivityItem
+                  action="New submission received"
+                  detail="EcoTech Solutions submitted a proposal"
+                  time="2 hours ago"
+                />
+                <ActivityItem
+                  action="Tender published"
+                  detail="Sustainable Office Supplies 2026"
+                  time="Yesterday"
+                />
+                <ActivityItem
+                  action="Evaluation completed"
+                  detail="Green IT Equipment awarded to GreenIT Corp"
+                  time="2 days ago"
+                />
+                <ActivityItem
+                  action="Supplier invited"
+                  detail="3 suppliers invited to Carbon-Neutral Logistics"
+                  time="3 days ago"
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column: Recent Tenders Table */}
+          <Card className="border-[#E5E7EB] bg-white lg:col-span-2">
+            <CardHeader className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
+              <CardTitle className="text-lg font-semibold text-[#111827]">
+                Recent Tenders
+              </CardTitle>
+              <CardDescription className="text-[#6B7280]">
+                Your most recent procurement activities
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+                        Tender Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+                        Submissions
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+                        Deadline
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E5E7EB]">
+                    <TenderRow
+                      name="Sustainable Office Supplies 2026"
+                      status="active"
+                      submissions={8}
+                      deadline="Apr 15, 2026"
+                    />
+                    <TenderRow
+                      name="Green IT Equipment Procurement"
+                      status="evaluation"
+                      submissions={12}
+                      deadline="Mar 28, 2026"
+                    />
+                    <TenderRow
+                      name="Carbon-Neutral Logistics Services"
+                      status="draft"
+                      submissions={0}
+                      deadline="May 1, 2026"
+                    />
+                    <TenderRow
+                      name="Renewable Energy Supply Contract"
+                      status="completed"
+                      submissions={15}
+                      deadline="Mar 10, 2026"
+                    />
+                    <TenderRow
+                      name="Eco-Friendly Packaging Materials"
+                      status="active"
+                      submissions={6}
+                      deadline="Apr 22, 2026"
+                    />
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </DashboardShell>
+  )
+}
+
+function ActivityItem({
+  action,
+  detail,
+  time,
+}: {
+  action: string
+  detail: string
+  time: string
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="mt-1.5 size-2 rounded-full bg-[#16A34A] flex-shrink-0" />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-[#111827]">{action}</p>
+        <p className="text-xs text-[#6B7280] truncate">{detail}</p>
+        <p className="text-xs text-[#9CA3AF] mt-0.5">{time}</p>
+      </div>
+    </div>
   )
 }
 
