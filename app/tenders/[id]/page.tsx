@@ -55,6 +55,8 @@ import {
   Eye,
   Trash2,
   Star,
+  Sparkles,
+  Save,
 } from "lucide-react"
 
 // Mock data - in production this would come from an API
@@ -77,37 +79,71 @@ const tenderData = {
       name: "Completeness", 
       weight: 15,
       instructions: "Assess whether the supplier has provided all required documentation and addressed all sections of the tender. Look for completeness of responses and adherence to submission guidelines.",
-      subcategories: ["Documentation completeness", "Response coverage", "Compliance with requirements"]
+      instructionsSaved: true,
+      subcategories: [
+        { name: "Documentation completeness", description: "Verify all required documents are submitted including company profile, technical proposal, pricing, certifications, and references.", saved: true },
+        { name: "Response coverage", description: "Check that all sections of the tender specification have been addressed with appropriate detail and clarity.", saved: true },
+        { name: "Compliance with requirements", description: "Confirm adherence to mandatory requirements including format, deadlines, and submission guidelines.", saved: true }
+      ]
     },
     { 
       name: "Quality", 
       weight: 20,
       instructions: "Evaluate the quality of proposed products/services, certifications held, and quality management processes in place. Consider track record and quality assurance measures.",
-      subcategories: ["Product/service quality", "Quality certifications", "Quality management processes"]
+      instructionsSaved: true,
+      subcategories: [
+        { name: "Product/service quality", description: "Assess the quality standards of proposed products or services based on specifications, samples, and track record.", saved: true },
+        { name: "Quality certifications", description: "Review relevant quality certifications such as ISO 9001, industry-specific standards, and third-party validations.", saved: true },
+        { name: "Quality management processes", description: "Evaluate documented QMS, inspection procedures, defect tracking, and continuous improvement practices.", saved: true }
+      ]
     },
     { 
       name: "Capability", 
       weight: 15,
       instructions: "Review technical expertise, relevant project experience, team qualifications, and infrastructure capacity to deliver the requirements at scale.",
-      subcategories: ["Technical expertise", "Relevant experience", "Team qualifications", "Infrastructure"]
+      instructionsSaved: true,
+      subcategories: [
+        { name: "Technical expertise", description: "Assess depth of technical knowledge, specialized skills, and industry-specific competencies of the team.", saved: true },
+        { name: "Relevant experience", description: "Review past projects of similar scope, complexity, and industry to demonstrate proven capability.", saved: true },
+        { name: "Team qualifications", description: "Evaluate credentials, certifications, and experience levels of key personnel assigned to the project.", saved: true },
+        { name: "Infrastructure", description: "Assess facilities, equipment, technology systems, and capacity to handle project requirements.", saved: true }
+      ]
     },
     { 
       name: "Price", 
       weight: 20,
       instructions: "Analyze pricing competitiveness, value for money, payment terms offered, and total cost of ownership including any hidden costs or long-term implications.",
-      subcategories: ["Base pricing", "Value for money", "Payment terms", "Total cost of ownership"]
+      instructionsSaved: true,
+      subcategories: [
+        { name: "Base pricing", description: "Compare proposed pricing against market rates, budget constraints, and competitor offerings.", saved: true },
+        { name: "Value for money", description: "Assess the overall value proposition considering quality, service levels, and long-term benefits relative to cost.", saved: true },
+        { name: "Payment terms", description: "Evaluate flexibility of payment schedules, early payment discounts, and financing options offered.", saved: true },
+        { name: "Total cost of ownership", description: "Calculate all costs including implementation, maintenance, training, and disposal over the contract period.", saved: true }
+      ]
     },
     { 
       name: "Sustainability", 
       weight: 20,
       instructions: "Assess environmental impact, carbon footprint reduction measures, ethical sourcing practices, and social responsibility initiatives aligned with our ESG goals.",
-      subcategories: ["Environmental impact", "Carbon footprint", "Ethical sourcing", "Social responsibility"]
+      instructionsSaved: true,
+      subcategories: [
+        { name: "Environmental impact", description: "Evaluate environmental policies, certifications, and measurable impact reduction initiatives.", saved: true },
+        { name: "Carbon footprint", description: "Assess carbon emissions data, reduction targets, offset programs, and climate commitments.", saved: true },
+        { name: "Ethical sourcing", description: "Review supply chain transparency, fair trade practices, and responsible material sourcing policies.", saved: true },
+        { name: "Social responsibility", description: "Evaluate community engagement, diversity initiatives, labor practices, and social impact programs.", saved: true }
+      ]
     },
     { 
       name: "Risk", 
       weight: 10,
       instructions: "Evaluate financial stability, supply chain reliability, business continuity plans, and insurance coverage to minimize procurement risks.",
-      subcategories: ["Financial stability", "Supply chain reliability", "Business continuity", "Insurance coverage"]
+      instructionsSaved: true,
+      subcategories: [
+        { name: "Financial stability", description: "Assess financial health through credit ratings, profitability trends, and balance sheet strength.", saved: true },
+        { name: "Supply chain reliability", description: "Evaluate supplier network diversity, delivery track record, and contingency arrangements.", saved: true },
+        { name: "Business continuity", description: "Review documented BCP, disaster recovery plans, and crisis management procedures.", saved: true },
+        { name: "Insurance coverage", description: "Verify adequate liability, professional indemnity, and product insurance coverage levels.", saved: true }
+      ]
     },
   ],
   budget: 125000,
@@ -526,6 +562,8 @@ export default function TenderDetailPage() {
   const [selectedMemberRole, setSelectedMemberRole] = useState("")
   const [editMemberOpen, setEditMemberOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<typeof teamMembersData[0] | null>(null)
+  const [descriptionEdit, setDescriptionEdit] = useState({ text: tenderData.description, editing: false, saved: true })
+  const [requirementsEdit, setRequirementsEdit] = useState(tenderData.requirements.map(r => ({ text: r, editing: false, saved: true })))
 
   const addExistingMember = (member: typeof companyMembersData[0]) => {
     const newTeamMember = {
@@ -601,15 +639,50 @@ export default function TenderDetailPage() {
   const addSubcategory = (criteriaIndex: number) => {
     setEditableCriteria(prev => prev.map((c, i) => 
       i === criteriaIndex 
-        ? { ...c, subcategories: [...c.subcategories, "New subcategory"] }
+        ? { ...c, subcategories: [...c.subcategories, { name: "", description: "", saved: false }] }
         : c
     ))
   }
 
-  const updateSubcategory = (criteriaIndex: number, subIndex: number, value: string) => {
+  const updateSubcategoryName = (criteriaIndex: number, subIndex: number, name: string) => {
     setEditableCriteria(prev => prev.map((c, i) => 
       i === criteriaIndex 
-        ? { ...c, subcategories: c.subcategories.map((s, si) => si === subIndex ? value : s) }
+        ? { ...c, subcategories: c.subcategories.map((s, si) => si === subIndex ? { ...s, name, saved: false } : s) }
+        : c
+    ))
+  }
+
+  const updateSubcategoryDescription = (criteriaIndex: number, subIndex: number, description: string) => {
+    setEditableCriteria(prev => prev.map((c, i) => 
+      i === criteriaIndex 
+        ? { ...c, subcategories: c.subcategories.map((s, si) => si === subIndex ? { ...s, description, saved: false } : s) }
+        : c
+    ))
+  }
+
+  const saveSubcategory = (criteriaIndex: number, subIndex: number) => {
+    setEditableCriteria(prev => prev.map((c, i) => 
+      i === criteriaIndex 
+        ? { ...c, subcategories: c.subcategories.map((s, si) => si === subIndex ? { ...s, saved: true } : s) }
+        : c
+    ))
+  }
+
+  const generateAiDescription = (criteriaIndex: number, subIndex: number) => {
+    // Simulate AI generating a description based on the subcategory name and parent criteria
+    const criteria = editableCriteria[criteriaIndex]
+    const subcategory = criteria.subcategories[subIndex]
+    
+    // In production, this would call an AI API
+    const aiDescriptions: Record<string, string> = {
+      default: `Evaluate the ${subcategory.name.toLowerCase()} aspect within the context of ${criteria.name.toLowerCase()}. Consider relevant documentation, evidence, and alignment with tender requirements.`
+    }
+    
+    const description = aiDescriptions.default
+    
+    setEditableCriteria(prev => prev.map((c, i) => 
+      i === criteriaIndex 
+        ? { ...c, subcategories: c.subcategories.map((s, si) => si === subIndex ? { ...s, description, saved: false } : s) }
         : c
     ))
   }
@@ -624,7 +697,23 @@ export default function TenderDetailPage() {
 
   const updateCriteriaInstructions = (index: number, instructions: string) => {
     setEditableCriteria(prev => prev.map((c, i) => 
-      i === index ? { ...c, instructions } : c
+      i === index ? { ...c, instructions, instructionsSaved: false } : c
+    ))
+  }
+
+  const saveCriteriaInstructions = (index: number) => {
+    setEditableCriteria(prev => prev.map((c, i) => 
+      i === index ? { ...c, instructionsSaved: true } : c
+    ))
+  }
+
+  const generateAiInstructions = (index: number) => {
+    const criteria = editableCriteria[index]
+    // In production, this would call an AI API
+    const aiInstruction = `Evaluate submissions based on ${criteria.name.toLowerCase()} criteria. Consider all subcategories including ${criteria.subcategories.map(s => s.name).join(", ")}. Score based on evidence provided, compliance with requirements, and overall quality of response.`
+    
+    setEditableCriteria(prev => prev.map((c, i) => 
+      i === index ? { ...c, instructions: aiInstruction, instructionsSaved: false } : c
     ))
   }
 
@@ -874,25 +963,142 @@ export default function TenderDetailPage() {
             <div className="lg:col-span-2 space-y-6">
               {/* Description */}
               <Card className="border-[#E5E7EB] bg-white">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
                   <CardTitle className="text-lg">Description</CardTitle>
+                  <div className="flex items-center gap-1">
+                    {!descriptionEdit.saved && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-[#6B7280] hover:text-[#16A34A]"
+                          onClick={() => {
+                            // In production, call AI API
+                            setDescriptionEdit(prev => ({ 
+                              ...prev, 
+                              text: "This tender seeks qualified suppliers for sustainable office supplies to support our organization's environmental commitments. We require eco-friendly products that meet strict sustainability criteria while maintaining quality and cost-effectiveness.",
+                              saved: false 
+                            }))
+                          }}
+                        >
+                          <Sparkles className="size-3 mr-1" />
+                          Complete with AI
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-[#16A34A]"
+                          onClick={() => setDescriptionEdit(prev => ({ ...prev, saved: true }))}
+                        >
+                          <Save className="size-3 mr-1" />
+                          Save
+                        </Button>
+                      </>
+                    )}
+                    {descriptionEdit.saved && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-[#6B7280]"
+                        onClick={() => setDescriptionEdit(prev => ({ ...prev, saved: false }))}
+                      >
+                        <Pencil className="size-3 mr-1" />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-[#6B7280] leading-relaxed">{tenderData.description}</p>
+                  {descriptionEdit.saved ? (
+                    <p className="text-[#111827] leading-relaxed">{descriptionEdit.text}</p>
+                  ) : (
+                    <Textarea
+                      value={descriptionEdit.text}
+                      onChange={(e) => setDescriptionEdit(prev => ({ ...prev, text: e.target.value }))}
+                      className="min-h-[100px] text-sm text-[#6B7280]"
+                      placeholder="Enter tender description..."
+                    />
+                  )}
                 </CardContent>
               </Card>
 
               {/* Requirements */}
               <Card className="border-[#E5E7EB] bg-white">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0">
                   <CardTitle className="text-lg">Requirements</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-[#6B7280] hover:text-[#16A34A]"
+                    onClick={() => setRequirementsEdit(prev => [...prev, { text: "", editing: true, saved: false }])}
+                  >
+                    <Plus className="size-3 mr-1" />
+                    Add
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {tenderData.requirements.map((req, index) => (
+                    {requirementsEdit.map((req, index) => (
                       <li key={index} className="flex items-start gap-3">
                         <CheckCircle className="size-5 text-[#16A34A] flex-shrink-0 mt-0.5" />
-                        <span className="text-[#6B7280]">{req}</span>
+                        {req.saved ? (
+                          <div className="flex-1 flex items-center justify-between gap-2">
+                            <span className="text-[#111827]">{req.text}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-1 text-[#6B7280]"
+                              onClick={() => setRequirementsEdit(prev => prev.map((r, i) => 
+                                i === index ? { ...r, saved: false } : r
+                              ))}
+                            >
+                              <Pencil className="size-3" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex-1 flex items-center gap-2">
+                            <Input
+                              value={req.text}
+                              onChange={(e) => setRequirementsEdit(prev => prev.map((r, i) => 
+                                i === index ? { ...r, text: e.target.value } : r
+                              ))}
+                              placeholder="Enter requirement..."
+                              className="flex-1 h-8 text-sm text-[#6B7280]"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs text-[#6B7280] hover:text-[#16A34A]"
+                              onClick={() => {
+                                // In production, call AI API
+                                setRequirementsEdit(prev => prev.map((r, i) => 
+                                  i === index ? { ...r, text: "Products must meet industry sustainability standards and certifications.", saved: false } : r
+                                ))
+                              }}
+                            >
+                              <Sparkles className="size-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs text-[#16A34A]"
+                              onClick={() => setRequirementsEdit(prev => prev.map((r, i) => 
+                                i === index ? { ...r, saved: true } : r
+                              ))}
+                              disabled={!req.text}
+                            >
+                              <Save className="size-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-[#6B7280] hover:text-red-600"
+                              onClick={() => setRequirementsEdit(prev => prev.filter((_, i) => i !== index))}
+                            >
+                              <X className="size-4" />
+                            </Button>
+                          </div>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -1033,11 +1239,14 @@ export default function TenderDetailPage() {
                               <Label className="text-xs text-[#6B7280]">Subcategories</Label>
                               {criteria.subcategories.map((sub, subIndex) => (
                                 <div key={subIndex} className="flex items-center gap-2">
-                                  <Input
-                                    value={sub}
-                                    onChange={(e) => updateSubcategory(criteriaIndex, subIndex, e.target.value)}
-                                    className="flex-1 h-8 text-sm"
-                                  />
+                                  <div className="flex items-center gap-1 flex-1">
+                                    <span className={`text-sm ${sub.saved ? 'text-[#111827]' : 'text-[#6B7280]'}`}>
+                                      {sub.name || "New subcategory"}
+                                    </span>
+                                    {!sub.description && (
+                                      <span className="text-xs text-amber-600">(needs description)</span>
+                                    )}
+                                  </div>
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -1584,34 +1793,129 @@ export default function TenderDetailPage() {
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <div className="p-4 space-y-4 border-t border-[#E5E7EB]">
+                          {/* Evaluation Instructions */}
                           <div className="space-y-2">
-                            <Label className="text-sm font-medium text-[#111827]">Evaluation Instructions</Label>
+                            <div className="flex items-center justify-between">
+                              <Label className="text-sm font-medium text-[#111827]">Evaluation Instructions</Label>
+                              <div className="flex items-center gap-1">
+                                {!criteria.instructionsSaved && (
+                                  <>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 text-xs text-[#6B7280] hover:text-[#16A34A]"
+                                      onClick={() => generateAiInstructions(criteriaIndex)}
+                                    >
+                                      <Sparkles className="size-3 mr-1" />
+                                      Complete with AI
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7 px-2 text-xs text-[#16A34A]"
+                                      onClick={() => saveCriteriaInstructions(criteriaIndex)}
+                                    >
+                                      <Save className="size-3 mr-1" />
+                                      Save
+                                    </Button>
+                                  </>
+                                )}
+                                {criteria.instructionsSaved && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs text-[#6B7280]"
+                                    onClick={() => setEditableCriteria(prev => prev.map((c, i) => 
+                                      i === criteriaIndex ? { ...c, instructionsSaved: false } : c
+                                    ))}
+                                  >
+                                    <Pencil className="size-3 mr-1" />
+                                    Edit
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
                             <Textarea
                               value={criteria.instructions}
                               onChange={(e) => updateCriteriaInstructions(criteriaIndex, e.target.value)}
                               placeholder="Describe what evaluators should look for when assessing this criteria..."
-                              className="min-h-[80px] text-sm"
+                              className={`min-h-[80px] text-sm ${criteria.instructionsSaved ? 'text-[#111827] bg-[#F9FAFB]' : 'text-[#6B7280]'}`}
+                              disabled={criteria.instructionsSaved}
                             />
                           </div>
                           
-                          <div className="space-y-2">
+                          {/* Subcategories */}
+                          <div className="space-y-3">
                             <Label className="text-sm font-medium text-[#111827]">Subcategories</Label>
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                               {criteria.subcategories.map((sub, subIndex) => (
-                                <div key={subIndex} className="flex items-center gap-2">
-                                  <Input
-                                    value={sub}
-                                    onChange={(e) => updateSubcategory(criteriaIndex, subIndex, e.target.value)}
-                                    className="flex-1 h-9 text-sm"
-                                  />
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="size-9 p-0 text-[#6B7280] hover:text-red-600"
-                                    onClick={() => removeSubcategory(criteriaIndex, subIndex)}
-                                  >
-                                    <X className="size-4" />
-                                  </Button>
+                                <div key={subIndex} className="border border-[#E5E7EB] rounded-lg p-3 space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <Input
+                                      value={sub.name}
+                                      onChange={(e) => updateSubcategoryName(criteriaIndex, subIndex, e.target.value)}
+                                      placeholder="Subcategory name"
+                                      className={`flex-1 h-9 text-sm font-medium ${sub.saved ? 'text-[#111827] bg-[#F9FAFB]' : 'text-[#6B7280]'}`}
+                                      disabled={sub.saved}
+                                    />
+                                    <div className="flex items-center gap-1">
+                                      {!sub.saved && (
+                                        <>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 px-2 text-xs text-[#6B7280] hover:text-[#16A34A]"
+                                            onClick={() => generateAiDescription(criteriaIndex, subIndex)}
+                                            disabled={!sub.name}
+                                          >
+                                            <Sparkles className="size-3 mr-1" />
+                                            AI
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 px-2 text-xs text-[#16A34A]"
+                                            onClick={() => saveSubcategory(criteriaIndex, subIndex)}
+                                            disabled={!sub.name || !sub.description}
+                                          >
+                                            <Save className="size-3" />
+                                          </Button>
+                                        </>
+                                      )}
+                                      {sub.saved && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2 text-xs text-[#6B7280]"
+                                          onClick={() => setEditableCriteria(prev => prev.map((c, i) => 
+                                            i === criteriaIndex 
+                                              ? { ...c, subcategories: c.subcategories.map((s, si) => si === subIndex ? { ...s, saved: false } : s) }
+                                              : c
+                                          ))}
+                                        >
+                                          <Pencil className="size-3" />
+                                        </Button>
+                                      )}
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 px-2 text-[#6B7280] hover:text-red-600"
+                                        onClick={() => removeSubcategory(criteriaIndex, subIndex)}
+                                      >
+                                        <X className="size-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1">
+                                    <Label className="text-xs text-[#6B7280]">Description (used by AI for assessment)</Label>
+                                    <Textarea
+                                      value={sub.description}
+                                      onChange={(e) => updateSubcategoryDescription(criteriaIndex, subIndex, e.target.value)}
+                                      placeholder="Describe what to evaluate for this subcategory..."
+                                      className={`min-h-[60px] text-sm ${sub.saved ? 'text-[#111827] bg-[#F9FAFB]' : 'text-[#6B7280]'}`}
+                                      disabled={sub.saved}
+                                    />
+                                  </div>
                                 </div>
                               ))}
                               <Button
