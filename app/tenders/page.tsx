@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { DashboardShell } from "@/components/shell/DashboardShell"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -486,6 +487,16 @@ function TenderRow({
   isSelected: boolean
   onSelect: (id: string) => void
 }) {
+  const router = useRouter()
+
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on checkbox or actions
+    if ((e.target as HTMLElement).closest('input, button, [role="menuitem"]')) {
+      return
+    }
+    router.push(`/tenders/${tender.id}`)
+  }
+
   const statusConfig: Record<TenderStatus, { label: string; className: string }> = {
     draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
     open: { label: "Open", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
@@ -504,7 +515,10 @@ function TenderRow({
   }
 
   return (
-    <tr className={`hover:bg-[#F3F4F6] transition-colors ${isSelected ? "bg-[#F0FDF4]" : ""}`}>
+    <tr 
+      className={`hover:bg-[#F3F4F6] transition-colors cursor-pointer ${isSelected ? "bg-[#F0FDF4]" : ""}`}
+      onClick={handleRowClick}
+    >
       <td className="px-4 py-3">
         <input
           type="checkbox"
