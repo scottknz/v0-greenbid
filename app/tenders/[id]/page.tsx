@@ -230,8 +230,25 @@ const activityData = [
   { action: "Tender created", detail: "Initial tender draft created by Sarah Chen", date: "Feb 25, 2026", time: "2:00 PM" },
 ]
 
+// Team members for this tender
+const teamMembersData = [
+  { id: "t1", name: "Sarah Chen", email: "sarah.chen@company.com", companyTitle: "Senior Procurement Manager", projectRole: "Lead", isLead: true },
+  { id: "t2", name: "James Wilson", email: "james.wilson@company.com", companyTitle: "Finance Analyst", projectRole: "Budget Reviewer", isLead: false },
+  { id: "t3", name: "Emily Rodriguez", email: "emily.rodriguez@company.com", companyTitle: "Sustainability Officer", projectRole: "ESG Evaluator", isLead: false },
+  { id: "t4", name: "Michael Park", email: "michael.park@company.com", companyTitle: "Legal Counsel", projectRole: "Contract Reviewer", isLead: false },
+]
+
+// Available company members to add
+const companyMembersData = [
+  { id: "c1", name: "David Thompson", email: "david.thompson@company.com", companyTitle: "Operations Manager" },
+  { id: "c2", name: "Lisa Wang", email: "lisa.wang@company.com", companyTitle: "IT Director" },
+  { id: "c3", name: "Robert Martinez", email: "robert.martinez@company.com", companyTitle: "Quality Assurance Lead" },
+  { id: "c4", name: "Jennifer Adams", email: "jennifer.adams@company.com", companyTitle: "Compliance Officer" },
+]
+
 const tabs = [
   { key: "overview", label: "Overview" },
+  { key: "team", label: "Team", count: teamMembersData.length },
   { key: "submissions", label: "Submissions", count: tenderData.submissions },
   { key: "evaluation", label: "Evaluation" },
   { key: "documents", label: "Documents", count: documentsData.length },
@@ -248,6 +265,48 @@ export default function TenderDetailPage() {
   const [expandedEvalCriteria, setExpandedEvalCriteria] = useState<string[]>([])
   const [ownerEditOpen, setOwnerEditOpen] = useState(false)
   const [editableOwner, setEditableOwner] = useState({ name: tenderData.owner, email: tenderData.ownerEmail })
+  const [teamMembers, setTeamMembers] = useState(teamMembersData)
+  const [addMemberOpen, setAddMemberOpen] = useState(false)
+  const [addNewMemberOpen, setAddNewMemberOpen] = useState(false)
+  const [newMember, setNewMember] = useState({ name: "", email: "", companyTitle: "", projectRole: "" })
+  const [selectedMemberRole, setSelectedMemberRole] = useState("")
+
+  const addExistingMember = (member: typeof companyMembersData[0]) => {
+    const newTeamMember = {
+      id: `t${teamMembers.length + 1}`,
+      name: member.name,
+      email: member.email,
+      companyTitle: member.companyTitle,
+      projectRole: selectedMemberRole || "Team Member",
+      isLead: false,
+    }
+    setTeamMembers(prev => [...prev, newTeamMember])
+    setAddMemberOpen(false)
+    setSelectedMemberRole("")
+  }
+
+  const addNewTeamMember = () => {
+    if (!newMember.name || !newMember.email) return
+    const newTeamMember = {
+      id: `t${teamMembers.length + 1}`,
+      name: newMember.name,
+      email: newMember.email,
+      companyTitle: newMember.companyTitle,
+      projectRole: newMember.projectRole || "Team Member",
+      isLead: false,
+    }
+    setTeamMembers(prev => [...prev, newTeamMember])
+    setAddNewMemberOpen(false)
+    setNewMember({ name: "", email: "", companyTitle: "", projectRole: "" })
+  }
+
+  const removeTeamMember = (id: string) => {
+    setTeamMembers(prev => prev.filter(m => m.id !== id))
+  }
+
+  const availableCompanyMembers = companyMembersData.filter(
+    cm => !teamMembers.some(tm => tm.email === cm.email)
+  )
 
   const toggleCriteriaExpand = (name: string) => {
     setExpandedCriteria(prev => 
@@ -521,62 +580,68 @@ export default function TenderDetailPage() {
 
             {/* Sidebar */}
             <div className="space-y-4">
-              {/* Owner */}
+              {/* Team */}
               <Card className="border-[#E5E7EB] bg-white">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="size-9">
-                        <AvatarFallback className="bg-[#F0FDF4] text-[#16A34A] text-sm">
-                          {editableOwner.name.split(" ").map(n => n[0]).join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium text-[#111827]">{editableOwner.name}</p>
-                        <p className="text-xs text-[#6B7280]">{editableOwner.email}</p>
-                      </div>
-                    </div>
-                    <Dialog open={ownerEditOpen} onOpenChange={setOwnerEditOpen}>
-                      <DialogTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-7 px-2 text-[#6B7280]">
-                          <Pencil className="size-3" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-sm">
-                        <DialogHeader>
-                          <DialogTitle>Change Tender Owner</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                          <div className="space-y-2">
-                            <Label>Name</Label>
-                            <Input
-                              value={editableOwner.name}
-                              onChange={(e) => setEditableOwner(prev => ({ ...prev, name: e.target.value }))}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Email</Label>
-                            <Input
-                              type="email"
-                              value={editableOwner.email}
-                              onChange={(e) => setEditableOwner(prev => ({ ...prev, email: e.target.value }))}
-                            />
-                          </div>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4 px-4">
+                  <CardTitle className="text-sm font-medium text-[#6B7280]">Team</CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 px-2 text-xs text-[#6B7280] hover:text-[#16A34A]"
+                    onClick={() => setActiveTab("team")}
+                  >
+                    View all
+                  </Button>
+                </CardHeader>
+                <CardContent className="px-4 pb-4 pt-0 space-y-3">
+                  {/* Lead */}
+                  {teamMembers.filter(m => m.isLead).map(member => (
+                    <div key={member.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="size-8">
+                          <AvatarFallback className="bg-[#F0FDF4] text-[#16A34A] text-xs">
+                            {member.name.split(" ").map(n => n[0]).join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-[#111827]">{member.name}</p>
+                          <p className="text-xs text-[#6B7280]">{member.companyTitle}</p>
                         </div>
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setOwnerEditOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button 
-                            onClick={() => setOwnerEditOpen(false)}
-                            className="bg-[#16A34A] hover:bg-[#15803D] text-white"
-                          >
-                            Save
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20">
+                        {member.projectRole}
+                      </Badge>
+                    </div>
+                  ))}
+                  
+                  {/* Other team members - show first 2 */}
+                  {teamMembers.filter(m => !m.isLead).slice(0, 2).map(member => (
+                    <div key={member.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="size-8">
+                          <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280] text-xs">
+                            {member.name.split(" ").map(n => n[0]).join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-[#111827]">{member.name}</p>
+                          <p className="text-xs text-[#6B7280]">{member.companyTitle}</p>
+                        </div>
+                      </div>
+                      <span className="text-xs text-[#6B7280]">{member.projectRole}</span>
+                    </div>
+                  ))}
+                  
+                  {teamMembers.filter(m => !m.isLead).length > 2 && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full h-7 text-xs text-[#6B7280] hover:text-[#16A34A]"
+                      onClick={() => setActiveTab("team")}
+                    >
+                      +{teamMembers.filter(m => !m.isLead).length - 2} more team members
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 
@@ -728,6 +793,188 @@ export default function TenderDetailPage() {
               </Card>
 
               </div>
+          </div>
+        )}
+
+        {activeTab === "team" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-[#111827]">Team Members</h3>
+                <p className="text-sm text-[#6B7280]">{teamMembers.length} people assigned to this tender</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="border-[#E5E7EB]">
+                      <Users className="size-4 mr-2" />
+                      Add from Company
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Add Team Member</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Project Role</Label>
+                        <Input 
+                          placeholder="e.g. Technical Reviewer, Evaluator..."
+                          value={selectedMemberRole}
+                          onChange={(e) => setSelectedMemberRole(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Select from Company</Label>
+                        {availableCompanyMembers.length > 0 ? (
+                          <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                            {availableCompanyMembers.map(member => (
+                              <div 
+                                key={member.id}
+                                className="flex items-center justify-between p-3 rounded-lg border border-[#E5E7EB] hover:bg-[#F3F4F6] cursor-pointer transition-colors"
+                                onClick={() => addExistingMember(member)}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="size-8">
+                                    <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280] text-xs">
+                                      {member.name.split(" ").map(n => n[0]).join("")}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="text-sm font-medium text-[#111827]">{member.name}</p>
+                                    <p className="text-xs text-[#6B7280]">{member.companyTitle}</p>
+                                  </div>
+                                </div>
+                                <Plus className="size-4 text-[#6B7280]" />
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-[#6B7280] py-4 text-center">All company members have been added</p>
+                        )}
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
+                <Dialog open={addNewMemberOpen} onOpenChange={setAddNewMemberOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
+                      <Plus className="size-4 mr-2" />
+                      New Member
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Add New Team Member</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Name</Label>
+                        <Input 
+                          placeholder="Full name"
+                          value={newMember.name}
+                          onChange={(e) => setNewMember(prev => ({ ...prev, name: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Email</Label>
+                        <Input 
+                          type="email"
+                          placeholder="email@company.com"
+                          value={newMember.email}
+                          onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Company Title</Label>
+                        <Input 
+                          placeholder="e.g. Procurement Analyst"
+                          value={newMember.companyTitle}
+                          onChange={(e) => setNewMember(prev => ({ ...prev, companyTitle: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Project Role</Label>
+                        <Input 
+                          placeholder="e.g. Technical Reviewer"
+                          value={newMember.projectRole}
+                          onChange={(e) => setNewMember(prev => ({ ...prev, projectRole: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setAddNewMemberOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={addNewTeamMember}
+                        className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                        disabled={!newMember.name || !newMember.email}
+                      >
+                        Add Member
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+
+            <Card className="border-[#E5E7EB] bg-white">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Company Title</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Project Role</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Email</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E5E7EB]">
+                      {teamMembers.map(member => (
+                        <tr key={member.id} className="hover:bg-[#F3F4F6] transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="size-8">
+                                <AvatarFallback className={`text-xs ${member.isLead ? 'bg-[#F0FDF4] text-[#16A34A]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                                  {member.name.split(" ").map(n => n[0]).join("")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <span className="font-medium text-[#111827]">{member.name}</span>
+                                {member.isLead && (
+                                  <Badge variant="outline" className="ml-2 text-xs bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20">
+                                    Lead
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-[#6B7280]">{member.companyTitle}</td>
+                          <td className="px-6 py-4 text-[#6B7280]">{member.projectRole}</td>
+                          <td className="px-6 py-4 text-[#6B7280]">{member.email}</td>
+                          <td className="px-6 py-4 text-right">
+                            {!member.isLead && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-8 px-2 text-[#6B7280] hover:text-red-600"
+                                onClick={() => removeTeamMember(member.id)}
+                              >
+                                <X className="size-4" />
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
