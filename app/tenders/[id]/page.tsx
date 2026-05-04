@@ -52,6 +52,7 @@ import {
   ChevronDown,
   Plus,
   X,
+  Eye,
 } from "lucide-react"
 
 // Mock data - in production this would come from an API
@@ -122,6 +123,11 @@ const submissionsData = [
     supplierName: "EcoSupply Co.",
     submittedDate: "Mar 15, 2026",
     status: "under_review",
+    keyContact: "John Smith",
+    keyContactEmail: "john.smith@ecosupply.com",
+    proposedValue: 118500,
+    totalHours: 240,
+    completionDate: "Jun 30, 2026",
     scores: {
       completeness: 95,
       quality: 88,
@@ -144,6 +150,11 @@ const submissionsData = [
     supplierName: "GreenOffice Ltd",
     submittedDate: "Mar 18, 2026",
     status: "evaluated",
+    keyContact: "Emma Davis",
+    keyContactEmail: "emma.davis@greenoffice.com",
+    proposedValue: 112000,
+    totalHours: 220,
+    completionDate: "Jul 15, 2026",
     scores: {
       completeness: 100,
       quality: 85,
@@ -165,6 +176,11 @@ const submissionsData = [
     supplierName: "Sustainable Solutions Inc",
     submittedDate: "Mar 20, 2026",
     status: "under_review",
+    keyContact: "Michael Brown",
+    keyContactEmail: "m.brown@sustainablesolutions.com",
+    proposedValue: 135000,
+    totalHours: 280,
+    completionDate: "Aug 1, 2026",
     scores: {
       completeness: 90,
       quality: 95,
@@ -188,6 +204,11 @@ const submissionsData = [
     supplierName: "EarthFirst Supplies",
     submittedDate: "Mar 22, 2026",
     status: "pending",
+    keyContact: "Lisa Johnson",
+    keyContactEmail: "lisa.j@earthfirst.com",
+    proposedValue: 108000,
+    totalHours: 200,
+    completionDate: "Jun 15, 2026",
     scores: null,
     weightedScore: null,
     documents: [
@@ -201,6 +222,11 @@ const submissionsData = [
     supplierName: "CleanTech Office",
     submittedDate: "Mar 25, 2026",
     status: "pending",
+    keyContact: "David Lee",
+    keyContactEmail: "d.lee@cleantech.com",
+    proposedValue: 121000,
+    totalHours: 250,
+    completionDate: "Jul 30, 2026",
     scores: null,
     weightedScore: null,
     documents: [
@@ -211,6 +237,227 @@ const submissionsData = [
     ],
   },
 ]
+
+// Detailed AI assessment data for each evaluated submission
+const assessmentData: Record<string, {
+  categories: {
+    name: string
+    aiScore: number
+    actualScore: number
+    subcategories: {
+      name: string
+      aiScore: number
+      actualScore: number
+      aiJustification: string
+      humanJustification: string
+    }[]
+  }[]
+}> = {
+  s1: {
+    categories: [
+      {
+        name: "Completeness",
+        aiScore: 95,
+        actualScore: 95,
+        subcategories: [
+          { name: "Documentation completeness", aiScore: 98, actualScore: 98, aiJustification: "All required documents have been submitted including company profile, technical proposal, pricing schedule, certifications, and references. The submission follows the required format and structure.", humanJustification: "" },
+          { name: "Response coverage", aiScore: 94, actualScore: 94, aiJustification: "The proposal addresses 94% of the requirements outlined in the tender specification. Minor gaps identified in the waste management section.", humanJustification: "" },
+          { name: "Compliance with requirements", aiScore: 93, actualScore: 93, aiJustification: "Strong compliance with ISO 14001 requirements. All paper products exceed the 80% recycled content threshold. Delivery vehicles confirmed as Euro 6 compliant.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Quality",
+        aiScore: 88,
+        actualScore: 88,
+        subcategories: [
+          { name: "Product/service quality", aiScore: 90, actualScore: 90, aiJustification: "Product samples provided demonstrate high quality. Customer reviews indicate 4.5/5 average satisfaction rating.", humanJustification: "" },
+          { name: "Quality certifications", aiScore: 85, actualScore: 85, aiJustification: "Holds ISO 9001 and ISO 14001 certifications. EU Ecolabel certification confirmed for 80% of product range.", humanJustification: "" },
+          { name: "Quality management processes", aiScore: 89, actualScore: 89, aiJustification: "Robust QMS documented with clear inspection protocols and defect tracking systems in place.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Capability",
+        aiScore: 92,
+        actualScore: 92,
+        subcategories: [
+          { name: "Technical expertise", aiScore: 94, actualScore: 94, aiJustification: "Team includes certified sustainability professionals. 15 years experience in eco-friendly office supplies.", humanJustification: "" },
+          { name: "Relevant experience", aiScore: 91, actualScore: 91, aiJustification: "Successfully delivered similar contracts for 3 Fortune 500 companies in the past 5 years.", humanJustification: "" },
+          { name: "Team qualifications", aiScore: 90, actualScore: 90, aiJustification: "Key personnel hold relevant certifications including CIPS and environmental management qualifications.", humanJustification: "" },
+          { name: "Infrastructure", aiScore: 93, actualScore: 93, aiJustification: "Modern warehouse facilities with capacity to handle orders up to 3x current requirements. Established logistics network.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Price",
+        aiScore: 85,
+        actualScore: 85,
+        subcategories: [
+          { name: "Base pricing", aiScore: 82, actualScore: 82, aiJustification: "Pricing is 5% above market average but includes premium sustainable materials.", humanJustification: "" },
+          { name: "Value for money", aiScore: 88, actualScore: 88, aiJustification: "Total cost of ownership analysis shows 12% savings over 3-year period due to durability.", humanJustification: "" },
+          { name: "Payment terms", aiScore: 84, actualScore: 84, aiJustification: "Offers Net 45 payment terms with 2% early payment discount.", humanJustification: "" },
+          { name: "Total cost of ownership", aiScore: 86, actualScore: 86, aiJustification: "Comprehensive TCO breakdown provided including maintenance, replacement, and disposal costs.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Sustainability",
+        aiScore: 90,
+        actualScore: 90,
+        subcategories: [
+          { name: "Environmental impact", aiScore: 92, actualScore: 92, aiJustification: "Carbon neutral operations certified. Uses 100% renewable energy in manufacturing.", humanJustification: "" },
+          { name: "Carbon footprint", aiScore: 88, actualScore: 88, aiJustification: "Documented 40% reduction in carbon footprint over past 5 years. Offset program for remaining emissions.", humanJustification: "" },
+          { name: "Ethical sourcing", aiScore: 91, actualScore: 91, aiJustification: "Fair Trade certified suppliers. Transparent supply chain with published audit results.", humanJustification: "" },
+          { name: "Social responsibility", aiScore: 89, actualScore: 89, aiJustification: "Active community programs and diversity initiatives. Living wage certification for all employees.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Risk",
+        aiScore: 87,
+        actualScore: 87,
+        subcategories: [
+          { name: "Financial stability", aiScore: 90, actualScore: 90, aiJustification: "Strong balance sheet with 8 years consecutive profitability. Dun & Bradstreet rating of AA.", humanJustification: "" },
+          { name: "Supply chain reliability", aiScore: 85, actualScore: 85, aiJustification: "Dual-sourcing strategy in place. 98.5% on-time delivery rate over past 2 years.", humanJustification: "" },
+          { name: "Business continuity", aiScore: 86, actualScore: 86, aiJustification: "Comprehensive BCP documented with regular testing. Backup facilities available.", humanJustification: "" },
+          { name: "Insurance coverage", aiScore: 87, actualScore: 87, aiJustification: "Adequate liability coverage of $5M. Product liability and professional indemnity in place.", humanJustification: "" },
+        ]
+      },
+    ]
+  },
+  s2: {
+    categories: [
+      {
+        name: "Completeness",
+        aiScore: 100,
+        actualScore: 100,
+        subcategories: [
+          { name: "Documentation completeness", aiScore: 100, actualScore: 100, aiJustification: "Exceptional submission with all required and supplementary documents provided. Clear organization and professional presentation.", humanJustification: "" },
+          { name: "Response coverage", aiScore: 100, actualScore: 100, aiJustification: "Every requirement addressed comprehensively with detailed explanations and supporting evidence.", humanJustification: "" },
+          { name: "Compliance with requirements", aiScore: 100, actualScore: 100, aiJustification: "Full compliance with all mandatory requirements. No gaps or exceptions noted.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Quality",
+        aiScore: 85,
+        actualScore: 85,
+        subcategories: [
+          { name: "Product/service quality", aiScore: 86, actualScore: 86, aiJustification: "Good quality products with consistent customer feedback. Some variation noted in batch quality.", humanJustification: "" },
+          { name: "Quality certifications", aiScore: 84, actualScore: 84, aiJustification: "ISO 9001 certified. EU Ecolabel for 65% of product range - below tender preference.", humanJustification: "" },
+          { name: "Quality management processes", aiScore: 85, actualScore: 85, aiJustification: "Standard QMS in place with documented procedures. Room for improvement in traceability.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Capability",
+        aiScore: 88,
+        actualScore: 88,
+        subcategories: [
+          { name: "Technical expertise", aiScore: 87, actualScore: 87, aiJustification: "Competent team with 10 years industry experience. Growing sustainability expertise.", humanJustification: "" },
+          { name: "Relevant experience", aiScore: 89, actualScore: 89, aiJustification: "Strong track record with mid-market clients. Limited Fortune 500 experience.", humanJustification: "" },
+          { name: "Team qualifications", aiScore: 88, actualScore: 88, aiJustification: "Team includes procurement specialists and environmental consultants.", humanJustification: "" },
+          { name: "Infrastructure", aiScore: 88, actualScore: 88, aiJustification: "Modern facilities with room to scale. Strategic warehouse locations.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Price",
+        aiScore: 92,
+        actualScore: 92,
+        subcategories: [
+          { name: "Base pricing", aiScore: 94, actualScore: 94, aiJustification: "Most competitive pricing among evaluated submissions. 8% below market average.", humanJustification: "" },
+          { name: "Value for money", aiScore: 91, actualScore: 91, aiJustification: "Excellent price-to-quality ratio. Bulk discount structure favorable.", humanJustification: "" },
+          { name: "Payment terms", aiScore: 90, actualScore: 90, aiJustification: "Flexible Net 60 terms available. Volume-based pricing tiers.", humanJustification: "" },
+          { name: "Total cost of ownership", aiScore: 93, actualScore: 93, aiJustification: "Lowest overall TCO projection over contract period.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Sustainability",
+        aiScore: 86,
+        actualScore: 86,
+        subcategories: [
+          { name: "Environmental impact", aiScore: 85, actualScore: 85, aiJustification: "Working towards carbon neutrality - currently at 70% reduction. Strong improvement trajectory.", humanJustification: "" },
+          { name: "Carbon footprint", aiScore: 84, actualScore: 84, aiJustification: "Published carbon footprint data. Active reduction program with measurable targets.", humanJustification: "" },
+          { name: "Ethical sourcing", aiScore: 88, actualScore: 88, aiJustification: "Supplier code of conduct in place. Regular audits conducted.", humanJustification: "" },
+          { name: "Social responsibility", aiScore: 87, actualScore: 87, aiJustification: "Community engagement programs. Apprenticeship scheme for sustainability skills.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Risk",
+        aiScore: 91,
+        actualScore: 91,
+        subcategories: [
+          { name: "Financial stability", aiScore: 93, actualScore: 93, aiJustification: "Excellent financial health with strong cash reserves. Part of larger group providing additional stability.", humanJustification: "" },
+          { name: "Supply chain reliability", aiScore: 90, actualScore: 90, aiJustification: "Well-established supplier network. 99.2% fulfillment rate.", humanJustification: "" },
+          { name: "Business continuity", aiScore: 89, actualScore: 89, aiJustification: "Comprehensive BCP with tested disaster recovery procedures.", humanJustification: "" },
+          { name: "Insurance coverage", aiScore: 92, actualScore: 92, aiJustification: "Comprehensive insurance package exceeding requirements.", humanJustification: "" },
+        ]
+      },
+    ]
+  },
+  s3: {
+    categories: [
+      {
+        name: "Completeness",
+        aiScore: 90,
+        actualScore: 90,
+        subcategories: [
+          { name: "Documentation completeness", aiScore: 92, actualScore: 92, aiJustification: "Most required documents provided. Minor formatting inconsistencies noted.", humanJustification: "" },
+          { name: "Response coverage", aiScore: 88, actualScore: 88, aiJustification: "Good coverage of requirements with some sections lacking detail.", humanJustification: "" },
+          { name: "Compliance with requirements", aiScore: 90, actualScore: 90, aiJustification: "Meets all mandatory requirements. Some preferred criteria not fully addressed.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Quality",
+        aiScore: 95,
+        actualScore: 95,
+        subcategories: [
+          { name: "Product/service quality", aiScore: 96, actualScore: 96, aiJustification: "Premium quality products with exceptional durability. Industry-leading specifications.", humanJustification: "" },
+          { name: "Quality certifications", aiScore: 94, actualScore: 94, aiJustification: "Comprehensive certification portfolio including ISO 9001, 14001, and B Corp.", humanJustification: "" },
+          { name: "Quality management processes", aiScore: 95, actualScore: 95, aiJustification: "Best-in-class QMS with continuous improvement culture. Six Sigma methodology.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Capability",
+        aiScore: 90,
+        actualScore: 90,
+        subcategories: [
+          { name: "Technical expertise", aiScore: 91, actualScore: 91, aiJustification: "Highly skilled team with deep sustainability expertise.", humanJustification: "" },
+          { name: "Relevant experience", aiScore: 89, actualScore: 89, aiJustification: "Impressive project portfolio in sustainability sector.", humanJustification: "" },
+          { name: "Team qualifications", aiScore: 90, actualScore: 90, aiJustification: "Industry-recognized experts on the team.", humanJustification: "" },
+          { name: "Infrastructure", aiScore: 90, actualScore: 90, aiJustification: "State-of-the-art facilities purpose-built for sustainable operations.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Price",
+        aiScore: 78,
+        actualScore: 78,
+        subcategories: [
+          { name: "Base pricing", aiScore: 75, actualScore: 75, aiJustification: "Premium pricing - 15% above market average. Reflects quality positioning.", humanJustification: "" },
+          { name: "Value for money", aiScore: 82, actualScore: 82, aiJustification: "Higher upfront cost offset by superior durability and lower replacement frequency.", humanJustification: "" },
+          { name: "Payment terms", aiScore: 78, actualScore: 78, aiJustification: "Standard Net 30 terms. Limited flexibility on pricing.", humanJustification: "" },
+          { name: "Total cost of ownership", aiScore: 77, actualScore: 77, aiJustification: "Highest TCO among evaluated suppliers despite quality benefits.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Sustainability",
+        aiScore: 94,
+        actualScore: 94,
+        subcategories: [
+          { name: "Environmental impact", aiScore: 96, actualScore: 96, aiJustification: "Industry leader in environmental performance. Net positive impact achieved.", humanJustification: "" },
+          { name: "Carbon footprint", aiScore: 95, actualScore: 95, aiJustification: "Carbon negative operations. Extensive offset and removal programs.", humanJustification: "" },
+          { name: "Ethical sourcing", aiScore: 93, actualScore: 93, aiJustification: "Exemplary supply chain ethics. Full transparency and traceability.", humanJustification: "" },
+          { name: "Social responsibility", aiScore: 92, actualScore: 92, aiJustification: "Award-winning CSR programs. Significant positive community impact.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Risk",
+        aiScore: 82,
+        actualScore: 82,
+        subcategories: [
+          { name: "Financial stability", aiScore: 80, actualScore: 80, aiJustification: "Smaller company with good growth trajectory but limited reserves.", humanJustification: "" },
+          { name: "Supply chain reliability", aiScore: 83, actualScore: 83, aiJustification: "Strong supplier relationships but some single-source dependencies.", humanJustification: "" },
+          { name: "Business continuity", aiScore: 82, actualScore: 82, aiJustification: "BCP in place but not recently tested.", humanJustification: "" },
+          { name: "Insurance coverage", aiScore: 83, actualScore: 83, aiJustification: "Adequate coverage meeting minimum requirements.", humanJustification: "" },
+        ]
+      },
+    ]
+  },
+}
 
 const documentsData = [
   { name: "Tender Specification Document.pdf", type: "PDF", size: "2.4 MB", uploadedDate: "Mar 1, 2026", uploadedBy: "Sarah Chen" },
@@ -250,7 +497,8 @@ const tabs = [
   { key: "overview", label: "Overview" },
   { key: "team", label: "Team", count: teamMembersData.length },
   { key: "submissions", label: "Submissions", count: tenderData.submissions },
-  { key: "evaluation", label: "Evaluation" },
+  { key: "criteria", label: "Evaluation Criteria" },
+  { key: "results", label: "Results" },
   { key: "documents", label: "Documents", count: documentsData.length },
   { key: "activity", label: "Activity" },
 ]
@@ -263,6 +511,9 @@ export default function TenderDetailPage() {
   const [editableCriteria, setEditableCriteria] = useState(tenderData.evaluationCriteria)
   const [expandedCriteria, setExpandedCriteria] = useState<string[]>([])
   const [expandedEvalCriteria, setExpandedEvalCriteria] = useState<string[]>([])
+  const [selectedAssessment, setSelectedAssessment] = useState<string | null>(null)
+  const [assessmentScores, setAssessmentScores] = useState<Record<string, typeof assessmentData.s1>>(assessmentData)
+  const [expandedAiJustification, setExpandedAiJustification] = useState<Record<string, boolean>>({})
   const [ownerEditOpen, setOwnerEditOpen] = useState(false)
   const [editableOwner, setEditableOwner] = useState({ name: tenderData.owner, email: tenderData.ownerEmail })
   const [teamMembers, setTeamMembers] = useState(teamMembersData)
@@ -354,6 +605,50 @@ export default function TenderDetailPage() {
     setExpandedEvalCriteria(prev => 
       prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
     )
+  }
+
+  const updateAssessmentScore = (submissionId: string, categoryIndex: number, subcategoryIndex: number, score: number) => {
+    setAssessmentScores(prev => {
+      const updated = { ...prev }
+      if (updated[submissionId]) {
+        updated[submissionId] = {
+          ...updated[submissionId],
+          categories: updated[submissionId].categories.map((cat, ci) => 
+            ci === categoryIndex ? {
+              ...cat,
+              subcategories: cat.subcategories.map((sub, si) => 
+                si === subcategoryIndex ? { ...sub, actualScore: score } : sub
+              )
+            } : cat
+          )
+        }
+      }
+      return updated
+    })
+  }
+
+  const updateAssessmentJustification = (submissionId: string, categoryIndex: number, subcategoryIndex: number, justification: string) => {
+    setAssessmentScores(prev => {
+      const updated = { ...prev }
+      if (updated[submissionId]) {
+        updated[submissionId] = {
+          ...updated[submissionId],
+          categories: updated[submissionId].categories.map((cat, ci) => 
+            ci === categoryIndex ? {
+              ...cat,
+              subcategories: cat.subcategories.map((sub, si) => 
+                si === subcategoryIndex ? { ...sub, humanJustification: justification } : sub
+              )
+            } : cat
+          )
+        }
+      }
+      return updated
+    })
+  }
+
+  const toggleAiJustification = (key: string) => {
+    setExpandedAiJustification(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
   const saveCriteria = () => {
@@ -685,10 +980,10 @@ export default function TenderDetailPage() {
                           className="h-auto p-0 text-sm text-[#16A34A] hover:text-[#15803D]"
                           onClick={() => {
                             setCriteriaEditOpen(false)
-                            setActiveTab("evaluation")
+                            setActiveTab("criteria")
                           }}
                         >
-                          Open full Evaluation tab for detailed instructions
+                          Open Evaluation Criteria tab for detailed instructions
                           <ExternalLink className="size-3 ml-1" />
                         </Button>
                         
@@ -1127,9 +1422,9 @@ export default function TenderDetailPage() {
           </div>
         )}
 
-        {activeTab === "evaluation" && (
+        {/* Evaluation Criteria Tab */}
+        {activeTab === "criteria" && (
           <div className="space-y-6">
-            {/* Evaluation Criteria Configuration */}
             <Card className="border-[#E5E7EB] bg-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <div>
@@ -1243,109 +1538,259 @@ export default function TenderDetailPage() {
                 ))}
               </CardContent>
             </Card>
+          </div>
+        )}
 
-            {/* Evaluation Progress */}
+        {/* Results Tab */}
+        {activeTab === "results" && !selectedAssessment && (
+          <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold text-[#111827]">Submissions</h3>
+                <h3 className="text-lg font-semibold text-[#111827]">Evaluation Results</h3>
                 <p className="text-sm text-[#6B7280]">
-                  {submissionsData.filter(s => s.weightedScore).length} of {tenderData.submissions} submissions evaluated
+                  {submissionsData.filter(s => s.weightedScore).length} of {submissionsData.length} submissions evaluated
                 </p>
               </div>
-              <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
-                Start Evaluation
-              </Button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {submissionsData.filter(s => s.weightedScore).map(submission => (
-                <Card key={submission.id} className="border-[#E5E7EB] bg-white">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="size-10">
-                          <AvatarFallback className="bg-[#F0FDF4] text-[#16A34A]">
-                            {submission.supplierName.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <CardTitle className="text-base">{submission.supplierName}</CardTitle>
-                          <CardDescription>{submission.submittedDate}</CardDescription>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-[#16A34A]">{submission.weightedScore}</p>
-                        <p className="text-xs text-[#6B7280]">Weighted Score</p>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="space-y-1 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#6B7280]">Completeness</span>
-                        <span className="font-medium text-[#111827]">{submission.scores?.completeness}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#6B7280]">Quality</span>
-                        <span className="font-medium text-[#111827]">{submission.scores?.quality}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#6B7280]">Capability</span>
-                        <span className="font-medium text-[#111827]">{submission.scores?.capability}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#6B7280]">Price</span>
-                        <span className="font-medium text-[#111827]">{submission.scores?.price}</span>
-                      </div>
-<div className="flex items-center justify-between">
-                      <span className="text-[#6B7280]">Sustainability</span>
-                      <span className="font-medium text-[#111827]">{submission.scores?.sustainability}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[#6B7280]">Risk</span>
-                      <span className="font-medium text-[#111827]">{submission.scores?.risk}</span>
-                    </div>
-                    </div>
-                    <div className="pt-2 flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 border-[#E5E7EB]">
-                        View Details
-                      </Button>
-                      <Button variant="outline" size="sm" className="flex-1 border-[#E5E7EB]">
-                        Compare
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <Card className="border-[#E5E7EB] bg-white">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Completeness</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Quality</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Capability</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Sustainability</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Risk</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted</th>
+                        <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Value</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Hours</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Completion</th>
+                        <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Contact</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Assessment</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E5E7EB]">
+                      {submissionsData.map(submission => (
+                        <tr key={submission.id} className="hover:bg-[#F3F4F6] transition-colors">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="size-8">
+                                <AvatarFallback className={`text-xs ${submission.weightedScore ? 'bg-[#F0FDF4] text-[#16A34A]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                                  {submission.supplierName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium text-[#111827]">{submission.supplierName}</span>
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            {submission.scores ? (
+                              <span className="font-medium text-[#111827]">{submission.scores.completeness}</span>
+                            ) : (
+                              <span className="text-[#D1D5DB]">-</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            {submission.scores ? (
+                              <span className="font-medium text-[#111827]">{submission.scores.quality}</span>
+                            ) : (
+                              <span className="text-[#D1D5DB]">-</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            {submission.scores ? (
+                              <span className="font-medium text-[#111827]">{submission.scores.capability}</span>
+                            ) : (
+                              <span className="text-[#D1D5DB]">-</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            {submission.scores ? (
+                              <span className="font-medium text-[#111827]">{submission.scores.price}</span>
+                            ) : (
+                              <span className="text-[#D1D5DB]">-</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            {submission.scores ? (
+                              <span className="font-medium text-[#111827]">{submission.scores.sustainability}</span>
+                            ) : (
+                              <span className="text-[#D1D5DB]">-</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            {submission.scores ? (
+                              <span className="font-medium text-[#111827]">{submission.scores.risk}</span>
+                            ) : (
+                              <span className="text-[#D1D5DB]">-</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            {submission.weightedScore ? (
+                              <span className="font-semibold text-[#16A34A]">{submission.weightedScore}</span>
+                            ) : (
+                              <span className="text-[#D1D5DB]">-</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-right text-[#111827]">
+                            {formatBudget(submission.proposedValue)}
+                          </td>
+                          <td className="px-3 py-3 text-center text-[#6B7280]">
+                            {submission.totalHours}
+                          </td>
+                          <td className="px-3 py-3 text-[#6B7280]">
+                            {submission.completionDate}
+                          </td>
+                          <td className="px-3 py-3">
+                            <div>
+                              <p className="text-[#111827] text-xs">{submission.keyContact}</p>
+                              <p className="text-[#6B7280] text-xs truncate max-w-[120px]">{submission.keyContactEmail}</p>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {submission.weightedScore ? (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 text-xs border-[#E5E7EB]"
+                                onClick={() => setSelectedAssessment(submission.id)}
+                              >
+                                View
+                              </Button>
+                            ) : (
+                              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
+                                Pending
+                              </Badge>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-              {/* Pending Evaluations */}
-              {submissionsData.filter(s => !s.weightedScore).map(submission => (
-                <Card key={submission.id} className="border-[#E5E7EB] bg-white border-dashed">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="size-10">
-                          <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280]">
-                            {submission.supplierName.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <CardTitle className="text-base">{submission.supplierName}</CardTitle>
-                          <CardDescription>{submission.submittedDate}</CardDescription>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                        Pending
+        {/* Detailed Assessment View */}
+        {activeTab === "results" && selectedAssessment && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-[#6B7280]"
+                onClick={() => setSelectedAssessment(null)}
+              >
+                <ArrowLeft className="size-4 mr-1" />
+                Back to Results
+              </Button>
+              <div>
+                <h3 className="text-lg font-semibold text-[#111827]">
+                  Assessment: {submissionsData.find(s => s.id === selectedAssessment)?.supplierName}
+                </h3>
+                <p className="text-sm text-[#6B7280]">
+                  Detailed evaluation breakdown with AI and human scores
+                </p>
+              </div>
+            </div>
+
+            {assessmentScores[selectedAssessment]?.categories.map((category, categoryIndex) => (
+              <Card key={category.name} className="border-[#E5E7EB] bg-white">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <CardTitle className="text-base">{category.name}</CardTitle>
+                      <Badge variant="outline" className="text-xs bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]">
+                        {editableCriteria.find(c => c.name === category.name)?.weight}% weight
                       </Badge>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Button className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white">
-                      Start Evaluation
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#6B7280]">AI Score:</span>
+                        <span className="font-medium text-[#6B7280]">{category.aiScore}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#6B7280]">Final Score:</span>
+                        <span className="font-semibold text-[#16A34A]">{category.actualScore}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <CardDescription className="mt-2">
+                    {editableCriteria.find(c => c.name === category.name)?.instructions}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {category.subcategories.map((sub, subIndex) => {
+                    const justificationKey = `${selectedAssessment}-${categoryIndex}-${subIndex}`
+                    return (
+                      <div key={sub.name} className="border border-[#E5E7EB] rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-[#111827]">{sub.name}</span>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-[#6B7280]">AI:</span>
+                              <span className="font-medium text-[#6B7280]">{sub.aiScore}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-[#6B7280]">Score:</span>
+                              <Input
+                                type="number"
+                                value={sub.actualScore}
+                                onChange={(e) => updateAssessmentScore(selectedAssessment, categoryIndex, subIndex, parseInt(e.target.value) || 0)}
+                                className="w-16 h-8 text-center text-sm font-semibold text-[#16A34A]"
+                                min={0}
+                                max={100}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* AI Justification - Collapsible */}
+                        <Collapsible
+                          open={expandedAiJustification[justificationKey]}
+                          onOpenChange={() => toggleAiJustification(justificationKey)}
+                        >
+                          <CollapsibleTrigger className="flex items-center gap-2 text-xs text-[#6B7280] hover:text-[#111827]">
+                            <ChevronDown className={`size-3 transition-transform ${expandedAiJustification[justificationKey] ? 'rotate-180' : ''}`} />
+                            AI Justification
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <p className="mt-2 text-sm text-[#6B7280] bg-[#F3F4F6] rounded p-3 italic">
+                              {sub.aiJustification}
+                            </p>
+                          </CollapsibleContent>
+                        </Collapsible>
+
+                        {/* Human Justification - Editable */}
+                        <div className="space-y-2">
+                          <Label className="text-xs text-[#6B7280]">Final Justification</Label>
+                          <Textarea
+                            value={sub.humanJustification || sub.aiJustification}
+                            onChange={(e) => updateAssessmentJustification(selectedAssessment, categoryIndex, subIndex, e.target.value)}
+                            placeholder="Edit or add to the AI-generated justification..."
+                            className="min-h-[60px] text-sm"
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </CardContent>
+              </Card>
+            ))}
+
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" className="border-[#E5E7EB]" onClick={() => setSelectedAssessment(null)}>
+                Cancel
+              </Button>
+              <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white" onClick={() => setSelectedAssessment(null)}>
+                Save Assessment
+              </Button>
             </div>
           </div>
         )}
