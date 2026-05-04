@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { FileText, CheckCircle, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 
-type SortField = "status" | "submissions" | "deadline" | "created" | "budget" | null
+type SortField = "status" | "submissions" | "deadline" | "budget" | null
 type SortDirection = "asc" | "desc"
 
 type TenderData = {
@@ -95,8 +95,7 @@ export default function BuyerDashboard() {
           comparison = a.submissions - b.submissions
           break
         case "deadline":
-        case "created":
-          comparison = new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime()
+          comparison = new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
           break
         case "budget":
           comparison = a.budget - b.budget
@@ -247,13 +246,6 @@ export default function BuyerDashboard() {
                         onSort={handleSort}
                       />
                       <SortableHeader
-                        label="Created"
-                        field="created"
-                        currentField={sortField}
-                        direction={sortDirection}
-                        onSort={handleSort}
-                      />
-                      <SortableHeader
                         label="Deadline"
                         field="deadline"
                         currentField={sortField}
@@ -279,7 +271,6 @@ export default function BuyerDashboard() {
                         name={tender.name}
                         status={tender.status}
                         submissions={tender.submissions}
-                        created={tender.created}
                         deadline={tender.deadline}
                         budget={tender.budget}
                         owner={tender.owner}
@@ -414,7 +405,6 @@ function TenderRow({
   name,
   status,
   submissions,
-  created,
   deadline,
   budget,
   owner,
@@ -422,7 +412,6 @@ function TenderRow({
   name: string
   status: "draft" | "active" | "evaluation" | "completed"
   submissions: number
-  created: string
   deadline: string
   budget: number
   owner: string
@@ -455,7 +444,6 @@ function TenderRow({
         </Badge>
       </td>
       <td className="px-3 py-3 text-[#6B7280] tabular-nums text-center">{submissions}</td>
-      <td className="px-3 py-3 text-[#6B7280] whitespace-nowrap">{created}</td>
       <td className="px-3 py-3 text-[#6B7280] whitespace-nowrap">{deadline}</td>
       <td className="px-3 py-3 text-[#6B7280] tabular-nums whitespace-nowrap">{formatBudget(budget)}</td>
       <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">{owner}</td>
