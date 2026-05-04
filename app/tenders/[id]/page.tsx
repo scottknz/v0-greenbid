@@ -57,6 +57,8 @@ import {
   Star,
   Sparkles,
   Save,
+  FileText,
+  Loader2,
 } from "lucide-react"
 
 // Mock data - in production this would come from an API
@@ -715,6 +717,89 @@ export default function TenderDetailPage() {
     setEditableCriteria(prev => prev.map((c, i) => 
       i === index ? { ...c, instructions: aiInstruction, instructionsSaved: false } : c
     ))
+  }
+
+  const [generatingFromRfp, setGeneratingFromRfp] = useState(false)
+  
+  const generateCriteriaFromRfp = async () => {
+    setGeneratingFromRfp(true)
+    // Simulate AI processing the RFP documents and requirements
+    // In production, this would analyze uploaded RFP documents and tender requirements
+    await new Promise(resolve => setTimeout(resolve, 1500))
+    
+    // Generate criteria based on RFP content (simulated AI response)
+    const generatedCriteria = [
+      { 
+        name: "Completeness", 
+        weight: 10,
+        instructions: "Assess whether the supplier has provided all required documentation as specified in Section 3 of the RFP. Verify adherence to submission format, deadline compliance, and completeness of all mandatory sections.",
+        instructionsSaved: false,
+        subcategories: [
+          { name: "Documentation completeness", description: "Verify submission includes company profile, technical proposal, pricing schedule, certifications, and all appendices listed in RFP Section 3.2.", saved: false },
+          { name: "Format compliance", description: "Check adherence to specified document formats, page limits, and naming conventions per RFP Section 2.4.", saved: false },
+          { name: "Mandatory requirements", description: "Confirm all mandatory requirements from RFP Appendix A are addressed with supporting evidence.", saved: false }
+        ]
+      },
+      { 
+        name: "Technical Quality", 
+        weight: 25,
+        instructions: "Evaluate the technical merit of proposed products/services against specifications in RFP Section 4. Assess quality certifications, product standards, and quality management systems.",
+        instructionsSaved: false,
+        subcategories: [
+          { name: "Product specifications", description: "Assess alignment with technical specifications outlined in RFP Section 4.1, including material composition and performance standards.", saved: false },
+          { name: "Quality certifications", description: "Verify ISO 9001, ISO 14001, EU Ecolabel, and other certifications required per RFP Section 4.3.", saved: false },
+          { name: "Quality assurance processes", description: "Evaluate documented QMS, testing procedures, and defect management as per RFP requirements.", saved: false }
+        ]
+      },
+      { 
+        name: "Supplier Capability", 
+        weight: 15,
+        instructions: "Review supplier's technical expertise, relevant experience, and capacity to deliver as outlined in RFP Section 5. Consider past performance on similar contracts.",
+        instructionsSaved: false,
+        subcategories: [
+          { name: "Relevant experience", description: "Assess experience with similar contracts in scope and complexity, minimum 3 references as per RFP Section 5.2.", saved: false },
+          { name: "Technical expertise", description: "Evaluate team qualifications, certifications, and specialized knowledge relevant to sustainable procurement.", saved: false },
+          { name: "Delivery capacity", description: "Assess infrastructure, logistics capabilities, and scalability to meet volume requirements in RFP Section 5.4.", saved: false }
+        ]
+      },
+      { 
+        name: "Commercial", 
+        weight: 20,
+        instructions: "Analyze pricing competitiveness, total cost of ownership, and commercial terms against budget parameters in RFP Section 6.",
+        instructionsSaved: false,
+        subcategories: [
+          { name: "Pricing competitiveness", description: "Compare unit pricing and volume discounts against market benchmarks and budget allocation in RFP Section 6.1.", saved: false },
+          { name: "Total cost of ownership", description: "Calculate all costs including delivery, installation, maintenance, and disposal as per TCO model in RFP Appendix C.", saved: false },
+          { name: "Payment and contract terms", description: "Evaluate payment schedules, warranty terms, and contract flexibility per RFP Section 6.3 requirements.", saved: false }
+        ]
+      },
+      { 
+        name: "Sustainability & ESG", 
+        weight: 25,
+        instructions: "Assess environmental credentials, carbon footprint, ethical sourcing, and social responsibility against ESG requirements in RFP Section 7.",
+        instructionsSaved: false,
+        subcategories: [
+          { name: "Environmental certifications", description: "Verify environmental certifications, carbon neutrality claims, and alignment with RFP Section 7.1 sustainability targets.", saved: false },
+          { name: "Carbon footprint", description: "Assess Scope 1, 2, and 3 emissions data, reduction commitments, and climate action plans per RFP Section 7.2.", saved: false },
+          { name: "Ethical supply chain", description: "Evaluate supply chain transparency, fair trade practices, and labor standards as per RFP Section 7.3.", saved: false },
+          { name: "Circular economy", description: "Assess recycled content, recyclability, and end-of-life disposal programs aligned with RFP Section 7.4.", saved: false }
+        ]
+      },
+      { 
+        name: "Risk Management", 
+        weight: 5,
+        instructions: "Evaluate supplier risk profile including financial stability, supply chain reliability, and business continuity as per RFP Section 8.",
+        instructionsSaved: false,
+        subcategories: [
+          { name: "Financial stability", description: "Assess credit rating, financial statements, and profitability trends as per RFP Section 8.1 requirements.", saved: false },
+          { name: "Supply chain resilience", description: "Evaluate supplier diversification, geographic risk, and contingency plans per RFP Section 8.2.", saved: false },
+          { name: "Business continuity", description: "Review BCP documentation, insurance coverage, and disaster recovery capabilities per RFP Section 8.3.", saved: false }
+        ]
+      },
+    ]
+    
+    setEditableCriteria(generatedCriteria)
+    setGeneratingFromRfp(false)
   }
 
   const toggleEvalCriteriaExpand = (name: string) => {
