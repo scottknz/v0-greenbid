@@ -516,6 +516,7 @@ export default function TenderDetailPage() {
   const [expandedAiJustification, setExpandedAiJustification] = useState<Record<string, boolean>>({})
   const [ownerEditOpen, setOwnerEditOpen] = useState(false)
   const [editableOwner, setEditableOwner] = useState({ name: tenderData.owner, email: tenderData.ownerEmail })
+  const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
   const [teamMembers, setTeamMembers] = useState(teamMembersData)
   const [addMemberOpen, setAddMemberOpen] = useState(false)
   const [addNewMemberOpen, setAddNewMemberOpen] = useState(false)
@@ -877,18 +878,7 @@ export default function TenderDetailPage() {
             <div className="space-y-4">
               {/* Team */}
               <Card className="border-[#E5E7EB] bg-white">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 pt-4 px-4">
-                  <CardTitle className="text-sm font-medium text-[#6B7280]">Team</CardTitle>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 px-2 text-xs text-[#6B7280] hover:text-[#16A34A]"
-                    onClick={() => setActiveTab("team")}
-                  >
-                    View all
-                  </Button>
-                </CardHeader>
-                <CardContent className="px-4 pb-4 pt-0 space-y-3">
+                <CardContent className="p-4 space-y-3">
                   {/* Lead */}
                   {teamMembers.filter(m => m.isLead).map(member => (
                     <div key={member.id} className="flex items-center justify-between">
@@ -909,33 +899,40 @@ export default function TenderDetailPage() {
                     </div>
                   ))}
                   
-                  {/* Other team members - show first 2 */}
-                  {teamMembers.filter(m => !m.isLead).slice(0, 2).map(member => (
-                    <div key={member.id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="size-8">
-                          <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280] text-xs">
-                            {member.name.split(" ").map(n => n[0]).join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="text-sm font-medium text-[#111827]">{member.name}</p>
-                          <p className="text-xs text-[#6B7280]">{member.companyTitle}</p>
-                        </div>
-                      </div>
-                      <span className="text-xs text-[#6B7280]">{member.projectRole}</span>
-                    </div>
-                  ))}
-                  
-                  {teamMembers.filter(m => !m.isLead).length > 2 && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="w-full h-7 text-xs text-[#6B7280] hover:text-[#16A34A]"
-                      onClick={() => setActiveTab("team")}
-                    >
-                      +{teamMembers.filter(m => !m.isLead).length - 2} more team members
-                    </Button>
+                  {/* Other team members - collapsible */}
+                  {teamMembers.filter(m => !m.isLead).length > 0 && (
+                    <Collapsible open={teamDropdownOpen} onOpenChange={setTeamDropdownOpen}>
+                      <CollapsibleTrigger className="flex items-center gap-2 text-xs text-[#6B7280] hover:text-[#111827] w-full py-1">
+                        <ChevronDown className={`size-3 transition-transform ${teamDropdownOpen ? 'rotate-180' : ''}`} />
+                        <span>{teamMembers.filter(m => !m.isLead).length} other team members</span>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-2 pt-2">
+                        {teamMembers.filter(m => !m.isLead).map(member => (
+                          <div key={member.id} className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <Avatar className="size-7">
+                                <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280] text-xs">
+                                  {member.name.split(" ").map(n => n[0]).join("")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="text-sm font-medium text-[#111827]">{member.name}</p>
+                                <p className="text-xs text-[#6B7280]">{member.companyTitle}</p>
+                              </div>
+                            </div>
+                            <span className="text-xs text-[#6B7280]">{member.projectRole}</span>
+                          </div>
+                        ))}
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="w-full h-7 text-xs text-[#6B7280] hover:text-[#16A34A] mt-1"
+                          onClick={() => setActiveTab("team")}
+                        >
+                          Manage team
+                        </Button>
+                      </CollapsibleContent>
+                    </Collapsible>
                   )}
                 </CardContent>
               </Card>
