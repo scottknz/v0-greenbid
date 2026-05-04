@@ -8,70 +8,21 @@ export interface NavItem {
 }
 
 export const buyerNav: NavItem[] = [
-  {
-    label: 'Dashboard',
-    href: '/buyer/dashboard',
-    icon: 'LayoutDashboard',
-    section: 'main',
-  },
-  {
-    label: 'Tenders',
-    href: '/buyer/tenders',
-    icon: 'FileText',
-    section: 'main',
-  },
-  {
-    label: 'Evaluations',
-    href: '/buyer/evaluations',
-    icon: 'ClipboardList',
-    section: 'main',
-    badge: true,
-  },
-  {
-    label: 'Suppliers',
-    href: '/buyer/suppliers',
-    icon: 'Users',
-    section: 'main',
-  },
-  {
-    label: 'AI Copilot',
-    href: '#',
-    icon: 'MessageSquare',
-    section: 'secondary',
-    isChatTrigger: true,
-  },
-  {
-    label: 'Settings',
-    href: '/buyer/settings',
-    icon: 'Settings',
-    section: 'secondary',
-  },
+  { label: 'Dashboard', href: '/', icon: 'LayoutDashboard', section: 'main' },
+  { label: 'New Tender', href: '/tenders/new', icon: 'FileText', section: 'main', badge: true },
+  { label: 'Evaluate Tender', href: '/evaluate', icon: 'ClipboardList', section: 'main' },
+  { label: 'Audit History', href: '/audit', icon: 'Shield', section: 'main' },
+  { label: 'AI Copilot', href: '#', icon: 'MessageSquare', section: 'secondary', isChatTrigger: true },
+  { label: 'Marketplace', href: '/marketplace', icon: 'Library', section: 'secondary' },
+  { label: 'Settings', href: '/settings', icon: 'Settings', section: 'secondary' },
 ];
 
 export const supplierNav: NavItem[] = [
-  {
-    label: 'Dashboard',
-    href: '/supplier/dashboard',
-    icon: 'LayoutDashboard',
-    section: 'main',
-  },
-  {
-    label: 'My Bids',
-    href: '/supplier/bids',
-    icon: 'FileText',
-    section: 'main',
-    badge: true,
-  },
-  {
-    label: 'Profile & Compliance',
-    href: '/supplier/profile',
-    icon: 'Shield',
-    section: 'main',
-  },
-  {
-    label: 'Settings',
-    href: '/supplier/settings',
-    icon: 'Settings',
-    section: 'secondary',
-  },
+  { label: 'Dashboard', href: '/', icon: 'LayoutDashboard', section: 'main' },
+  { label: 'Open Tenders', href: '/tenders', icon: 'FolderOpen', section: 'main' },
+  { label: 'My Submissions', href: '/submissions', icon: 'Upload', section: 'main' },
+  { label: 'Saved Tenders', href: '/saved', icon: 'Star', section: 'main' },
+  { label: 'AI Copilot', href: '#', icon: 'MessageSquare', section: 'secondary', isChatTrigger: true },
+  { label: 'Notifications', href: '/notifications', icon: 'Bell', section: 'secondary' },
+  { label: 'Settings', href: '/settings', icon: 'Settings', section: 'secondary' },
 ];
