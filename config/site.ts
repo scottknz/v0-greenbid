@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: 'ProcureESG',
+  name: 'greenbid',
   description: 'AI-assisted ESG procurement platform.',
   tenderStates: [
     'draft',

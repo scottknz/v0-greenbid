@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ESG Procure - Sustainable Procurement Platform',
-  description: 'B2B SaaS ESG Procurement Platform for sustainable business operations',
+  title: 'greenbid - Sustainable Procurement Platform',
+  description: 'AI-assisted ESG procurement platform for sustainable business operations',
   generator: 'v0.app',
   icons: {
     icon: [
