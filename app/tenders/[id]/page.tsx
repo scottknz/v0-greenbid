@@ -58,6 +58,13 @@ import {
   Sparkles,
   Save,
   Loader2,
+  Search,
+  Filter,
+  Send,
+  MessageSquare,
+  Users,
+  ClipboardList,
+  ArrowUpDown,
 } from "lucide-react"
 
 // Mock data - in production this would come from an API
@@ -506,14 +513,34 @@ const documentsData = [
   { name: "Evaluation Criteria Matrix.pdf", type: "PDF", size: "1.1 MB", uploadedDate: "Mar 5, 2026", uploadedBy: "Sarah Chen" },
 ]
 
+const activityTypes = [
+  { key: "submission", label: "Submission", color: "bg-blue-100 text-blue-700" },
+  { key: "evaluation", label: "Evaluation", color: "bg-purple-100 text-purple-700" },
+  { key: "document", label: "Document", color: "bg-amber-100 text-amber-700" },
+  { key: "team", label: "Team", color: "bg-cyan-100 text-cyan-700" },
+  { key: "tender", label: "Tender", color: "bg-green-100 text-green-700" },
+  { key: "comment", label: "Comment", color: "bg-gray-100 text-gray-700" },
+]
+
 const activityData = [
-  { action: "Submission received", detail: "CleanTech Office submitted their proposal", date: "Mar 25, 2026", time: "2:30 PM" },
-  { action: "Evaluation completed", detail: "GreenOffice Ltd evaluation finalized with score 90", date: "Mar 24, 2026", time: "4:15 PM" },
-  { action: "Submission received", detail: "EarthFirst Supplies submitted their proposal", date: "Mar 22, 2026", time: "11:00 AM" },
-  { action: "Document uploaded", detail: "Budget Breakdown.xlsx added by James Wilson", date: "Mar 3, 2026", time: "3:45 PM" },
-  { action: "Supplier invited", detail: "5 additional suppliers invited to tender", date: "Mar 2, 2026", time: "10:30 AM" },
-  { action: "Tender published", detail: "Tender made available to invited suppliers", date: "Mar 1, 2026", time: "9:00 AM" },
-  { action: "Tender created", detail: "Initial tender draft created by Sarah Chen", date: "Feb 25, 2026", time: "2:00 PM" },
+  { id: "a1", type: "submission", action: "Submission received", detail: "CleanTech Office submitted their proposal", person: "CleanTech Office", date: "2026-03-25", time: "2:30 PM" },
+  { id: "a2", type: "evaluation", action: "Evaluation completed", detail: "GreenOffice Ltd evaluation finalized with score 90", person: "Sarah Chen", date: "2026-03-24", time: "4:15 PM" },
+  { id: "a3", type: "evaluation", action: "Evaluation started", detail: "Started AI-assisted evaluation for EcoSupply Co.", person: "Emily Rodriguez", date: "2026-03-23", time: "10:00 AM" },
+  { id: "a4", type: "submission", action: "Submission received", detail: "EarthFirst Supplies submitted their proposal", person: "EarthFirst Supplies", date: "2026-03-22", time: "11:00 AM" },
+  { id: "a5", type: "comment", action: "Comment added", detail: "Added note on sustainability scoring methodology", person: "Emily Rodriguez", date: "2026-03-21", time: "3:00 PM" },
+  { id: "a6", type: "submission", action: "Submission received", detail: "Sustainable Solutions Inc submitted their proposal", person: "Sustainable Solutions Inc", date: "2026-03-20", time: "9:45 AM" },
+  { id: "a7", type: "evaluation", action: "Criteria updated", detail: "Updated Sustainability weighting from 15% to 20%", person: "Sarah Chen", date: "2026-03-19", time: "2:30 PM" },
+  { id: "a8", type: "submission", action: "Submission received", detail: "GreenOffice Ltd submitted their proposal", person: "GreenOffice Ltd", date: "2026-03-18", time: "4:00 PM" },
+  { id: "a9", type: "team", action: "Team member added", detail: "Michael Park joined as Contract Reviewer", person: "Sarah Chen", date: "2026-03-17", time: "11:30 AM" },
+  { id: "a10", type: "submission", action: "Submission received", detail: "EcoSupply Co. submitted their proposal", person: "EcoSupply Co.", date: "2026-03-15", time: "10:15 AM" },
+  { id: "a11", type: "document", action: "Document uploaded", detail: "Technical Requirements v2.pdf uploaded", person: "James Wilson", date: "2026-03-10", time: "9:00 AM" },
+  { id: "a12", type: "team", action: "Team member added", detail: "Emily Rodriguez joined as ESG Evaluator", person: "Sarah Chen", date: "2026-03-08", time: "2:00 PM" },
+  { id: "a13", type: "document", action: "Document uploaded", detail: "Budget Breakdown.xlsx added", person: "James Wilson", date: "2026-03-03", time: "3:45 PM" },
+  { id: "a14", type: "tender", action: "Supplier invited", detail: "5 additional suppliers invited to tender", person: "Sarah Chen", date: "2026-03-02", time: "10:30 AM" },
+  { id: "a15", type: "tender", action: "Tender published", detail: "Tender made available to invited suppliers", person: "Sarah Chen", date: "2026-03-01", time: "9:00 AM" },
+  { id: "a16", type: "document", action: "Document uploaded", detail: "RFP Document.pdf uploaded", person: "Sarah Chen", date: "2026-02-28", time: "4:00 PM" },
+  { id: "a17", type: "team", action: "Team member added", detail: "James Wilson joined as Budget Reviewer", person: "Sarah Chen", date: "2026-02-26", time: "11:00 AM" },
+  { id: "a18", type: "tender", action: "Tender created", detail: "Initial tender draft created", person: "Sarah Chen", date: "2026-02-25", time: "2:00 PM" },
 ]
 
 // Team members for this tender
@@ -565,6 +592,87 @@ export default function TenderDetailPage() {
   const [editingMember, setEditingMember] = useState<typeof teamMembersData[0] | null>(null)
   const [descriptionEdit, setDescriptionEdit] = useState({ text: tenderData.description, editing: false, saved: true })
   const [requirementsEdit, setRequirementsEdit] = useState(tenderData.requirements.map(r => ({ text: r, editing: false, saved: true })))
+  
+  // Activity filters
+  const [activitySearch, setActivitySearch] = useState("")
+  const [activityTypeFilter, setActivityTypeFilter] = useState<string[]>([])
+  const [activityPersonFilter, setActivityPersonFilter] = useState<string[]>([])
+  const [activityDateFrom, setActivityDateFrom] = useState("")
+  const [activityDateTo, setActivityDateTo] = useState("")
+  const [activitySortOrder, setActivitySortOrder] = useState<"asc" | "desc">("desc")
+  
+  // Get unique people from activity data
+  const activityPeople = [...new Set(activityData.map(a => a.person))]
+  
+  // Filter and sort activities
+  const filteredActivities = activityData
+    .filter(activity => {
+      // Search filter
+      if (activitySearch && !activity.action.toLowerCase().includes(activitySearch.toLowerCase()) && 
+          !activity.detail.toLowerCase().includes(activitySearch.toLowerCase()) &&
+          !activity.person.toLowerCase().includes(activitySearch.toLowerCase())) {
+        return false
+      }
+      // Type filter
+      if (activityTypeFilter.length > 0 && !activityTypeFilter.includes(activity.type)) {
+        return false
+      }
+      // Person filter
+      if (activityPersonFilter.length > 0 && !activityPersonFilter.includes(activity.person)) {
+        return false
+      }
+      // Date range filter
+      if (activityDateFrom && activity.date < activityDateFrom) {
+        return false
+      }
+      if (activityDateTo && activity.date > activityDateTo) {
+        return false
+      }
+      return true
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.date + " " + a.time)
+      const dateB = new Date(b.date + " " + b.time)
+      return activitySortOrder === "desc" ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime()
+    })
+  
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "submission": return <Send className="size-4" />
+      case "evaluation": return <ClipboardList className="size-4" />
+      case "document": return <FileText className="size-4" />
+      case "team": return <Users className="size-4" />
+      case "tender": return <FileText className="size-4" />
+      case "comment": return <MessageSquare className="size-4" />
+      default: return <Clock className="size-4" />
+    }
+  }
+  
+  const getActivityTypeStyle = (type: string) => {
+    const typeInfo = activityTypes.find(t => t.key === type)
+    return typeInfo?.color || "bg-gray-100 text-gray-700"
+  }
+  
+  const formatActivityDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    
+    if (date.toDateString() === today.toDateString()) return "Today"
+    if (date.toDateString() === yesterday.toDateString()) return "Yesterday"
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+  }
+  
+  const clearActivityFilters = () => {
+    setActivitySearch("")
+    setActivityTypeFilter([])
+    setActivityPersonFilter([])
+    setActivityDateFrom("")
+    setActivityDateTo("")
+  }
+  
+  const hasActiveFilters = activitySearch || activityTypeFilter.length > 0 || activityPersonFilter.length > 0 || activityDateFrom || activityDateTo
 
   const addExistingMember = (member: typeof companyMembersData[0]) => {
     const newTeamMember = {
@@ -2354,29 +2462,188 @@ export default function TenderDetailPage() {
         )}
 
         {activeTab === "activity" && (
-          <Card className="border-[#E5E7EB] bg-white">
-            <CardHeader>
-              <CardTitle className="text-lg">Activity Timeline</CardTitle>
-              <CardDescription>Complete history of tender activities</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="relative">
-                <div className="absolute left-4 top-0 bottom-0 w-px bg-[#E5E7EB]" />
-                <div className="space-y-6">
-                  {activityData.map((activity, index) => (
-                    <div key={index} className="relative flex gap-4 pl-10">
-                      <div className="absolute left-2.5 top-1 size-3 rounded-full bg-[#16A34A] border-2 border-white" />
-                      <div className="flex-1">
-                        <p className="font-medium text-[#111827]">{activity.action}</p>
-                        <p className="text-sm text-[#6B7280]">{activity.detail}</p>
-                        <p className="text-xs text-[#9CA3AF] mt-1">{activity.date} at {activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
+          <div className="space-y-4">
+            {/* Filters */}
+            <Card className="border-[#E5E7EB] bg-white">
+              <CardContent className="p-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  {/* Search */}
+                  <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#9CA3AF]" />
+                    <Input
+                      placeholder="Search activities..."
+                      value={activitySearch}
+                      onChange={(e) => setActivitySearch(e.target.value)}
+                      className="pl-9 h-9 text-sm"
+                    />
+                  </div>
+                  
+                  {/* Type Filter */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-9 border-[#E5E7EB]">
+                        <Filter className="size-4 mr-2" />
+                        Type
+                        {activityTypeFilter.length > 0 && (
+                          <Badge className="ml-2 bg-[#16A34A] text-white text-xs px-1.5">{activityTypeFilter.length}</Badge>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-48">
+                      {activityTypes.map(type => (
+                        <DropdownMenuItem
+                          key={type.key}
+                          onClick={() => setActivityTypeFilter(prev => 
+                            prev.includes(type.key) ? prev.filter(t => t !== type.key) : [...prev, type.key]
+                          )}
+                          className="flex items-center justify-between"
+                        >
+                          <span>{type.label}</span>
+                          {activityTypeFilter.includes(type.key) && <CheckCircle className="size-4 text-[#16A34A]" />}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  {/* Person Filter */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-9 border-[#E5E7EB]">
+                        <Users className="size-4 mr-2" />
+                        Person
+                        {activityPersonFilter.length > 0 && (
+                          <Badge className="ml-2 bg-[#16A34A] text-white text-xs px-1.5">{activityPersonFilter.length}</Badge>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56 max-h-64 overflow-y-auto">
+                      {activityPeople.map(person => (
+                        <DropdownMenuItem
+                          key={person}
+                          onClick={() => setActivityPersonFilter(prev => 
+                            prev.includes(person) ? prev.filter(p => p !== person) : [...prev, person]
+                          )}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="truncate">{person}</span>
+                          {activityPersonFilter.includes(person) && <CheckCircle className="size-4 text-[#16A34A] flex-shrink-0" />}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  {/* Date Range */}
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="date"
+                      value={activityDateFrom}
+                      onChange={(e) => setActivityDateFrom(e.target.value)}
+                      className="h-9 text-sm w-36"
+                      placeholder="From"
+                    />
+                    <span className="text-[#6B7280]">to</span>
+                    <Input
+                      type="date"
+                      value={activityDateTo}
+                      onChange={(e) => setActivityDateTo(e.target.value)}
+                      className="h-9 text-sm w-36"
+                      placeholder="To"
+                    />
+                  </div>
+                  
+                  {/* Clear Filters */}
+                  {hasActiveFilters && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-9 text-[#6B7280] hover:text-red-600"
+                      onClick={clearActivityFilters}
+                    >
+                      <X className="size-4 mr-1" />
+                      Clear
+                    </Button>
+                  )}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+            
+            {/* Results count */}
+            <div className="flex items-center justify-between text-sm text-[#6B7280]">
+              <span>
+                Showing {filteredActivities.length} of {activityData.length} activities
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => setActivitySortOrder(prev => prev === "desc" ? "asc" : "desc")}
+              >
+                <ArrowUpDown className="size-3 mr-1" />
+                {activitySortOrder === "desc" ? "Newest first" : "Oldest first"}
+              </Button>
+            </div>
+
+            {/* Activity Table */}
+            <Card className="border-[#E5E7EB] bg-white">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-28">Type</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Action</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Details</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-40">Person</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-36">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E5E7EB]">
+                      {filteredActivities.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="px-4 py-8 text-center text-[#6B7280]">
+                            No activities match your filters
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredActivities.map(activity => (
+                          <tr key={activity.id} className="hover:bg-[#F9FAFB] transition-colors">
+                            <td className="px-4 py-3">
+                              <Badge className={`${getActivityTypeStyle(activity.type)} border-0 text-xs font-medium`}>
+                                <span className="mr-1">{getActivityIcon(activity.type)}</span>
+                                {activityTypes.find(t => t.key === activity.type)?.label}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3 font-medium text-[#111827]">
+                              {activity.action}
+                            </td>
+                            <td className="px-4 py-3 text-[#6B7280]">
+                              {activity.detail}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <Avatar className="size-6">
+                                  <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280] text-xs">
+                                    {activity.person.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-[#111827] truncate">{activity.person}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-[#6B7280]">
+                              <div>
+                                <p>{formatActivityDate(activity.date)}</p>
+                                <p className="text-xs text-[#9CA3AF]">{activity.time}</p>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </DashboardShell>
