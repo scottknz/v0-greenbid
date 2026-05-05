@@ -74,10 +74,10 @@ import {
 // Mock data - in production this would come from an API
 const tenderData = {
   id: "1",
-  name: "Sustainable Office Supplies 2026",
+  name: "Comprehensive Scope 3 Value Chain Emissions Analysis",
   referenceId: "TND-2026-001",
   status: "active" as const,
-  category: "Office Supplies",
+  category: "Scope 3 / Value Chain",
   description: "Procurement of sustainable and eco-friendly office supplies including recycled paper products, biodegradable pens and markers, energy-efficient desk accessories, and environmentally certified furniture items. This RFP aims to reduce our carbon footprint while maintaining high-quality standards for workplace materials.",
   requirements: [
     "All paper products must contain minimum 80% post-consumer recycled content",

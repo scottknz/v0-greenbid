@@ -60,33 +60,33 @@ import {
 
 // Mock RFPs data
 const rfpsData = [
-  { id: "rfp1", title: "Sustainable Office Supplies 2026", status: "open" },
-  { id: "rfp2", title: "IT Infrastructure Renewal", status: "open" },
-  { id: "rfp3", title: "Catering Services Contract", status: "closed" },
-  { id: "rfp4", title: "Fleet Management Services", status: "evaluation" },
+  { id: "rfp1", title: "Comprehensive Scope 3 Value Chain Emissions Analysis", status: "open" },
+  { id: "rfp2", title: "SBTi Target Setting & Validation Support", status: "open" },
+  { id: "rfp3", title: "Embodied Carbon Life Cycle Assessment (LCA)", status: "closed" },
+  { id: "rfp4", title: "ISSB (IFRS S1 & S2) Integration & Reporting", status: "evaluation" },
 ]
 
 // Mock buyers/team members
 const buyersData = [
-  { id: "b1", name: "Sarah Chen", role: "Procurement Lead" },
-  { id: "b2", name: "David Thompson", role: "Category Manager" },
-  { id: "b3", name: "Emily Watson", role: "Sustainability Officer" },
+  { id: "b1", name: "Emma Thompson", role: "Sustainability Lead" },
+  { id: "b2", name: "David Kumar", role: "Carbon Analyst" },
+  { id: "b3", name: "Lisa Martinez", role: "ESG Manager" },
 ]
 
 // Mock suppliers
 const suppliersData = [
-  { id: "s1", name: "EcoSupply Co.", contact: "John Smith" },
-  { id: "s2", name: "GreenOffice Ltd", contact: "Emma Davis" },
-  { id: "s3", name: "Sustainable Solutions Inc", contact: "Michael Brown" },
-  { id: "s4", name: "EnviroTech Partners", contact: "Lisa Johnson" },
-  { id: "s5", name: "CleanSource Materials", contact: "Robert Williams" },
+  { id: "s1", name: "EcoMetrics Advisory", contact: "Dr. Sarah Chen" },
+  { id: "s2", name: "CarbonClear Solutions", contact: "Emily Rodriguez" },
+  { id: "s3", name: "Transition Risk Partners", contact: "Robert Williams" },
+  { id: "s4", name: "SustainSustain", contact: "David Park" },
+  { id: "s5", name: "Lifecycle Data Labs", contact: "Dr. Patricia Smith" },
 ]
 
 // Global supplier database
 const globalSuppliersData = [
-  { id: "g1", name: "RecycleFirst Corp", contact: "Alex Turner", email: "alex@recyclefirst.com" },
-  { id: "g2", name: "EcoMaterials Global", contact: "Nina Patel", email: "nina@ecomaterials.com" },
-  { id: "g3", name: "GreenPrint Solutions", contact: "Tom Wilson", email: "tom@greenprint.com" },
+  { id: "g1", name: "PCAF Analytics Group", contact: "James Mitchell", email: "james@pcafgroup.com" },
+  { id: "g2", name: "GridShift Energy Advisors", contact: "Nina Patel", email: "nina@gridshift.com" },
+  { id: "g3", name: "Apex Environmental Consulting", contact: "Tom Wilson", email: "tom@apexenv.com" },
 ]
 
 // Thread statuses
