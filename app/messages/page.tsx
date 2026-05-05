@@ -288,6 +288,8 @@ export default function MessagesPage() {
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(new Set())
   const [searchQuery, setSearchQuery] = useState("")
+  const [rfpFilter, setRfpFilter] = useState<string | null>(null)
+  const [visibilityFilter, setVisibilityFilter] = useState<"all" | "private" | null>(null)
   const [composeOpen, setComposeOpen] = useState(false)
   
   // Compose state
@@ -319,7 +321,17 @@ export default function MessagesPage() {
         t.lastSender.toLowerCase().includes(query)
       )
     }
-    
+
+    // Apply RFP filter
+    if (rfpFilter) {
+      filtered = filtered.filter(t => t.rfpId === rfpFilter)
+    }
+
+    // Apply visibility filter
+    if (visibilityFilter) {
+      filtered = filtered.filter(t => t.visibility === visibilityFilter)
+    }
+
     // Apply folder filter
     switch (selectedFolder) {
       case "inbox":
@@ -509,18 +521,19 @@ export default function MessagesPage() {
   return (
     <DashboardShell>
       <div className="flex flex-col h-[calc(100vh-64px)]">
-        {/* Top Bar - Search + Compose */}
-        <div className="flex items-center gap-4 px-4 py-3 border-b border-[#E5E7EB] bg-white">
-          <div className="relative flex-1 max-w-2xl">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#9CA3AF]" />
-            <Input
-              placeholder="Search messages..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-[#F3F4F6] border-0 focus-visible:bg-white focus-visible:ring-1"
-            />
-          </div>
-          <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+        {/* Top Bar - Search + Filters + Compose */}
+        <div className="px-4 py-3 border-b border-[#E5E7EB] bg-white space-y-2">
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-2xl">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#9CA3AF]" />
+              <Input
+                placeholder="Search messages..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-10 bg-[#F3F4F6] border-0 focus-visible:bg-white focus-visible:ring-1"
+              />
+            </div>
+            <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
             <DialogTrigger asChild>
               <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white shadow-sm">
                 <Plus className="size-4 mr-2" />
@@ -712,6 +725,49 @@ export default function MessagesPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          </div>
+          {/* Filter Pills */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Select value={rfpFilter || "all"} onValueChange={(v) => setRfpFilter(v === "all" ? null : v)}>
+              <SelectTrigger className="h-8 text-xs w-auto min-w-[140px] border-[#E5E7EB] bg-white">
+                <SelectValue placeholder="All RFPs" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All RFPs</SelectItem>
+                {rfpsData.map(rfp => (
+                  <SelectItem key={rfp.id} value={rfp.id}>{rfp.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-1 bg-[#F3F4F6] rounded-md p-0.5">
+              {[
+                { key: null, label: "All" },
+                { key: "all", label: "Public" },
+                { key: "private", label: "Private" },
+              ].map(opt => (
+                <button
+                  key={String(opt.key)}
+                  onClick={() => setVisibilityFilter(opt.key as typeof visibilityFilter)}
+                  className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                    visibilityFilter === opt.key
+                      ? "bg-white text-[#111827] shadow-sm"
+                      : "text-[#6B7280] hover:text-[#111827]"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {(rfpFilter || visibilityFilter) && (
+              <button
+                onClick={() => { setRfpFilter(null); setVisibilityFilter(null) }}
+                className="text-xs text-[#6B7280] hover:text-[#111827] flex items-center gap-1"
+              >
+                <X className="size-3" />
+                Clear filters
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Main Content - 3 Column Layout */}
