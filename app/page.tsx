@@ -223,15 +223,11 @@ export default function BuyerDashboard() {
 
           {/* Right Column: Recent RFPs Table */}
           <Card className="border-[#E5E7EB] bg-white lg:col-span-3 overflow-hidden pt-0">
-            <CardHeader className="bg-white border-b border-[#E5E7EB]">
-              <CardTitle className="text-lg font-semibold text-[#111827]">
-                Recent RFPs
-              </CardTitle>
-              <CardDescription className="text-[#6B7280]">
-                Your most recent procurement activities
-              </CardDescription>
-            </CardHeader>
             <CardContent className="p-0">
+              <div className="px-6 py-4 border-b border-[#E5E7EB]">
+                <h3 className="text-base font-semibold text-[#111827]">Recent RFPs</h3>
+                <p className="text-sm text-[#6B7280] mt-0.5">Your most recent procurement activities</p>
+              </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
