@@ -1789,7 +1789,11 @@ export default function TenderDetailPage() {
                   </thead>
                   <tbody className="divide-y divide-[#E5E7EB]">
                     {submissionsData.map(submission => (
-                      <tr key={submission.id} className="hover:bg-[#F3F4F6] transition-colors">
+                      <tr 
+                        key={submission.id} 
+                        className="hover:bg-[#F3F4F6] transition-colors cursor-pointer"
+                        onClick={() => router.push(`/tenders/${params.id}/submissions/${submission.id}`)}
+                      >
                         <td className="px-3 py-3">
                           <div className="flex items-center gap-2">
                             <Avatar className="size-7">
