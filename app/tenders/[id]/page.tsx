@@ -699,7 +699,7 @@ const tabs = [
   { key: "team", label: "Team", count: teamMembersData.length },
   { key: "documents", label: "Documents", count: documentsData.length },
   { key: "submissions", label: "Submissions", count: tenderData.submissions },
-  { key: "criteria", label: "Evaluation Criteria" },
+  { key: "criteria", label: "Evaluation" },
   { key: "qa", label: "Q&A", count: qaThreadsData.length },
   { key: "results", label: "Results" },
   { key: "activity", label: "Activity" },
