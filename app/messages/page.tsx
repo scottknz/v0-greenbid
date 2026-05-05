@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { DashboardShell } from "@/components/shell/DashboardShell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -518,7 +519,8 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <DashboardShell>
+    <div className="space-y-6 p-5">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -1184,5 +1186,6 @@ export default function MessagesPage() {
         </Card>
       </div>
     </div>
+    </DashboardShell>
   )
 }
