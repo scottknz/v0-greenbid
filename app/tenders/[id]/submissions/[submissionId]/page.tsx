@@ -702,35 +702,8 @@ export default function SubmissionDetailPage() {
         {/* Summary Tab */}
         {activeTab === "summary" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content - Results */}
+            {/* Main Content - Evaluation Results first */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Submission Summary Card */}
-              <Card className="border-[#E5E7EB] bg-white">
-                <CardHeader>
-                  <CardTitle className="text-lg">Submission Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-4 bg-[#F9FAFB] rounded-lg">
-                      <p className="text-sm text-[#6B7280]">Total Documents</p>
-                      <p className="text-2xl font-bold text-[#111827]">{submission.documents.length}</p>
-                    </div>
-                    <div className="p-4 bg-[#F9FAFB] rounded-lg">
-                      <p className="text-sm text-[#6B7280]">Team Members</p>
-                      <p className="text-2xl font-bold text-[#111827]">{submission.team.length}</p>
-                    </div>
-                    <div className="p-4 bg-[#F9FAFB] rounded-lg">
-                      <p className="text-sm text-[#6B7280]">Proposed Hours</p>
-                      <p className="text-2xl font-bold text-[#111827]">{submission.totalHours}</p>
-                    </div>
-                    <div className="p-4 bg-[#F9FAFB] rounded-lg">
-                      <p className="text-sm text-[#6B7280]">Completion</p>
-                      <p className="text-2xl font-bold text-[#111827]">{submission.completionDate}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Evaluation Results */}
             <Card className="border-[#E5E7EB] bg-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -907,6 +880,34 @@ export default function SubmissionDetailPage() {
               </CardContent>
             </Card>
 
+            {/* Submission Summary */}
+            <Card className="border-[#E5E7EB] bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-[#6B7280]">Submission Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[#6B7280]">Total Documents</span>
+                  <span className="text-sm font-medium text-[#111827]">{submission.documents.length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[#6B7280]">Total Activities</span>
+                  <span className="text-sm font-medium text-[#111827]">{submission.activities.length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[#6B7280]">Team Members</span>
+                  <span className="text-sm font-medium text-[#111827]">{submission.team.length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[#6B7280]">Proposed Hours</span>
+                  <span className="text-sm font-medium text-[#111827]">{submission.totalHours}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-[#6B7280]">Completion Date</span>
+                  <span className="text-sm font-medium text-[#111827]">{submission.completionDate}</span>
+                </div>
+              </CardContent>
+            </Card>
             </div>
         </div>
         )}
