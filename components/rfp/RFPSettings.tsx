@@ -1,6 +1,6 @@
 'use client';
 
-import { RFPDocument } from '@/types/rfp';
+import { RFP } from '@/types/rfp';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -17,8 +17,8 @@ import {
 } from '@/components/ui/dialog';
 
 interface RFPSettingsProps {
-  rfp: RFPDocument;
-  onUpdate: (updates: Partial<RFPDocument>) => void;
+  rfp: RFP;
+  onUpdate: (updates: Partial<RFP>) => void;
 }
 
 export function RFPSettings({ rfp, onUpdate }: RFPSettingsProps) {

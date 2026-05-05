@@ -1,6 +1,6 @@
 'use client';
 
-import { RFPDocument, RFPVersion } from '@/types/rfp';
+import { RFP, RFPVersion } from '@/types/rfp';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { Clock, RotateCcw, Trash2, ChevronDown } from 'lucide-react';
 
 interface VersionHistoryProps {
-  rfp: RFPDocument;
+  rfp: RFP;
   onRestore: (version: RFPVersion) => void;
 }
 
@@ -31,10 +31,10 @@ export function VersionHistory({ rfp, onRestore }: VersionHistoryProps) {
       </div>
       
       {rfp.versions.map((version, index) => (
-        <Card key={`version-${version.version}`} className="p-4">
+        <Card key={version.id} className="p-4">
           <button
             onClick={() => setExpandedVersion(
-              expandedVersion === `v-${version.version}` ? null : `v-${version.version}`
+              expandedVersion === version.id ? null : version.id
             )}
             className="w-full flex items-center justify-between hover:bg-muted/50 p-2 rounded transition-colors"
           >
@@ -55,12 +55,12 @@ export function VersionHistory({ rfp, onRestore }: VersionHistoryProps) {
             </div>
             <ChevronDown
               className={`w-4 h-4 text-text-muted-foreground transition-transform ${
-                expandedVersion === `v-${version.version}` ? 'rotate-180' : ''
+                expandedVersion === version.id ? 'rotate-180' : ''
               }`}
             />
           </button>
 
-          {expandedVersion === `v-${version.version}` && (
+          {expandedVersion === version.id && (
             <div className="mt-4 pt-4 border-t border-border space-y-3">
               <div className="text-sm text-text-muted-foreground">
                 <p>Sections: {version.sections.length}</p>

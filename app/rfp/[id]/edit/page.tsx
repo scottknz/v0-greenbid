@@ -7,7 +7,7 @@ import { RFPEditor } from '@/components/rfp/RFPEditor';
 import { RFPCopilot } from '@/components/rfp/RFPCopilot';
 import { VersionHistory } from '@/components/rfp/VersionHistory';
 import { RFPSettings } from '@/components/rfp/RFPSettings';
-import { getRFPById, updateRFP, createRFPVersion } from '@/lib/mock-rfp';
+import { getRFPById, updateRFP, createRFPVersion, saveRFP } from '@/lib/mock-rfp';
 import { RFPDocument, RFPVersion } from '@/types/rfp';
 import { Button } from '@/components/ui/button';
 import { FileText, Eye, Download, Save, ChevronDown } from 'lucide-react';
@@ -43,8 +43,10 @@ export default function RFPEditPage() {
         const draftRFP = sessionStorage.getItem('draft-rfp');
         if (draftRFP) {
           try {
-            const data = JSON.parse(draftRFP);
-            setRfp(data as RFPDocument);
+            const data = JSON.parse(draftRFP) as RFPDocument;
+            // Save to the store immediately for persistence
+            saveRFP(data);
+            setRfp(data);
             // Clear the draft from sessionStorage after loading
             sessionStorage.removeItem('draft-rfp');
             setLoading(false);
@@ -54,9 +56,14 @@ export default function RFPEditPage() {
           }
         }
 
-        // Otherwise try to load from mock data
+        // Otherwise try to load from the store
         const data = getRFPById(rfpId);
-        setRfp(data);
+        if (data) {
+          setRfp(data);
+        } else {
+          // RFP not found in store or sessionStorage
+          console.error('RFP not found:', rfpId);
+        }
       } catch (error) {
         console.error('Failed to load RFP:', error);
       } finally {
