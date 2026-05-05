@@ -560,10 +560,10 @@ const companyMembersData = [
 const tabs = [
   { key: "overview", label: "Overview" },
   { key: "team", label: "Team", count: teamMembersData.length },
+  { key: "documents", label: "Documents", count: documentsData.length },
   { key: "submissions", label: "Submissions", count: tenderData.submissions },
   { key: "criteria", label: "Evaluation Criteria" },
   { key: "results", label: "Results" },
-  { key: "documents", label: "Documents", count: documentsData.length },
   { key: "activity", label: "Activity" },
 ]
 
@@ -1113,35 +1113,26 @@ export default function TenderDetailPage() {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-[#E5E7EB]">
-          <nav className="flex gap-6" aria-label="Tabs">
+        <div className="border-b border-[#E5E7EB] bg-[#FAFAFA]">
+          <nav className="flex gap-1" aria-label="Tabs">
             {tabs.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`relative pb-3 text-sm font-medium transition-colors ${
+                className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
                   activeTab === tab.key
-                    ? "text-[#16A34A]"
-                    : "text-[#6B7280] hover:text-[#111827]"
+                    ? "text-[#16A34A] border-[#16A34A] bg-white"
+                    : "text-[#6B7280] hover:text-[#111827] border-transparent hover:border-[#D1D5DB]"
                 }`}
               >
                 <span className="flex items-center gap-2">
                   {tab.label}
                   {tab.count !== undefined && (
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${
-                        activeTab === tab.key
-                          ? "bg-[#F0FDF4] text-[#16A34A]"
-                          : "bg-[#F3F4F6] text-[#6B7280]"
-                      }`}
-                    >
+                    <span className="text-xs font-semibold text-[#6B7280] group-hover:text-[#111827]">
                       {tab.count}
                     </span>
                   )}
                 </span>
-                {activeTab === tab.key && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#16A34A]" />
-                )}
               </button>
             ))}
           </nav>
