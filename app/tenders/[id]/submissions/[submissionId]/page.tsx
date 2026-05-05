@@ -104,9 +104,9 @@ const submissionsData: Record<string, {
       { id: "a7", type: "upload", action: "Document uploaded", detail: "Uploaded Certifications.pdf", timestamp: "2026-03-14T09:45:00" },
       { id: "a8", type: "communication", action: "Question submitted", detail: "Asked clarification about sustainability requirements", timestamp: "2026-03-12T11:00:00" },
       { id: "a9", type: "document_access", action: "Document viewed", detail: "Viewed Budget Breakdown.xlsx", timestamp: "2026-03-10T15:20:00" },
-      { id: "a10", type: "login", action: "Portal login", detail: "Logged into tender portal", timestamp: "2026-03-10T15:15:00" },
+      { id: "a10", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-10T15:15:00" },
       { id: "a11", type: "communication", action: "Message received", detail: "Received response to clarification request", timestamp: "2026-03-08T09:00:00" },
-      { id: "a12", type: "login", action: "Portal login", detail: "Logged into tender portal", timestamp: "2026-03-05T10:00:00" },
+      { id: "a12", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-05T10:00:00" },
     ],
   },
   s2: {
@@ -146,7 +146,7 @@ const submissionsData: Record<string, {
       { id: "a2", type: "form_submission", action: "Form submitted", detail: "Completed submission form", timestamp: "2026-03-18T15:50:00" },
       { id: "a3", type: "upload", action: "Document uploaded", detail: "Uploaded Cost Breakdown.xlsx", timestamp: "2026-03-18T15:45:00" },
       { id: "a4", type: "document_access", action: "Document viewed", detail: "Viewed RFP Document.pdf", timestamp: "2026-03-17T11:00:00" },
-      { id: "a5", type: "login", action: "Portal login", detail: "Logged into tender portal", timestamp: "2026-03-17T10:55:00" },
+      { id: "a5", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-17T10:55:00" },
     ],
   },
   s3: {
@@ -192,7 +192,7 @@ const submissionsData: Record<string, {
       { id: "a4", type: "communication", action: "Question submitted", detail: "Asked about timeline flexibility", timestamp: "2026-03-19T14:00:00" },
       { id: "a5", type: "upload", action: "Document uploaded", detail: "Uploaded Case Studies.pdf", timestamp: "2026-03-19T10:30:00" },
       { id: "a6", type: "document_access", action: "Document downloaded", detail: "Downloaded all RFP documents", timestamp: "2026-03-15T09:00:00" },
-      { id: "a7", type: "login", action: "Portal login", detail: "Logged into tender portal", timestamp: "2026-03-15T08:55:00" },
+      { id: "a7", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-15T08:55:00" },
     ],
   },
   s4: {
@@ -222,7 +222,7 @@ const submissionsData: Record<string, {
       { id: "a1", type: "upload", action: "Document uploaded", detail: "Uploaded Proposal Document.pdf", timestamp: "2026-03-22T10:00:00" },
       { id: "a2", type: "form_submission", action: "Form submitted", detail: "Completed submission form", timestamp: "2026-03-22T09:55:00" },
       { id: "a3", type: "document_access", action: "Document viewed", detail: "Viewed RFP Document.pdf", timestamp: "2026-03-21T14:00:00" },
-      { id: "a4", type: "login", action: "Portal login", detail: "Logged into tender portal", timestamp: "2026-03-21T13:55:00" },
+      { id: "a4", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-21T13:55:00" },
     ],
   },
   s5: {
@@ -256,7 +256,7 @@ const submissionsData: Record<string, {
       { id: "a3", type: "form_submission", action: "Form submitted", detail: "Completed submission form", timestamp: "2026-03-25T14:20:00" },
       { id: "a4", type: "document_access", action: "Document downloaded", detail: "Downloaded RFP Document.pdf", timestamp: "2026-03-24T11:00:00" },
       { id: "a5", type: "upload", action: "Document uploaded", detail: "Uploaded Certifications.pdf", timestamp: "2026-03-24T10:30:00" },
-      { id: "a6", type: "login", action: "Portal login", detail: "Logged into tender portal", timestamp: "2026-03-24T10:25:00" },
+      { id: "a6", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-24T10:25:00" },
     ],
   },
 }
@@ -350,21 +350,21 @@ Account Manager, EcoSupply Co.`,
     },
     {
       id: "c3",
-      subject: "Welcome to the Sustainable Office Supplies Tender",
+      subject: "Welcome to the Sustainable Office Supplies RFP",
       from: { name: "GreenBid Platform", email: "notifications@greenbid.com" },
       to: { name: "John Smith", email: "john.smith@ecosupply.com" },
       date: "2026-03-05T10:00:00",
-      preview: "You have been invited to participate in the Sustainable Office Supplies tender...",
+      preview: "You have been invited to participate in the Sustainable Office Supplies RFP...",
       body: `Dear John Smith,
 
-You have been invited to participate in the Sustainable Office Supplies tender by GreenBid Corp.
+You have been invited to submit a proposal for the Sustainable Office Supplies RFP by GreenBid Corp.
 
-Tender Details:
+RFP Details:
 - Title: Sustainable Office Supplies
 - Submission Deadline: April 15, 2026
 - Estimated Value: $120,000
 
-To access the tender documents and submit your proposal, please log in to your supplier portal.
+To access the RFP documents and submit your proposal, please log in to your supplier portal.
 
 If you have any questions, please contact the procurement team.
 
@@ -380,10 +380,10 @@ GreenBid Platform`,
       from: { name: "GreenBid Platform", email: "notifications@greenbid.com" },
       to: { name: "Emma Davis", email: "emma.davis@greenoffice.com" },
       date: "2026-03-18T16:05:00",
-      preview: "Your submission has been received successfully...",
+      preview: "Your proposal has been received successfully...",
       body: `Dear Emma Davis,
 
-Your submission for the Sustainable Office Supplies tender has been received successfully.
+Your proposal for the Sustainable Office Supplies RFP has been received successfully.
 
 Submission Details:
 - Submission ID: S2-GO-2026
@@ -427,7 +427,7 @@ Budget Reviewer`,
       id: "c2",
       subject: "Question: Timeline Flexibility",
       from: { name: "Michael Brown", email: "m.brown@sustainablesolutions.com" },
-      to: { name: "Tender Team", email: "procurement@greenbid.com" },
+      to: { name: "Procurement Team", email: "procurement@greenbid.com" },
       date: "2026-03-19T14:00:00",
       preview: "Hello, I would like to inquire about the project timeline flexibility...",
       body: `Hello,

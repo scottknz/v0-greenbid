@@ -121,15 +121,15 @@ export default function BuyerDashboard() {
         {/* Top Row: Metric Cards */}
         <div className="grid gap-4 grid-cols-1 md:grid-cols-4">
           <MetricCard
-            title="Open Tenders"
+            title="Open RFPs"
             value="5"
-            description="Accepting submissions"
+            description="Accepting proposals"
             icon={FileText}
             iconColor="text-[#16A34A]"
             iconBg="bg-[#F0FDF4]"
           />
           <MetricCard
-            title="Active Tenders"
+            title="Active RFPs"
             value="12"
             description="3 closing this week"
             icon={FileText}
@@ -203,7 +203,7 @@ export default function BuyerDashboard() {
                   time="2 hours ago"
                 />
                 <ActivityItem
-                  action="Tender published"
+                  action="RFP published"
                   detail="Sustainable Office Supplies 2026"
                   time="Yesterday"
                 />
@@ -221,11 +221,11 @@ export default function BuyerDashboard() {
             </Card>
           </div>
 
-          {/* Right Column: Recent Tenders Table */}
+          {/* Right Column: Recent RFPs Table */}
           <Card className="border-[#E5E7EB] bg-white lg:col-span-3">
             <CardHeader className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
               <CardTitle className="text-lg font-semibold text-[#111827]">
-                Recent Tenders
+                Recent RFPs
               </CardTitle>
               <CardDescription className="text-[#6B7280]">
                 Your most recent procurement activities
@@ -237,7 +237,7 @@ export default function BuyerDashboard() {
                   <thead>
                     <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
                       <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                        Tender Name
+                        RFP Name
                       </th>
                       <SortableHeader
                         label="Status"

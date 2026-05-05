@@ -120,10 +120,10 @@ export function Sidebar({ variant }: SidebarProps) {
             'bg-brand-green text-white hover:bg-brand-green/90',
             isSidebarCollapsed ? 'h-9 w-9 p-0' : ''
           )}
-          aria-label="New Tender"
+          aria-label="Create RFP"
         >
           <Plus className="h-4 w-4 shrink-0" />
-          {!isSidebarCollapsed && <span>New Tender</span>}
+          {!isSidebarCollapsed && <span>Create RFP</span>}
         </Link>
         <div className="h-2" />
         {renderNavItems(mainItems)}

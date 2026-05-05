@@ -72,7 +72,7 @@ const tenderData = {
   referenceId: "TND-2026-001",
   status: "active" as const,
   category: "Office Supplies",
-  description: "Procurement of sustainable and eco-friendly office supplies including recycled paper products, biodegradable pens and markers, energy-efficient desk accessories, and environmentally certified furniture items. This tender aims to reduce our carbon footprint while maintaining high-quality standards for workplace materials.",
+  description: "Procurement of sustainable and eco-friendly office supplies including recycled paper products, biodegradable pens and markers, energy-efficient desk accessories, and environmentally certified furniture items. This RFP aims to reduce our carbon footprint while maintaining high-quality standards for workplace materials.",
   requirements: [
     "All paper products must contain minimum 80% post-consumer recycled content",
     "Plastic items must be recyclable or biodegradable",
@@ -84,11 +84,11 @@ const tenderData = {
     { 
       name: "Content", 
       weight: 15,
-      instructions: "Assess whether the supplier has provided all required documentation and addressed all sections of the tender. Look for completeness of responses and adherence to submission guidelines.",
+      instructions: "Assess whether the supplier has provided all required documentation and addressed all sections of the RFP. Look for completeness of responses and adherence to submission guidelines.",
       instructionsSaved: true,
       subcategories: [
         { name: "Documentation completeness", description: "Verify all required documents are submitted including company profile, technical proposal, pricing, certifications, and references.", saved: true },
-        { name: "Response coverage", description: "Check that all sections of the tender specification have been addressed with appropriate detail and clarity.", saved: true },
+        { name: "Response coverage", description: "Check that all sections of the RFP specification have been addressed with appropriate detail and clarity.", saved: true },
         { name: "Compliance with requirements", description: "Confirm adherence to mandatory requirements including format, deadlines, and submission guidelines.", saved: true }
       ]
     },
@@ -305,7 +305,7 @@ const assessmentData: Record<string, {
         actualScore: 95,
         subcategories: [
           { name: "Documentation completeness", aiScore: 98, actualScore: 98, aiJustification: "All required documents have been submitted including company profile, technical proposal, pricing schedule, certifications, and references. The submission follows the required format and structure.", humanJustification: "" },
-          { name: "Response coverage", aiScore: 94, actualScore: 94, aiJustification: "The proposal addresses 94% of the requirements outlined in the tender specification. Minor gaps identified in the waste management section.", humanJustification: "" },
+          { name: "Response coverage", aiScore: 94, actualScore: 94, aiJustification: "The proposal addresses 94% of the requirements outlined in the RFP specification. Minor gaps identified in the waste management section.", humanJustification: "" },
           { name: "Compliance with requirements", aiScore: 93, actualScore: 93, aiJustification: "Strong compliance with ISO 14001 requirements. All paper products exceed the 80% recycled content threshold. Delivery vehicles confirmed as Euro 6 compliant.", humanJustification: "" },
         ]
       },
@@ -383,7 +383,7 @@ const assessmentData: Record<string, {
         actualScore: 85,
         subcategories: [
           { name: "Product/service quality", aiScore: 86, actualScore: 86, aiJustification: "Good quality products with consistent customer feedback. Some variation noted in batch quality.", humanJustification: "" },
-          { name: "Quality certifications", aiScore: 84, actualScore: 84, aiJustification: "ISO 9001 certified. EU Ecolabel for 65% of product range - below tender preference.", humanJustification: "" },
+          { name: "Quality certifications", aiScore: 84, actualScore: 84, aiJustification: "ISO 9001 certified. EU Ecolabel for 65% of product range - below RFP preference.", humanJustification: "" },
           { name: "Quality management processes", aiScore: 85, actualScore: 85, aiJustification: "Standard QMS in place with documented procedures. Room for improvement in traceability.", humanJustification: "" },
         ]
       },
@@ -504,7 +504,7 @@ const assessmentData: Record<string, {
 }
 
 const documentsData = [
-  { name: "Tender Specification Document.pdf", type: "PDF", size: "2.4 MB", uploadedDate: "Mar 1, 2026", uploadedBy: "Sarah Chen" },
+  { name: "RFP Specification Document.pdf", type: "PDF", size: "2.4 MB", uploadedDate: "Mar 1, 2026", uploadedBy: "Sarah Chen" },
   { name: "ESG Requirements Checklist.xlsx", type: "Excel", size: "156 KB", uploadedDate: "Mar 1, 2026", uploadedBy: "Sarah Chen" },
   { name: "Supplier Questionnaire Template.docx", type: "Word", size: "89 KB", uploadedDate: "Mar 2, 2026", uploadedBy: "Sarah Chen" },
   { name: "Budget Breakdown.xlsx", type: "Excel", size: "234 KB", uploadedDate: "Mar 3, 2026", uploadedBy: "James Wilson" },
@@ -534,11 +534,11 @@ const activityData = [
   { id: "a11", type: "document", action: "Document uploaded", detail: "Technical Requirements v2.pdf uploaded", person: "James Wilson", date: "2026-03-10", time: "9:00 AM" },
   { id: "a12", type: "team", action: "Team member added", detail: "Emily Rodriguez joined as ESG Evaluator", person: "Sarah Chen", date: "2026-03-08", time: "2:00 PM" },
   { id: "a13", type: "document", action: "Document uploaded", detail: "Budget Breakdown.xlsx added", person: "James Wilson", date: "2026-03-03", time: "3:45 PM" },
-  { id: "a14", type: "tender", action: "Supplier invited", detail: "5 additional suppliers invited to tender", person: "Sarah Chen", date: "2026-03-02", time: "10:30 AM" },
-  { id: "a15", type: "tender", action: "Tender published", detail: "Tender made available to invited suppliers", person: "Sarah Chen", date: "2026-03-01", time: "9:00 AM" },
+  { id: "a14", type: "tender", action: "Supplier invited", detail: "5 additional suppliers invited to RFP", person: "Sarah Chen", date: "2026-03-02", time: "10:30 AM" },
+  { id: "a15", type: "tender", action: "RFP published", detail: "RFP made available to invited suppliers", person: "Sarah Chen", date: "2026-03-01", time: "9:00 AM" },
   { id: "a16", type: "document", action: "Document uploaded", detail: "RFP Document.pdf uploaded", person: "Sarah Chen", date: "2026-02-28", time: "4:00 PM" },
   { id: "a17", type: "team", action: "Team member added", detail: "James Wilson joined as Budget Reviewer", person: "Sarah Chen", date: "2026-02-26", time: "11:00 AM" },
-  { id: "a18", type: "tender", action: "Tender created", detail: "Initial tender draft created", person: "Sarah Chen", date: "2026-02-25", time: "2:00 PM" },
+  { id: "a18", type: "tender", action: "RFP created", detail: "Initial RFP draft created", person: "Sarah Chen", date: "2026-02-25", time: "2:00 PM" },
 ]
 
 // Team members for this tender
@@ -782,7 +782,7 @@ export default function TenderDetailPage() {
     
     // In production, this would call an AI API
     const aiDescriptions: Record<string, string> = {
-      default: `Evaluate the ${subcategory.name.toLowerCase()} aspect within the context of ${criteria.name.toLowerCase()}. Consider relevant documentation, evidence, and alignment with tender requirements.`
+      default: `Evaluate the ${subcategory.name.toLowerCase()} aspect within the context of ${criteria.name.toLowerCase()}. Consider relevant documentation, evidence, and alignment with RFP requirements.`
     }
     
     const description = aiDescriptions.default
@@ -829,7 +829,7 @@ export default function TenderDetailPage() {
   const generateCriteriaFromRfp = async () => {
     setGeneratingFromRfp(true)
     // Simulate AI processing the RFP documents and requirements
-    // In production, this would analyze uploaded RFP documents and tender requirements
+    // In production, this would analyze uploaded RFP documents and requirements
     await new Promise(resolve => setTimeout(resolve, 1500))
     
     // Generate criteria based on RFP content (simulated AI response)
@@ -999,7 +999,7 @@ export default function TenderDetailPage() {
             onClick={() => router.push("/tenders")}
           >
             <ArrowLeft className="size-4 mr-1" />
-            Back to Tenders
+            Back to RFPs
           </Button>
         </div>
 
@@ -1040,7 +1040,7 @@ export default function TenderDetailPage() {
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Copy className="size-4 mr-2" />
-                  Duplicate Tender
+                  Duplicate RFP
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Download className="size-4 mr-2" />
@@ -1049,7 +1049,7 @@ export default function TenderDetailPage() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-red-600">
                   <Archive className="size-4 mr-2" />
-                  Archive Tender
+                  Archive RFP
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -1145,7 +1145,7 @@ export default function TenderDetailPage() {
               {/* Description */}
               <Card className="border-[#E5E7EB] bg-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle className="text-lg">Tender Description</CardTitle>
+                  <CardTitle className="text-lg">RFP Description</CardTitle>
                   <div className="flex items-center gap-1">
                     {!descriptionEdit.saved && (
                       <>
@@ -1157,7 +1157,7 @@ export default function TenderDetailPage() {
                             // In production, call AI API
                             setDescriptionEdit(prev => ({ 
                               ...prev, 
-                              text: "This tender seeks qualified suppliers for sustainable office supplies to support our organization's environmental commitments. We require eco-friendly products that meet strict sustainability criteria while maintaining quality and cost-effectiveness.",
+                              text: "This RFP seeks qualified suppliers for sustainable office supplies to support our organization's environmental commitments. We require eco-friendly products that meet strict sustainability criteria while maintaining quality and cost-effectiveness.",
                               saved: false 
                             }))
                           }}
@@ -1197,7 +1197,7 @@ export default function TenderDetailPage() {
                       value={descriptionEdit.text}
                       onChange={(e) => setDescriptionEdit(prev => ({ ...prev, text: e.target.value }))}
                       className="min-h-[100px] text-sm text-[#6B7280]"
-                      placeholder="Enter tender description..."
+                      placeholder="Enter RFP description..."
                     />
                   )}
                 </CardContent>
@@ -1206,7 +1206,7 @@ export default function TenderDetailPage() {
               {/* Requirements */}
               <Card className="border-[#E5E7EB] bg-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle className="text-lg">Tender Requirements</CardTitle>
+                  <CardTitle className="text-lg">RFP Requirements</CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -1509,7 +1509,7 @@ export default function TenderDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-[#111827]">Team Members</h3>
-                <p className="text-sm text-[#6B7280]">{teamMembers.length} people assigned to this tender</p>
+                <p className="text-sm text-[#6B7280]">{teamMembers.length} people assigned to this RFP</p>
               </div>
               <div className="flex items-center gap-2">
                 <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
@@ -1761,7 +1761,7 @@ export default function TenderDetailPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-sm text-[#6B7280]">
-                {tenderData.submissions} submissions received from {tenderData.invitedSuppliers} invited suppliers
+                {tenderData.submissions} proposals received from {tenderData.invitedSuppliers} invited suppliers
               </p>
               <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
                 <Send className="size-4 mr-2" />

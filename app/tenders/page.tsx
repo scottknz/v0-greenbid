@@ -258,15 +258,15 @@ export default function TendersPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-[#111827]">
-              Tenders
+              RFPs
             </h1>
             <p className="text-sm text-[#6B7280]">
-              Manage and track all your procurement tenders
+              Manage and track all your procurement RFPs
             </p>
           </div>
           <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
             <Plus className="size-4 mr-2" />
-            New Tender
+            Create RFP
           </Button>
         </div>
 
@@ -308,7 +308,7 @@ export default function TendersPage() {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#9CA3AF]" />
             <Input
-              placeholder="Search tenders by name, ID, category, or owner..."
+              placeholder="Search RFPs by name, ID, category, or owner..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="pl-10 border-[#E5E7EB] bg-white"
@@ -347,7 +347,7 @@ export default function TendersPage() {
                       />
                     </th>
                     <SortableHeader
-                      label="Tender Name"
+                      label="RFP Name"
                       field="name"
                       currentField={sortField}
                       direction={sortDirection}
@@ -410,7 +410,7 @@ export default function TendersPage() {
 
               {filteredTenders.length === 0 && (
                 <div className="py-12 text-center">
-                  <p className="text-[#6B7280]">No tenders found matching your criteria.</p>
+                  <p className="text-[#6B7280]">No RFPs found matching your criteria.</p>
                 </div>
               )}
             </div>
@@ -420,7 +420,7 @@ export default function TendersPage() {
         {/* Pagination */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-[#6B7280]">
-            Showing {filteredTenders.length} of {allTendersData.length} tenders
+            Showing {filteredTenders.length} of {allTendersData.length} RFPs
           </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="border-[#E5E7EB]" disabled>
