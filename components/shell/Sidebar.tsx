@@ -119,7 +119,7 @@ export function Sidebar({ variant }: SidebarProps) {
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-4">
         <Link
-          href="/tenders/new"
+          href="/rfp/create"
           className={cn(
             'group flex w-full items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
             'bg-brand-green text-white hover:bg-brand-green/90',

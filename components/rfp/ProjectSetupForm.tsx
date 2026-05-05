@@ -91,7 +91,7 @@ export function ProjectSetupForm({
               </Label>
               <Input
                 id="projectName"
-                placeholder="e.g., Sustainable Office Supplies 2026"
+                placeholder="e.g., Comprehensive Scope 3 Value Chain Emissions Analysis"
                 value={projectInfo.projectName || ''}
                 onChange={(e) => handleChange('projectName', e.target.value)}
                 className="border-border"
