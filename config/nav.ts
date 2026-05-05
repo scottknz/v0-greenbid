@@ -11,7 +11,7 @@ export interface NavItem {
 export const buyerNav: NavItem[] = [
   { label: 'Dashboard', href: '/', icon: 'LayoutDashboard', section: 'main' },
   { label: 'RFPs', href: '/tenders', icon: 'FileText', section: 'main' },
-  { label: 'Suppliers', href: '/suppliers', icon: 'Users', section: 'main' },
+  { label: 'Suppliers', href: '/buyer/suppliers', icon: 'Users', section: 'main' },
   { label: 'Messages', href: '/messages', icon: 'Mail', section: 'main', badgeCount: 2 },
   { label: 'Evaluations', href: '/evaluations', icon: 'ClipboardList', section: 'main' },
   { label: 'AI Copilot', href: '#', icon: 'MessageSquare', section: 'secondary', isChatTrigger: true },
