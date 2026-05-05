@@ -116,8 +116,11 @@ export function RFPInterview({
 
   // Start the interview with an intro message
   useEffect(() => {
+    // Prevent double initialization in React strict mode
+    if (messages.length > 0) return;
+
     const introMessage: InterviewMessage = {
-      id: 'intro',
+      id: `intro-${Date.now()}`,
       role: 'assistant',
       content: `Hello! I'm here to help you create a professional ${template.name}. I'll ask you a series of questions to gather all the information needed to generate a comprehensive RFP document.\n\nYou can answer in as much detail as you like - the more context you provide, the better the resulting document will be.\n\nLet's begin!`,
       timestamp: new Date(),
@@ -143,7 +146,7 @@ export function RFPInterview({
 
     setTimeout(() => {
       const questionMessage: InterviewMessage = {
-        id: `q-${index}`,
+        id: `q-${index}-${Date.now()}`,
         role: 'assistant',
         content: question.followUp 
           ? `${question.question}\n\n${question.followUp}`
@@ -166,7 +169,7 @@ export function RFPInterview({
     
     // Add user's response
     const userMessage: InterviewMessage = {
-      id: `a-${currentQuestionIndex}`,
+      id: `a-${currentQuestionIndex}-${Date.now()}`,
       role: 'user',
       content: inputValue,
       timestamp: new Date(),
@@ -185,7 +188,7 @@ export function RFPInterview({
       setTimeout(() => {
         // Add acknowledgment
         const ackMessage: InterviewMessage = {
-          id: `ack-${currentQuestionIndex}`,
+          id: `ack-${currentQuestionIndex}-${Date.now()}`,
           role: 'assistant',
           content: getAcknowledgment(currentQuestion.category),
           timestamp: new Date(),
@@ -240,7 +243,7 @@ export function RFPInterview({
     
     setTimeout(() => {
       const completionMessage: InterviewMessage = {
-        id: 'complete',
+        id: `complete-${Date.now()}`,
         role: 'assistant',
         content: "Thank you for providing all that information! I now have everything I need to generate your RFP document. Click the button below to proceed, and I'll create a comprehensive draft based on your responses.",
         timestamp: new Date(),

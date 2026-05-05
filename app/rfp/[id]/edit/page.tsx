@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { DashboardShell } from '@/components/shell/DashboardShell';
 import { RFPEditor } from '@/components/rfp/RFPEditor';
 import { getRFPById, updateRFP, createRFPVersion, saveRFP } from '@/lib/mock-rfp';
 import { RFPDocument } from '@/types/rfp';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 export default function RFPEditPage() {
   const params = useParams();
@@ -71,44 +71,38 @@ export default function RFPEditPage() {
 
   if (loading) {
     return (
-      <DashboardShell>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <Loader2 className="w-8 h-8 animate-spin text-brand-green mx-auto mb-4" />
-            <div className="text-lg font-medium text-text-primary">Loading RFP...</div>
-          </div>
+      <div className="flex items-center justify-center h-screen bg-background">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-brand-green mx-auto mb-4" />
+          <div className="text-lg font-medium text-text-primary">Loading RFP...</div>
         </div>
-      </DashboardShell>
+      </div>
     );
   }
 
   if (!rfp) {
     return (
-      <DashboardShell>
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <div className="text-lg font-medium text-text-primary mb-4">RFP not found</div>
-            <Link href="/tenders">
-              <Button variant="outline" className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to RFPs
-              </Button>
-            </Link>
-          </div>
+      <div className="flex items-center justify-center h-screen bg-background">
+        <div className="text-center">
+          <div className="text-lg font-medium text-text-primary mb-4">RFP not found</div>
+          <Link href="/tenders">
+            <Button variant="outline" className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back to RFPs
+            </Button>
+          </Link>
         </div>
-      </DashboardShell>
+      </div>
     );
   }
 
   return (
-    <DashboardShell>
-      <div className="h-full">
-        <RFPEditor 
-          rfp={rfp} 
-          onUpdate={handleUpdate}
-          onSave={handleSave}
-        />
-      </div>
-    </DashboardShell>
+    <div className="h-screen bg-background">
+      <RFPEditor 
+        rfp={rfp} 
+        onUpdate={handleUpdate}
+        onSave={handleSave}
+      />
+    </div>
   );
 }

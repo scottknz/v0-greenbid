@@ -6,6 +6,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import {
   Bold,
@@ -46,26 +47,19 @@ export function SectionEditor({
         heading: {
           levels: [2, 3, 4],
         },
-        bulletList: {
-          keepMarks: true,
-          keepAttributes: false,
-        },
-        orderedList: {
-          keepMarks: true,
-          keepAttributes: false,
-        },
       }),
       Placeholder.configure({
         placeholder: 'Start writing or use the AI prompt below to generate content...',
       }),
     ],
     content: section.content || '',
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       onUpdateContent(editor.getHTML());
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[300px] p-6',
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[300px] p-4',
       },
     },
   });
@@ -75,7 +69,7 @@ export function SectionEditor({
     if (editor && section.content !== editor.getHTML()) {
       editor.commands.setContent(section.content || '');
     }
-  }, [section.id, editor]);
+  }, [section.id]);
 
   const handleAIGenerate = async () => {
     if (!aiPrompt.trim() || !editor) return;
@@ -101,10 +95,8 @@ export function SectionEditor({
     const reader = new FileReader();
     reader.onload = (event) => {
       const base64 = event.target?.result as string;
-      // Insert image as HTML
-      editor.chain().focus().insertContent(
-        `<img src="${base64}" alt="Uploaded image" style="max-width: 100%; height: auto; margin: 1rem 0;" />`
-      ).run();
+      // Insert image as HTML since we're not using the Image extension
+      editor.chain().focus().insertContent(`<img src="${base64}" alt="Uploaded image" style="max-width: 100%; height: auto;" />`).run();
     };
     reader.readAsDataURL(file);
   };
@@ -138,7 +130,7 @@ export function SectionEditor({
         </div>
         <div className="flex items-center gap-2">
           {isUnsaved && (
-            <span className="text-xs text-amber-600">Unsaved changes</span>
+            <span className="text-xs text-warning">Unsaved changes</span>
           )}
           <Button
             onClick={onSaveSection}
@@ -163,9 +155,8 @@ export function SectionEditor({
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={cn(
             'h-8 w-8 p-0',
-            editor.isActive('bold') && 'bg-surface-hover text-brand-green'
+            editor.isActive('bold') && 'bg-surface-hover'
           )}
-          title="Bold"
         >
           <Bold className="w-4 h-4" />
         </Button>
@@ -175,9 +166,8 @@ export function SectionEditor({
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={cn(
             'h-8 w-8 p-0',
-            editor.isActive('italic') && 'bg-surface-hover text-brand-green'
+            editor.isActive('italic') && 'bg-surface-hover'
           )}
-          title="Italic"
         >
           <Italic className="w-4 h-4" />
         </Button>
@@ -188,9 +178,8 @@ export function SectionEditor({
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           className={cn(
             'h-8 w-8 p-0',
-            editor.isActive('heading', { level: 2 }) && 'bg-surface-hover text-brand-green'
+            editor.isActive('heading', { level: 2 }) && 'bg-surface-hover'
           )}
-          title="Heading 2"
         >
           <Heading2 className="w-4 h-4" />
         </Button>
@@ -200,9 +189,8 @@ export function SectionEditor({
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           className={cn(
             'h-8 w-8 p-0',
-            editor.isActive('heading', { level: 3 }) && 'bg-surface-hover text-brand-green'
+            editor.isActive('heading', { level: 3 }) && 'bg-surface-hover'
           )}
-          title="Heading 3"
         >
           <Heading3 className="w-4 h-4" />
         </Button>
@@ -213,9 +201,8 @@ export function SectionEditor({
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           className={cn(
             'h-8 w-8 p-0',
-            editor.isActive('bulletList') && 'bg-surface-hover text-brand-green'
+            editor.isActive('bulletList') && 'bg-surface-hover'
           )}
-          title="Bullet List"
         >
           <List className="w-4 h-4" />
         </Button>
@@ -225,9 +212,8 @@ export function SectionEditor({
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           className={cn(
             'h-8 w-8 p-0',
-            editor.isActive('orderedList') && 'bg-surface-hover text-brand-green'
+            editor.isActive('orderedList') && 'bg-surface-hover'
           )}
-          title="Numbered List"
         >
           <ListOrdered className="w-4 h-4" />
         </Button>
@@ -237,7 +223,6 @@ export function SectionEditor({
           size="sm"
           onClick={() => fileInputRef.current?.click()}
           className="h-8 w-8 p-0"
-          title="Insert Image"
         >
           <ImageIcon className="w-4 h-4" />
         </Button>
@@ -255,7 +240,6 @@ export function SectionEditor({
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
           className="h-8 w-8 p-0"
-          title="Undo"
         >
           <Undo className="w-4 h-4" />
         </Button>
@@ -265,7 +249,6 @@ export function SectionEditor({
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
           className="h-8 w-8 p-0"
-          title="Redo"
         >
           <Redo className="w-4 h-4" />
         </Button>
@@ -287,7 +270,7 @@ export function SectionEditor({
       {/* AI Prompt Section */}
       <div className="border-t border-border bg-surface p-4">
         <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-green/10 flex items-center justify-center">
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-green-light flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-brand-green" />
           </div>
           <div className="flex-1">
@@ -327,5 +310,9 @@ export function SectionEditor({
 
 // Mock content generator - in production, this would call an AI API
 function generateMockContent(sectionTitle: string, prompt: string): string {
-  return `<p>Based on your request to "${prompt}", here is additional content for the ${sectionTitle} section:</p><p>This content has been generated to assist with your RFP documentation. In a production environment, this would be generated by an AI model trained on RFP best practices and your organization's specific requirements.</p>`;
+  const responses: Record<string, string> = {
+    default: `<p>Based on your request to "${prompt}", here is additional content for this section:</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>`,
+  };
+
+  return responses.default;
 }
