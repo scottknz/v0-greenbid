@@ -575,9 +575,7 @@ export default function TenderDetailPage() {
   const [editableCriteria, setEditableCriteria] = useState(tenderData.evaluationCriteria)
   const [expandedCriteria, setExpandedCriteria] = useState<string[]>([])
   const [expandedEvalCriteria, setExpandedEvalCriteria] = useState<string[]>([])
-  const [selectedAssessment, setSelectedAssessment] = useState<string | null>(null)
-  const [assessmentScores, setAssessmentScores] = useState<Record<string, typeof assessmentData.s1>>(assessmentData)
-  const [expandedAiJustification, setExpandedAiJustification] = useState<Record<string, boolean>>({})
+
   const [ownerEditOpen, setOwnerEditOpen] = useState(false)
   const [editableOwner, setEditableOwner] = useState({ name: tenderData.owner, email: tenderData.ownerEmail })
   const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
@@ -911,50 +909,6 @@ export default function TenderDetailPage() {
     setExpandedEvalCriteria(prev => 
       prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
     )
-  }
-
-  const updateAssessmentScore = (submissionId: string, categoryIndex: number, subcategoryIndex: number, score: number) => {
-    setAssessmentScores(prev => {
-      const updated = { ...prev }
-      if (updated[submissionId]) {
-        updated[submissionId] = {
-          ...updated[submissionId],
-          categories: updated[submissionId].categories.map((cat, ci) => 
-            ci === categoryIndex ? {
-              ...cat,
-              subcategories: cat.subcategories.map((sub, si) => 
-                si === subcategoryIndex ? { ...sub, actualScore: score } : sub
-              )
-            } : cat
-          )
-        }
-      }
-      return updated
-    })
-  }
-
-  const updateAssessmentJustification = (submissionId: string, categoryIndex: number, subcategoryIndex: number, justification: string) => {
-    setAssessmentScores(prev => {
-      const updated = { ...prev }
-      if (updated[submissionId]) {
-        updated[submissionId] = {
-          ...updated[submissionId],
-          categories: updated[submissionId].categories.map((cat, ci) => 
-            ci === categoryIndex ? {
-              ...cat,
-              subcategories: cat.subcategories.map((sub, si) => 
-                si === subcategoryIndex ? { ...sub, humanJustification: justification } : sub
-              )
-            } : cat
-          )
-        }
-      }
-      return updated
-    })
-  }
-
-  const toggleAiJustification = (key: string) => {
-    setExpandedAiJustification(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
   const saveCriteria = () => {
@@ -2112,7 +2066,7 @@ export default function TenderDetailPage() {
         )}
 
         {/* Results Tab */}
-        {activeTab === "results" && !selectedAssessment && (
+        {activeTab === "results" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
@@ -2137,11 +2091,7 @@ export default function TenderDetailPage() {
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Risk</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted</th>
-                        <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Value</th>
-                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Hours</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Completion</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Contact</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Assessment</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E7EB]">
@@ -2206,30 +2156,16 @@ export default function TenderDetailPage() {
                               <span className="text-[#D1D5DB]">-</span>
                             )}
                           </td>
-                          <td className="px-3 py-3 text-right text-[#111827]">
-                            {formatBudget(submission.proposedValue)}
-                          </td>
-                          <td className="px-3 py-3 text-center text-[#6B7280]">
-                            {submission.totalHours}
-                          </td>
-                          <td className="px-3 py-3 text-[#6B7280]">
-                            {submission.completionDate}
-                          </td>
-                          <td className="px-3 py-3">
-                            <div>
-                              <p className="text-[#111827] text-xs">{submission.keyContact}</p>
-                              <p className="text-[#6B7280] text-xs truncate max-w-[120px]">{submission.keyContactEmail}</p>
-                            </div>
-                          </td>
                           <td className="px-4 py-3 text-center">
                             {submission.weightedScore ? (
                               <Button 
                                 variant="outline" 
                                 size="sm" 
                                 className="h-7 text-xs border-[#E5E7EB]"
-                                onClick={() => setSelectedAssessment(submission.id)}
+                                onClick={() => router.push(`/tenders/${params.id}/submissions/${submission.id}?tab=results`)}
                               >
-                                View
+                                <Pencil className="size-3 mr-1" />
+                                Edit
                               </Button>
                             ) : (
                               <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
@@ -2244,124 +2180,6 @@ export default function TenderDetailPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )}
-
-        {/* Detailed Assessment View */}
-        {activeTab === "results" && selectedAssessment && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-[#6B7280]"
-                onClick={() => setSelectedAssessment(null)}
-              >
-                <ArrowLeft className="size-4 mr-1" />
-                Back to Results
-              </Button>
-              <div>
-                <h3 className="text-lg font-semibold text-[#111827]">
-                  Assessment: {submissionsData.find(s => s.id === selectedAssessment)?.supplierName}
-                </h3>
-                <p className="text-sm text-[#6B7280]">
-                  Detailed evaluation breakdown with AI and human scores
-                </p>
-              </div>
-            </div>
-
-            {assessmentScores[selectedAssessment]?.categories.map((category, categoryIndex) => (
-              <Card key={category.name} className="border-[#E5E7EB] bg-white">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <CardTitle className="text-base">{category.name}</CardTitle>
-                      <Badge variant="outline" className="text-xs bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]">
-                        {editableCriteria.find(c => c.name === category.name)?.weight}% weight
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#6B7280]">AI Score:</span>
-                        <span className="font-medium text-[#6B7280]">{category.aiScore}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#6B7280]">Final Score:</span>
-                        <span className="font-semibold text-[#16A34A]">{category.actualScore}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <CardDescription className="mt-2">
-                    {editableCriteria.find(c => c.name === category.name)?.instructions}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {category.subcategories.map((sub, subIndex) => {
-                    const justificationKey = `${selectedAssessment}-${categoryIndex}-${subIndex}`
-                    return (
-                      <div key={sub.name} className="border border-[#E5E7EB] rounded-lg p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-[#111827]">{sub.name}</span>
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="text-[#6B7280]">AI:</span>
-                              <span className="font-medium text-[#6B7280]">{sub.aiScore}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-[#6B7280]">Score:</span>
-                              <Input
-                                type="number"
-                                value={sub.actualScore}
-                                onChange={(e) => updateAssessmentScore(selectedAssessment, categoryIndex, subIndex, parseInt(e.target.value) || 0)}
-                                className="w-16 h-8 text-center text-sm font-semibold text-[#16A34A]"
-                                min={0}
-                                max={100}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* AI Justification - Collapsible */}
-                        <Collapsible
-                          open={expandedAiJustification[justificationKey]}
-                          onOpenChange={() => toggleAiJustification(justificationKey)}
-                        >
-                          <CollapsibleTrigger className="flex items-center gap-2 text-xs text-[#6B7280] hover:text-[#111827]">
-                            <ChevronDown className={`size-3 transition-transform ${expandedAiJustification[justificationKey] ? 'rotate-180' : ''}`} />
-                            AI Justification
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <p className="mt-2 text-sm text-[#6B7280] bg-[#F3F4F6] rounded p-3 italic">
-                              {sub.aiJustification}
-                            </p>
-                          </CollapsibleContent>
-                        </Collapsible>
-
-                        {/* Human Justification - Editable */}
-                        <div className="space-y-2">
-                          <Label className="text-xs text-[#6B7280]">Final Justification</Label>
-                          <Textarea
-                            value={sub.humanJustification || sub.aiJustification}
-                            onChange={(e) => updateAssessmentJustification(selectedAssessment, categoryIndex, subIndex, e.target.value)}
-                            placeholder="Edit or add to the AI-generated justification..."
-                            className="min-h-[60px] text-sm"
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </CardContent>
-              </Card>
-            ))}
-
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" className="border-[#E5E7EB]" onClick={() => setSelectedAssessment(null)}>
-                Cancel
-              </Button>
-              <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white" onClick={() => setSelectedAssessment(null)}>
-                Save Assessment
-              </Button>
-            </div>
           </div>
         )}
 
