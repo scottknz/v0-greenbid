@@ -555,9 +555,9 @@ function TenderRow({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push(`/tenders/${tender.id}`)}>
               <Eye className="size-4 mr-2" />
-              View
+              Open
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Pencil className="size-4 mr-2" />
