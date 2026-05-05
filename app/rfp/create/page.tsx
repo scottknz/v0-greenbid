@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DashboardShell } from '@/components/shell/DashboardShell';
 import { TemplateSelector } from '@/components/rfp/TemplateSelector';
 import { ProjectSetupForm } from '@/components/rfp/ProjectSetupForm';
 import { Button } from '@/components/ui/button';
@@ -63,98 +62,96 @@ export default function CreateRFPPage() {
   const currentStepIndex = currentStep === 'template' ? 0 : 1;
 
   return (
-    <DashboardShell>
-      <div className="min-h-screen bg-background">
-        {/* Header */}
-        <div className="border-b border-border bg-white">
-          <div className="mx-auto max-w-4xl px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Link href="/tenders">
-                  <Button variant="ghost" size="sm" className="text-text-secondary">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to RFPs
-                  </Button>
-                </Link>
-                <div className="h-6 w-px bg-border" />
-                <h1 className="text-lg font-semibold text-text-primary">Create New RFP</h1>
-              </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b border-border bg-white">
+        <div className="mx-auto max-w-4xl px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link href="/tenders">
+                <Button variant="ghost" size="sm" className="text-text-secondary">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to RFPs
+                </Button>
+              </Link>
+              <div className="h-6 w-px bg-border" />
+              <h1 className="text-lg font-semibold text-text-primary">Create New RFP</h1>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Progress Steps */}
-        <div className="border-b border-border bg-surface">
-          <div className="mx-auto max-w-4xl px-6 py-4">
-            <nav className="flex items-center justify-center gap-8">
-              {steps.map((step, index) => {
-                const isActive = index === currentStepIndex;
-                const isCompleted = index < currentStepIndex;
-                const Icon = step.icon;
+      {/* Progress Steps */}
+      <div className="border-b border-border bg-surface">
+        <div className="mx-auto max-w-4xl px-6 py-4">
+          <nav className="flex items-center justify-center gap-8">
+            {steps.map((step, index) => {
+              const isActive = index === currentStepIndex;
+              const isCompleted = index < currentStepIndex;
+              const Icon = step.icon;
 
-                return (
-                  <div key={step.id} className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-brand-green text-white'
-                          : isCompleted
-                          ? 'bg-brand-green-light text-brand-green'
-                          : 'bg-surface-hover text-text-muted'
-                      )}
-                    >
-                      {isCompleted ? (
-                        <svg className="h-4 w-4\" fill="none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">
-                          <path strokeLinecap="round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M5 13l4 4L19 7\" />
-                        </svg>
-                      ) : (
-                        <Icon className="h-4 w-4" />
-                      )}
-                    </div>
-                    <span
-                      className={cn(
-                        'text-sm font-medium',
-                        isActive ? 'text-text-primary' : 'text-text-muted'
-                      )}
-                    >
-                      {step.label}
-                    </span>
-                    {index < steps.length - 1 && (
-                      <div
-                        className={cn(
-                          'ml-4 h-px w-16',
-                          isCompleted ? 'bg-brand-green' : 'bg-border'
-                        )}
-                      />
+              return (
+                <div key={step.id} className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-brand-green text-white'
+                        : isCompleted
+                        ? 'bg-brand-green-light text-brand-green'
+                        : 'bg-surface-hover text-text-muted'
+                    )}
+                  >
+                    {isCompleted ? (
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <Icon className="h-4 w-4" />
                     )}
                   </div>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="mx-auto max-w-4xl px-6 py-8">
-          {currentStep === 'template' && (
-            <TemplateSelector
-              selectedTemplate={selectedTemplate}
-              onSelectTemplate={handleSelectTemplate}
-              onNext={handleNextFromTemplate}
-            />
-          )}
-
-          {currentStep === 'setup' && (
-            <ProjectSetupForm
-              projectInfo={projectInfo}
-              onUpdateProjectInfo={setProjectInfo}
-              onBack={handleBackToTemplate}
-              onNext={handleCreateRFP}
-            />
-          )}
+                  <span
+                    className={cn(
+                      'text-sm font-medium',
+                      isActive ? 'text-text-primary' : 'text-text-muted'
+                    )}
+                  >
+                    {step.label}
+                  </span>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={cn(
+                        'ml-4 h-px w-16',
+                        isCompleted ? 'bg-brand-green' : 'bg-border'
+                      )}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </nav>
         </div>
       </div>
-    </DashboardShell>
+
+      {/* Content */}
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        {currentStep === 'template' && (
+          <TemplateSelector
+            selectedTemplate={selectedTemplate}
+            onSelectTemplate={handleSelectTemplate}
+            onNext={handleNextFromTemplate}
+          />
+        )}
+
+        {currentStep === 'setup' && (
+          <ProjectSetupForm
+            projectInfo={projectInfo}
+            onUpdateProjectInfo={setProjectInfo}
+            onBack={handleBackToTemplate}
+            onNext={handleCreateRFP}
+          />
+        )}
+      </div>
+    </div>
   );
 }

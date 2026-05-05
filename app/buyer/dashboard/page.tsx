@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { ActivityFeed, ActivityItem } from '@/components/dashboard/ActivityFeed';
 import { DataTable } from '@/components/dashboard/DataTable';
@@ -87,9 +88,11 @@ export default function BuyerDashboardPage() {
     <div className="flex flex-col min-h-full">
       <div className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-6">
         <h1 className="text-lg font-semibold text-text-primary">Dashboard</h1>
-        <Button className="bg-brand-green hover:bg-brand-green-mid text-white h-9 px-4 rounded-md">
-          + Create RFP
-        </Button>
+        <Link href="/rfp/create">
+          <Button className="bg-brand-green hover:bg-brand-green-mid text-white h-9 px-4 rounded-md">
+            + Create RFP
+          </Button>
+        </Link>
       </div>
 
       <div className="flex-1 p-6 space-y-6">
