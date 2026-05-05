@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { DashboardShell } from "@/components/shell/DashboardShell"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -264,10 +265,12 @@ export default function TendersPage() {
               Manage and track all your procurement RFPs
             </p>
           </div>
-          <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
-            <Plus className="size-4 mr-2" />
-            Create RFP
-          </Button>
+          <Link href="/rfp/create">
+            <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
+              <Plus className="size-4 mr-2" />
+              Create RFP
+            </Button>
+          </Link>
         </div>
 
         {/* Tabs */}
