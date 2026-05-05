@@ -89,6 +89,7 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     uploadedBy: 'Emma Davis',
     tags: ['pricing', 'cost', 'template', 'excel'],
     usedInRFPs: ['rfp-003', 'rfp-004', 'rfp-005'],
+    version: '1.0',
   },
   {
     id: 'doc-008',
@@ -100,6 +101,8 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     uploadedAt: '2024-01-01T09:00:00Z',
     uploadedBy: 'John Smith',
     tags: ['company', 'overview', 'background'],
+    usedInRFPs: [],
+    version: '1.0',
   },
   {
     id: 'doc-009',
@@ -112,6 +115,7 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     uploadedBy: 'Alex Kumar',
     tags: ['technical', 'cloud', 'specifications', 'requirements'],
     usedInRFPs: ['rfp-002'],
+    version: '2.1',
   },
   {
     id: 'doc-010',
@@ -123,5 +127,7 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     uploadedAt: '2023-12-25T11:30:00Z',
     uploadedBy: 'Rachel Green',
     tags: ['case study', 'example', 'project', 'success'],
+    usedInRFPs: ['rfp-004'],
+    version: '1.0',
   },
 ]
