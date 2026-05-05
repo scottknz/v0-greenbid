@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import Image from '@tiptap/extension-image';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
@@ -22,7 +21,6 @@ import {
   Send,
   Loader2,
   Image as ImageIcon,
-  Upload,
 } from 'lucide-react';
 import type { RFPSectionContent } from '@/types/rfp';
 
@@ -41,7 +39,6 @@ export function SectionEditor({
 }: SectionEditorProps) {
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showImageUpload, setShowImageUpload] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -53,10 +50,6 @@ export function SectionEditor({
       }),
       Placeholder.configure({
         placeholder: 'Start writing or use the AI prompt below to generate content...',
-      }),
-      Image.configure({
-        inline: true,
-        allowBase64: true,
       }),
     ],
     content: section.content || '',
@@ -101,10 +94,10 @@ export function SectionEditor({
     const reader = new FileReader();
     reader.onload = (event) => {
       const base64 = event.target?.result as string;
-      editor.chain().focus().setImage({ src: base64 }).run();
+      // Insert image as HTML since we're not using the Image extension
+      editor.chain().focus().insertContent(`<img src="${base64}" alt="Uploaded image" style="max-width: 100%; height: auto;" />`).run();
     };
     reader.readAsDataURL(file);
-    setShowImageUpload(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
