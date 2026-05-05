@@ -278,6 +278,59 @@ const evaluationCriteria = [
   { name: "Price", weight: 20 },
 ]
 
+// Canonical criterion and sub-criterion descriptions (mirrors tenderData.evaluationCriteria)
+const criterionDescriptions: Record<string, { description: string; subcriteria: Record<string, string> }> = {
+  Content: {
+    description: "Assess whether the supplier has provided all required documentation and addressed all sections of the RFP. Look for completeness of responses and adherence to submission guidelines.",
+    subcriteria: {
+      "Documentation completeness": "Verify all required documents are submitted including company profile, technical proposal, pricing, certifications, and references.",
+      "Response coverage": "Check that all sections of the RFP specification have been addressed with appropriate detail and clarity.",
+      "Compliance with requirements": "Confirm adherence to mandatory requirements including format, deadlines, and submission guidelines.",
+    },
+  },
+  Quality: {
+    description: "Evaluate the quality of proposed products/services, certifications held, and quality management processes in place. Consider track record and quality assurance measures.",
+    subcriteria: {
+      "Product/service quality": "Assess the quality standards of proposed products or services based on specifications, samples, and track record.",
+      "Quality certifications": "Review relevant quality certifications such as ISO 9001, industry-specific standards, and third-party validations.",
+      "Quality management processes": "Evaluate documented QMS, inspection procedures, defect tracking, and continuous improvement practices.",
+    },
+  },
+  Capability: {
+    description: "Review technical expertise, relevant project experience, team qualifications, and infrastructure capacity to deliver the requirements at scale.",
+    subcriteria: {
+      "Technical expertise": "Assess depth of technical knowledge, specialized skills, and industry-specific competencies of the team.",
+      "Relevant experience": "Review past projects of similar scope, complexity, and industry to demonstrate proven capability.",
+      "Infrastructure": "Assess facilities, equipment, technology systems, and capacity to handle project requirements.",
+    },
+  },
+  Sustainability: {
+    description: "Assess environmental impact, carbon footprint reduction measures, ethical sourcing practices, and social responsibility initiatives aligned with our ESG goals.",
+    subcriteria: {
+      "Environmental impact": "Evaluate environmental policies, certifications, and measurable impact reduction initiatives.",
+      "Carbon footprint": "Assess carbon emissions data, reduction targets, offset programs, and climate commitments.",
+      "Ethical sourcing": "Review supply chain transparency, fair trade practices, and responsible material sourcing policies.",
+      "Social responsibility": "Evaluate community engagement, diversity initiatives, labor practices, and social impact programs.",
+    },
+  },
+  Risk: {
+    description: "Evaluate financial stability, supply chain reliability, business continuity plans, and insurance coverage to minimise procurement risks.",
+    subcriteria: {
+      "Financial stability": "Assess financial health through credit ratings, profitability trends, and balance sheet strength.",
+      "Supply chain reliability": "Evaluate supplier network diversity, delivery track record, and contingency arrangements.",
+      "Business continuity": "Review documented BCP, disaster recovery plans, and crisis management procedures.",
+    },
+  },
+  Price: {
+    description: "Analyse pricing competitiveness, value for money, payment terms offered, and total cost of ownership including any hidden costs or long-term implications.",
+    subcriteria: {
+      "Base pricing": "Compare proposed pricing against market rates, budget constraints, and competitor offerings.",
+      "Value for money": "Assess the overall value proposition considering quality, service levels, and long-term benefits relative to cost.",
+      "Total cost of ownership": "Calculate all costs including implementation, maintenance, training, and disposal over the contract period.",
+    },
+  },
+}
+
 // Assessment scores with subcategory justifications
 const assessmentScoresData: Record<string, Array<{
   name: string
@@ -919,14 +972,21 @@ export default function SubmissionDetailPage() {
                 {editableCategories.map((category, catIdx) => (
                   <Card key={category.name} className="border-[#E5E7EB] bg-white">
                     <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <CardTitle className="text-base">{category.name}</CardTitle>
-                          <Badge variant="outline" className="text-xs bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]">
-                            {category.weight}% weight
-                          </Badge>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-1.5">
+                            <CardTitle className="text-base">{category.name}</CardTitle>
+                            <Badge variant="outline" className="text-xs bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB] shrink-0">
+                              {category.weight}% weight
+                            </Badge>
+                          </div>
+                          {criterionDescriptions[category.name] && (
+                            <p className="text-sm text-[#6B7280] leading-relaxed">
+                              {criterionDescriptions[category.name].description}
+                            </p>
+                          )}
                         </div>
-                        <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-4 text-sm shrink-0">
                           <div className="flex items-center gap-1.5">
                             <span className="text-xs text-[#9CA3AF]">AI Score</span>
                             <span className="font-medium text-[#6B7280]">{category.aiScore}</span>
@@ -945,7 +1005,7 @@ export default function SubmissionDetailPage() {
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="bg-[#F8F9FA] border-b border-[#E5E7EB]">
-                              <th className="px-4 py-2.5 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-1/4">Sub-criterion</th>
+                              <th className="px-4 py-2.5 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-1/3">Sub-criterion</th>
                               <th className="px-3 py-2.5 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide w-20">AI Score</th>
                               <th className="px-3 py-2.5 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide w-20">Final Score</th>
                               <th className="px-4 py-2.5 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Justification</th>
@@ -954,7 +1014,14 @@ export default function SubmissionDetailPage() {
                           <tbody className="divide-y divide-[#E5E7EB]">
                             {category.subcategories.map((sub, subIdx) => (
                               <tr key={sub.name} className="hover:bg-[#F9FAFB] transition-colors">
-                                <td className="px-4 py-3 font-medium text-[#111827]">{sub.name}</td>
+                                <td className="px-4 py-3">
+                                  <p className="font-medium text-[#111827]">{sub.name}</p>
+                                  {criterionDescriptions[category.name]?.subcriteria[sub.name] && (
+                                    <p className="text-xs text-[#9CA3AF] mt-0.5 leading-relaxed">
+                                      {criterionDescriptions[category.name].subcriteria[sub.name]}
+                                    </p>
+                                  )}
+                                </td>
                                 <td className="px-3 py-3 text-center text-[#6B7280]">{sub.aiScore}</td>
                                 <td className="px-3 py-3 text-center">
                                   {resultsEditMode ? (
