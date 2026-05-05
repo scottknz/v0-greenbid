@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
@@ -693,6 +694,44 @@ export default function SubmissionDetailPage() {
   const [activitySearch, setActivitySearch] = useState("")
   const [activityTypeFilter, setActivityTypeFilter] = useState<string[]>([])
   const [activitySortOrder, setActivitySortOrder] = useState<"asc" | "desc">("desc")
+
+  // Activity row selection
+  const [selectedActivityRows, setSelectedActivityRows] = useState<Set<string>>(new Set())
+
+  const toggleActivityRow = (id: string) => {
+    setSelectedActivityRows(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleAllActivityRows = (rows: typeof submission.activities) => {
+    if (rows.every(a => selectedActivityRows.has(a.id))) {
+      setSelectedActivityRows(new Set())
+    } else {
+      setSelectedActivityRows(new Set(rows.map(a => a.id)))
+    }
+  }
+
+  const exportActivitiesToCSV = (activities: typeof submission.activities, filename: string) => {
+    const headers = ["Type", "Action", "Details", "Date", "Time"]
+    const rows = activities.map(a => {
+      const { date, time } = formatTimestamp(a.timestamp)
+      const typeLabel = activityTypes.find(t => t.key === a.type)?.label ?? a.type
+      return [typeLabel, a.action, a.detail, date, time]
+    })
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n")
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+  }
 
   // Team collapsible
   const [teamExpanded, setTeamExpanded] = useState(false)
@@ -1516,10 +1555,33 @@ export default function SubmissionDetailPage() {
                 <CardTitle className="text-lg">Activity Log</CardTitle>
                 <CardDescription>All actions taken by this supplier</CardDescription>
               </div>
-              <Button variant="outline" size="sm" className="border-[#E5E7EB]">
-                <Download className="size-4 mr-2" />
-                Export
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-[#E5E7EB]"
+                  disabled={selectedActivityRows.size === 0}
+                  onClick={() => {
+                    const selected = submission.activities.filter(a => selectedActivityRows.has(a.id))
+                    exportActivitiesToCSV(selected, `${submission.supplierName.replace(/\s+/g, "_")}_activity_selection.csv`)
+                  }}
+                >
+                  <Download className="size-4 mr-2" />
+                  Download Selection
+                  {selectedActivityRows.size > 0 && (
+                    <Badge className="ml-2 bg-[#16A34A] text-white text-xs px-1.5">{selectedActivityRows.size}</Badge>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-[#E5E7EB]"
+                  onClick={() => exportActivitiesToCSV(submission.activities, `${submission.supplierName.replace(/\s+/g, "_")}_activity_all.csv`)}
+                >
+                  <Download className="size-4 mr-2" />
+                  Download All
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Filters */}
@@ -1588,6 +1650,13 @@ export default function SubmissionDetailPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                      <th className="px-4 py-3 w-10">
+                        <Checkbox
+                          checked={filteredActivities.length > 0 && filteredActivities.every(a => selectedActivityRows.has(a.id))}
+                          onCheckedChange={() => toggleAllActivityRows(filteredActivities)}
+                          aria-label="Select all activities"
+                        />
+                      </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-32">Type</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Action</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Details</th>
@@ -1597,15 +1666,26 @@ export default function SubmissionDetailPage() {
                   <tbody className="divide-y divide-[#E5E7EB]">
                     {filteredActivities.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-8 text-center text-[#6B7280]">
+                        <td colSpan={5} className="px-4 py-8 text-center text-[#6B7280]">
                           No activities match your filters
                         </td>
                       </tr>
                     ) : (
                       filteredActivities.map(activity => {
                         const { date, time } = formatTimestamp(activity.timestamp)
+                        const isSelected = selectedActivityRows.has(activity.id)
                         return (
-                          <tr key={activity.id} className="hover:bg-[#F9FAFB] transition-colors">
+                          <tr
+                            key={activity.id}
+                            className={`transition-colors ${isSelected ? "bg-[#F0FDF4]" : "hover:bg-[#F9FAFB]"}`}
+                          >
+                            <td className="px-4 py-3">
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={() => toggleActivityRow(activity.id)}
+                                aria-label={`Select ${activity.action}`}
+                              />
+                            </td>
                             <td className="px-4 py-3">
                               <Badge className={`${getActivityTypeStyle(activity.type)} border-0 text-xs font-medium`}>
                                 <span className="mr-1">{getActivityIcon(activity.type)}</span>
@@ -1631,9 +1711,16 @@ export default function SubmissionDetailPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-[#6B7280]">
-                Showing {filteredActivities.length} of {submission.activities.length} activities
-              </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-[#6B7280]">
+                  Showing {filteredActivities.length} of {submission.activities.length} activities
+                </p>
+                {selectedActivityRows.size > 0 && (
+                  <p className="text-xs text-[#16A34A] font-medium">
+                    {selectedActivityRows.size} row{selectedActivityRows.size !== 1 ? "s" : ""} selected
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
