@@ -8,6 +8,82 @@ import type {
   RFPSectionContent 
 } from '@/types/rfp';
 
+// Internal company team members available to assign to RFPs
+export const internalTeamMembers: Omit<RFPTeamMember, 'role' | 'isLead'>[] = [
+  {
+    id: 'int-001',
+    name: 'Emma Thompson',
+    email: 'emma.thompson@company.com',
+    jobTitle: 'Head of Sustainability',
+    department: 'Sustainability',
+    phone: '+1 (555) 101-0001',
+    avatarInitials: 'ET',
+  },
+  {
+    id: 'int-002',
+    name: 'David Kumar',
+    email: 'david.kumar@company.com',
+    jobTitle: 'Carbon Analyst',
+    department: 'Sustainability',
+    phone: '+1 (555) 101-0002',
+    avatarInitials: 'DK',
+  },
+  {
+    id: 'int-003',
+    name: 'Lisa Martinez',
+    email: 'lisa.martinez@company.com',
+    jobTitle: 'ESG Manager',
+    department: 'Sustainability',
+    phone: '+1 (555) 101-0003',
+    avatarInitials: 'LM',
+  },
+  {
+    id: 'int-004',
+    name: 'James Wilson',
+    email: 'james.wilson@company.com',
+    jobTitle: 'Procurement Lead',
+    department: 'Procurement',
+    phone: '+1 (555) 101-0004',
+    avatarInitials: 'JW',
+  },
+  {
+    id: 'int-005',
+    name: 'Maria Garcia',
+    email: 'maria.garcia@company.com',
+    jobTitle: 'Legal Counsel',
+    department: 'Legal',
+    phone: '+1 (555) 101-0005',
+    avatarInitials: 'MG',
+  },
+  {
+    id: 'int-006',
+    name: 'Tom Chen',
+    email: 'tom.chen@company.com',
+    jobTitle: 'CFO',
+    department: 'Finance',
+    phone: '+1 (555) 101-0006',
+    avatarInitials: 'TC',
+  },
+  {
+    id: 'int-007',
+    name: 'Sarah Okonkwo',
+    email: 'sarah.okonkwo@company.com',
+    jobTitle: 'Risk & Compliance Officer',
+    department: 'Compliance',
+    phone: '+1 (555) 101-0007',
+    avatarInitials: 'SO',
+  },
+  {
+    id: 'int-008',
+    name: 'Alex Petrov',
+    email: 'alex.petrov@company.com',
+    jobTitle: 'Data & Analytics Manager',
+    department: 'Technology',
+    phone: '+1 (555) 101-0008',
+    avatarInitials: 'AP',
+  },
+];
+
 // Generic RFP Template
 export const genericTemplate: RFPTemplate = {
   id: 'template-generic',
@@ -520,10 +596,14 @@ export const rfpCategories = [
   'Environmental Impact (EIA)',
 ];
 
+// =============================================================================
+// RFP STORAGE AND MANAGEMENT FUNCTIONS
+// =============================================================================
+
 // In-memory store for RFPs (mock database)
 const rfpStore: Map<string, RFPDocument> = new Map();
 
-// Initialize with sample RFP
+// Initialize store with sample RFP
 rfpStore.set(sampleDraftRFP.id, sampleDraftRFP);
 
 /**
@@ -534,11 +614,27 @@ export function getRFPById(id: string): RFPDocument | null {
 }
 
 /**
+ * Save a new RFP to the store
+ */
+export function saveRFP(rfp: RFPDocument): RFPDocument {
+  rfpStore.set(rfp.id, rfp);
+  return rfp;
+}
+
+/**
  * Update an existing RFP
  */
 export function updateRFP(id: string, updates: Partial<RFPDocument>): RFPDocument | null {
   const existing = rfpStore.get(id);
-  if (!existing) return null;
+  if (!existing) {
+    // If not found in store, check if updates contain the full RFP and save it
+    if (updates.id) {
+      const newRfp = updates as RFPDocument;
+      rfpStore.set(newRfp.id, newRfp);
+      return newRfp;
+    }
+    return null;
+  }
   
   const updated: RFPDocument = {
     ...existing,
@@ -551,35 +647,41 @@ export function updateRFP(id: string, updates: Partial<RFPDocument>): RFPDocumen
 }
 
 /**
- * Create a new version of an RFP
+ * Create a new version snapshot of an RFP
  */
-export function createRFPVersion(id: string, changesSummary: string): RFPDocument | null {
-  const existing = rfpStore.get(id);
+export function createRFPVersion(id: string, rfpData: RFPDocument): RFPDocument | null {
+  const existing = rfpStore.get(id) || rfpData;
   if (!existing) return null;
   
   const newVersion: RFPVersion = {
     version: existing.currentVersion,
     savedAt: new Date().toISOString(),
     savedBy: 'Current User',
-    changesSummary,
+    changesSummary: `Version ${existing.currentVersion} saved`,
     sections: [...existing.sections],
   };
   
   const updated: RFPDocument = {
     ...existing,
     currentVersion: existing.currentVersion + 1,
-    versions: [...existing.versions, newVersion],
+    versions: [...(existing.versions || []), newVersion],
     updatedAt: new Date().toISOString(),
   };
   
-  rfpStore.set(id, updated);
+  rfpStore.set(updated.id, updated);
   return updated;
 }
 
 /**
- * Save a new RFP to the store
+ * Delete an RFP from the store
  */
-export function saveRFP(rfp: RFPDocument): RFPDocument {
-  rfpStore.set(rfp.id, rfp);
-  return rfp;
+export function deleteRFP(id: string): boolean {
+  return rfpStore.delete(id);
+}
+
+/**
+ * Get all RFPs from the store
+ */
+export function getAllRFPs(): RFPDocument[] {
+  return Array.from(rfpStore.values());
 }

@@ -108,7 +108,7 @@ export default function RFPEditPage() {
     });
   };
 
-  const handleUpdateSettings = (updates: Partial<RFP>) => {
+  const handleUpdateSettings = (updates: Partial<RFPDocument>) => {
     if (!rfp) return;
     const updated = updateRFP(rfp.id, { ...rfp, ...updates });
     setRfp(updated);

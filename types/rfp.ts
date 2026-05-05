@@ -79,26 +79,36 @@ export interface RFPProjectInfo {
   projectName: string;
   category: string;
   description: string;
-  
+  department: string;
+
+  // Classification
+  referenceId: string;
+  confidentiality: RFPConfidentiality;
+  contractType: RFPContractType;
+  submissionLanguage: RFPSubmissionLanguage;
+
   // Budget
   expectedBudget: number;
   budgetCurrency: string;
   budgetFlexibility: 'fixed' | 'flexible' | 'negotiable';
-  
+  budgetConfidential: boolean; // If true, budget is hidden from AI and suppliers
+
   // Timeline
-  submissionDeadline: string;
   qaStartDate: string;
   qaEndDate: string;
+  submissionDeadline: string; // Only required field
   expectedStartDate: string;
   expectedCompletionDate: string;
-  
+
   // Milestones
   milestones: RFPMilestone[];
-  
-  // Contact
+
+  // Team (replaces primaryContact)
+  team: RFPTeamMember[];
+
+  // Legacy - kept for backward compat, derived from team lead
   primaryContact: string;
   primaryContactEmail: string;
-  department: string;
 }
 
 export interface RFPMilestone {
@@ -107,6 +117,24 @@ export interface RFPMilestone {
   dueDate: string;
   description: string;
 }
+
+export type RFPTeamRole = 'Lead' | 'Reviewer' | 'Approver' | 'Observer';
+
+export interface RFPTeamMember {
+  id: string;
+  name: string;
+  email: string;
+  jobTitle: string;
+  department: string;
+  phone?: string;
+  avatarInitials: string;
+  role: RFPTeamRole;
+  isLead: boolean;
+}
+
+export type RFPConfidentiality = 'Public' | 'Restricted' | 'Confidential';
+export type RFPContractType = 'Fixed Price' | 'Time & Materials' | 'Framework Agreement' | 'Retainer';
+export type RFPSubmissionLanguage = 'English' | 'French' | 'Spanish' | 'German' | 'Mandarin' | 'Other';
 
 // Version history
 export interface RFPVersion {

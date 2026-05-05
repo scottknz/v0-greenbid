@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -18,24 +19,27 @@ import {
   Undo,
   Redo,
   Highlighter,
+  ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import type { RFPDocument, RFPSectionContent } from '@/types/rfp';
 
 interface RFPEditorProps {
-  content: string;
-  onContentChange: (content: string) => void;
+  rfp: RFPDocument;
+  onUpdate: (rfp: RFPDocument) => void;
   isAITyping?: boolean;
-  highlightedSectionId?: string | null;
 }
 
 export function RFPEditor({ 
-  content, 
-  onContentChange, 
+  rfp,
+  onUpdate,
   isAITyping = false,
-  highlightedSectionId 
 }: RFPEditorProps) {
+  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
+  const activeSection = rfp.sections[activeSectionIndex];
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -51,9 +55,21 @@ export function RFPEditor({
       }),
       Underline,
     ],
-    content,
+    content: activeSection?.content || '',
     onUpdate: ({ editor }) => {
-      onContentChange(editor.getHTML());
+      // Update the active section content
+      const updatedSections = [...rfp.sections];
+      updatedSections[activeSectionIndex] = {
+        ...updatedSections[activeSectionIndex],
+        content: editor.getHTML(),
+        lastEditedAt: new Date().toISOString(),
+        lastEditedBy: 'user',
+      };
+      onUpdate({
+        ...rfp,
+        sections: updatedSections,
+        updatedAt: new Date().toISOString(),
+      });
     },
     editorProps: {
       attributes: {
@@ -61,6 +77,13 @@ export function RFPEditor({
       },
     },
   });
+
+  // Update editor content when active section changes
+  useEffect(() => {
+    if (editor && activeSection) {
+      editor.commands.setContent(activeSection.content || '');
+    }
+  }, [activeSectionIndex, editor]);
 
   if (!editor) {
     return (
@@ -71,177 +94,217 @@ export function RFPEditor({
   }
 
   return (
-    <div className="flex flex-col h-full border border-border rounded-lg overflow-hidden bg-white">
-      {/* Toolbar */}
-      <div className="flex items-center gap-1 p-2 border-b border-border bg-surface flex-wrap">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={cn(
-            'h-8 w-8 p-0',
-            editor.isActive('bold') && 'bg-surface-hover text-brand-green'
-          )}
-        >
-          <Bold className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={cn(
-            'h-8 w-8 p-0',
-            editor.isActive('italic') && 'bg-surface-hover text-brand-green'
-          )}
-        >
-          <Italic className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={cn(
-            'h-8 w-8 p-0',
-            editor.isActive('underline') && 'bg-surface-hover text-brand-green'
-          )}
-        >
-          <UnderlineIcon className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleHighlight().run()}
-          className={cn(
-            'h-8 w-8 p-0',
-            editor.isActive('highlight') && 'bg-surface-hover text-brand-green'
-          )}
-        >
-          <Highlighter className="h-4 w-4" />
-        </Button>
-
-        <Separator orientation="vertical" className="mx-1 h-6" />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={cn(
-            'h-8 w-8 p-0',
-            editor.isActive('heading', { level: 1 }) && 'bg-surface-hover text-brand-green'
-          )}
-        >
-          <Heading1 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={cn(
-            'h-8 w-8 p-0',
-            editor.isActive('heading', { level: 2 }) && 'bg-surface-hover text-brand-green'
-          )}
-        >
-          <Heading2 className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={cn(
-            'h-8 w-8 p-0',
-            editor.isActive('heading', { level: 3 }) && 'bg-surface-hover text-brand-green'
-          )}
-        >
-          <Heading3 className="h-4 w-4" />
-        </Button>
-
-        <Separator orientation="vertical" className="mx-1 h-6" />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={cn(
-            'h-8 w-8 p-0',
-            editor.isActive('bulletList') && 'bg-surface-hover text-brand-green'
-          )}
-        >
-          <List className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={cn(
-            'h-8 w-8 p-0',
-            editor.isActive('orderedList') && 'bg-surface-hover text-brand-green'
-          )}
-        >
-          <ListOrdered className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={cn(
-            'h-8 w-8 p-0',
-            editor.isActive('blockquote') && 'bg-surface-hover text-brand-green'
-          )}
-        >
-          <Quote className="h-4 w-4" />
-        </Button>
-
-        <Separator orientation="vertical" className="mx-1 h-6" />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().undo()}
-          className="h-8 w-8 p-0"
-        >
-          <Undo className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().redo()}
-          className="h-8 w-8 p-0"
-        >
-          <Redo className="h-4 w-4" />
-        </Button>
-
-        {isAITyping && (
-          <>
-            <Separator orientation="vertical" className="mx-1 h-6" />
-            <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-brand-green-light text-brand-green text-xs font-medium">
-              <div className="flex gap-1">
-                <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-                <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-                <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
-              </div>
-              AI is writing
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Editor Content */}
-      <div className="flex-1 overflow-y-auto">
-        <EditorContent editor={editor} />
-      </div>
-
-      {/* Status Bar */}
-      <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-surface text-xs text-text-muted">
-        <div className="flex items-center gap-4">
-          <span>{editor.storage.characterCount?.characters?.() || 0} characters</span>
-          <span>{editor.storage.characterCount?.words?.() || 0} words</span>
+    <div className="flex h-full">
+      {/* Section Navigation Sidebar */}
+      <div className="w-64 border-r border-border bg-surface overflow-y-auto">
+        <div className="p-4">
+          <h3 className="text-sm font-semibold text-text-primary mb-3">Sections</h3>
+          <nav className="space-y-1">
+            {rfp.sections.map((section, index) => (
+              <button
+                key={section.id}
+                onClick={() => setActiveSectionIndex(index)}
+                className={cn(
+                  'w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-left transition-colors',
+                  activeSectionIndex === index
+                    ? 'bg-brand-green-light text-brand-green font-medium'
+                    : 'text-text-secondary hover:bg-surface-hover'
+                )}
+              >
+                <span className="text-xs text-text-muted w-6">{section.number || index + 1}</span>
+                <span className="flex-1 truncate">{section.title}</span>
+                {activeSectionIndex === index && (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+            ))}
+          </nav>
         </div>
-        <div>
-          {highlightedSectionId && (
-            <span className="text-brand-green">Editing: {highlightedSectionId}</span>
+      </div>
+
+      {/* Editor Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Section Header */}
+        <div className="px-6 py-4 border-b border-border bg-white">
+          <h2 className="text-lg font-semibold text-text-primary">
+            {activeSection?.title || 'Select a section'}
+          </h2>
+          <p className="text-sm text-text-muted">
+            Section {activeSection?.number || activeSectionIndex + 1} of {rfp.sections.length}
+          </p>
+        </div>
+
+        {/* Toolbar */}
+        <div className="flex items-center gap-1 p-2 border-b border-border bg-surface flex-wrap">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={cn(
+              'h-8 w-8 p-0',
+              editor.isActive('bold') && 'bg-surface-hover text-brand-green'
+            )}
+          >
+            <Bold className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={cn(
+              'h-8 w-8 p-0',
+              editor.isActive('italic') && 'bg-surface-hover text-brand-green'
+            )}
+          >
+            <Italic className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleUnderline().run()}
+            className={cn(
+              'h-8 w-8 p-0',
+              editor.isActive('underline') && 'bg-surface-hover text-brand-green'
+            )}
+          >
+            <UnderlineIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleHighlight().run()}
+            className={cn(
+              'h-8 w-8 p-0',
+              editor.isActive('highlight') && 'bg-surface-hover text-brand-green'
+            )}
+          >
+            <Highlighter className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="mx-1 h-6" />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            className={cn(
+              'h-8 w-8 p-0',
+              editor.isActive('heading', { level: 1 }) && 'bg-surface-hover text-brand-green'
+            )}
+          >
+            <Heading1 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={cn(
+              'h-8 w-8 p-0',
+              editor.isActive('heading', { level: 2 }) && 'bg-surface-hover text-brand-green'
+            )}
+          >
+            <Heading2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            className={cn(
+              'h-8 w-8 p-0',
+              editor.isActive('heading', { level: 3 }) && 'bg-surface-hover text-brand-green'
+            )}
+          >
+            <Heading3 className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="mx-1 h-6" />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={cn(
+              'h-8 w-8 p-0',
+              editor.isActive('bulletList') && 'bg-surface-hover text-brand-green'
+            )}
+          >
+            <List className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            className={cn(
+              'h-8 w-8 p-0',
+              editor.isActive('orderedList') && 'bg-surface-hover text-brand-green'
+            )}
+          >
+            <ListOrdered className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            className={cn(
+              'h-8 w-8 p-0',
+              editor.isActive('blockquote') && 'bg-surface-hover text-brand-green'
+            )}
+          >
+            <Quote className="h-4 w-4" />
+          </Button>
+
+          <Separator orientation="vertical" className="mx-1 h-6" />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().undo().run()}
+            disabled={!editor.can().undo()}
+            className="h-8 w-8 p-0"
+          >
+            <Undo className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().redo().run()}
+            disabled={!editor.can().redo()}
+            className="h-8 w-8 p-0"
+          >
+            <Redo className="h-4 w-4" />
+          </Button>
+
+          {isAITyping && (
+            <>
+              <Separator orientation="vertical" className="mx-1 h-6" />
+              <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-brand-green-light text-brand-green text-xs font-medium">
+                <div className="flex gap-1">
+                  <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+                  <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
+                  <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                </div>
+                AI is writing
+              </div>
+            </>
           )}
+        </div>
+
+        {/* Editor Content */}
+        <div className="flex-1 overflow-y-auto bg-white">
+          <EditorContent editor={editor} />
+        </div>
+
+        {/* Status Bar */}
+        <div className="flex items-center justify-between px-4 py-2 border-t border-border bg-surface text-xs text-text-muted">
+          <div className="flex items-center gap-4">
+            <span>Last saved: {new Date(rfp.updatedAt).toLocaleTimeString()}</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span>Version {rfp.currentVersion}</span>
+            {activeSection?.aiGenerated && (
+              <span className="text-brand-green">AI Generated</span>
+            )}
+          </div>
         </div>
       </div>
     </div>
