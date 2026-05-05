@@ -886,20 +886,8 @@ export default function MessagesPage() {
                 <Mail className="size-4 mr-1" />
                 Mark Unread
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8"
-                onClick={() => {
-                  const selected = threads.filter(t => selectedThreadIds.has(t.id))
-                  exportToCSV(selected, "messages_selection.csv")
-                }}
-              >
-                <Download className="size-4 mr-1" />
-                Export Selection
-              </Button>
               <Button variant="ghost" size="sm" className="h-8 text-[#6B7280]" onClick={() => setSelectedThreadIds(new Set())}>
-                Cancel
+                Clear Selection
               </Button>
             </div>
           )}
@@ -908,15 +896,38 @@ export default function MessagesPage() {
 
       {/* Results Header */}
       <div className="flex items-center justify-between text-sm text-[#6B7280]">
-        <span>Showing {filteredThreads.length} of {threads.length} conversations</span>
+        <div className="flex items-center gap-3">
+          <span>Showing {filteredThreads.length} of {threads.length} conversations</span>
+          {selectedThreadIds.size > 0 && (
+            <span className="text-[#16A34A] font-medium">
+              {selectedThreadIds.size} selected
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="h-8"
+            className="h-8 border-[#E5E7EB]"
+            disabled={selectedThreadIds.size === 0}
+            onClick={() => {
+              const selected = threads.filter(t => selectedThreadIds.has(t.id))
+              exportToCSV(selected, "messages_selection.csv")
+            }}
+          >
+            <Download className="size-4 mr-2" />
+            Download Selection
+            {selectedThreadIds.size > 0 && (
+              <Badge className="ml-2 bg-[#16A34A] text-white text-xs px-1.5">{selectedThreadIds.size}</Badge>
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 border-[#E5E7EB]"
             onClick={() => exportToCSV(threads, "all_messages.csv")}
           >
-            <Download className="size-4 mr-1" />
+            <Download className="size-4 mr-2" />
             Download All
           </Button>
         </div>
