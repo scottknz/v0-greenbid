@@ -743,12 +743,12 @@ export default function MessagesPage() {
             </div>
 
             {/* RFP Filter */}
-            <Select value={rfpFilter || ""} onValueChange={(v) => setRfpFilter(v || null)}>
+            <Select value={rfpFilter || "all"} onValueChange={(v) => setRfpFilter(v === "all" ? null : v)}>
               <SelectTrigger className="w-[180px] h-9">
                 <SelectValue placeholder="All RFPs" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All RFPs</SelectItem>
+                <SelectItem value="all">All RFPs</SelectItem>
                 {rfpsData.map(rfp => (
                   <SelectItem key={rfp.id} value={rfp.id}>{rfp.title}</SelectItem>
                 ))}
@@ -756,12 +756,12 @@ export default function MessagesPage() {
             </Select>
 
             {/* Status Filter */}
-            <Select value={statusFilter || ""} onValueChange={(v) => setStatusFilter(v || null)}>
+            <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? null : v)}>
               <SelectTrigger className="w-[160px] h-9">
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 {threadStatuses.map(status => (
                   <SelectItem key={status.key} value={status.key}>{status.label}</SelectItem>
                 ))}
