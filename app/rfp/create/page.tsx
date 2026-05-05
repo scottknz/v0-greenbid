@@ -4,18 +4,20 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TemplateSelector } from '@/components/rfp/TemplateSelector';
 import { ProjectSetupForm } from '@/components/rfp/ProjectSetupForm';
+import { RFPInterview } from '@/components/rfp/RFPInterview';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Settings, Edit3 } from 'lucide-react';
-import { rfpTemplates, createRFPFromTemplate } from '@/lib/mock-rfp';
+import { ArrowLeft, FileText, Settings, MessageSquare, Edit3 } from 'lucide-react';
+import { rfpTemplates, createRFPFromTemplate, saveRFP } from '@/lib/mock-rfp';
 import type { RFPTemplate, RFPDocument } from '@/types/rfp';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-type Step = 'template' | 'setup';
+type Step = 'template' | 'setup' | 'interview';
 
 const steps = [
   { id: 'template', label: 'Select Template', icon: FileText },
   { id: 'setup', label: 'Project Details', icon: Settings },
+  { id: 'interview', label: 'AI Interview', icon: MessageSquare },
   { id: 'editor', label: 'Edit Document', icon: Edit3 },
 ];
 
@@ -30,6 +32,7 @@ export default function CreateRFPPage() {
     budgetFlexibility: 'flexible',
     milestones: [],
   });
+  const [interviewData, setInterviewData] = useState<Record<string, string>>({});
 
   const handleSelectTemplate = (template: RFPTemplate) => {
     setSelectedTemplate(template);
@@ -45,21 +48,57 @@ export default function CreateRFPPage() {
     setCurrentStep('template');
   };
 
-  const handleCreateRFP = () => {
+  const handleNextFromSetup = () => {
+    if (projectInfo.projectName) {
+      setCurrentStep('interview');
+    }
+  };
+
+  const handleBackToSetup = () => {
+    setCurrentStep('setup');
+  };
+
+  const handleInterviewComplete = (data: Record<string, string>) => {
+    setInterviewData(data);
+    createAndNavigateToEditor(data);
+  };
+
+  const handleSkipInterview = () => {
+    createAndNavigateToEditor({});
+  };
+
+  const createAndNavigateToEditor = (interviewAnswers: Record<string, string>) => {
     if (selectedTemplate && projectInfo.projectName) {
-      // Create the RFP document
+      // Create the RFP document with interview data
       const rfpDocument = createRFPFromTemplate(selectedTemplate, projectInfo);
       
-      // In production, save to database here
-      // For now, store in sessionStorage and navigate to editor
+      // Store interview answers in the document's AI summary for context
+      if (Object.keys(interviewAnswers).length > 0) {
+        rfpDocument.aiSummary = JSON.stringify(interviewAnswers);
+      }
+
+      // Save to the in-memory store
+      saveRFP(rfpDocument);
+      
+      // Also store in sessionStorage for immediate access
       sessionStorage.setItem('draft-rfp', JSON.stringify(rfpDocument));
+      sessionStorage.setItem('interview-data', JSON.stringify(interviewAnswers));
       
       // Navigate to the editor
       router.push(`/rfp/${rfpDocument.id}/edit`);
     }
   };
 
-  const currentStepIndex = currentStep === 'template' ? 0 : 1;
+  const getStepIndex = () => {
+    switch (currentStep) {
+      case 'template': return 0;
+      case 'setup': return 1;
+      case 'interview': return 2;
+      default: return 0;
+    }
+  };
+
+  const currentStepIndex = getStepIndex();
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,14 +123,14 @@ export default function CreateRFPPage() {
       {/* Progress Steps */}
       <div className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4">
-          <nav className="flex items-center justify-center gap-8">
+          <nav className="flex items-center justify-center gap-6">
             {steps.map((step, index) => {
               const isActive = index === currentStepIndex;
               const isCompleted = index < currentStepIndex;
               const Icon = step.icon;
 
               return (
-                <div key={step.id} className="flex items-center gap-3">
+                <div key={step.id} className="flex items-center gap-2">
                   <div
                     className={cn(
                       'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
@@ -112,7 +151,7 @@ export default function CreateRFPPage() {
                   </div>
                   <span
                     className={cn(
-                      'text-sm font-medium',
+                      'text-sm font-medium hidden sm:block',
                       isActive ? 'text-text-primary' : 'text-text-muted'
                     )}
                   >
@@ -121,7 +160,7 @@ export default function CreateRFPPage() {
                   {index < steps.length - 1 && (
                     <div
                       className={cn(
-                        'ml-4 h-px w-16',
+                        'ml-2 h-px w-8 sm:w-12',
                         isCompleted ? 'bg-brand-green' : 'bg-border'
                       )}
                     />
@@ -148,8 +187,40 @@ export default function CreateRFPPage() {
             projectInfo={projectInfo}
             onUpdateProjectInfo={setProjectInfo}
             onBack={handleBackToTemplate}
-            onNext={handleCreateRFP}
+            onNext={handleNextFromSetup}
           />
+        )}
+
+        {currentStep === 'interview' && selectedTemplate && (
+          <div>
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-text-primary">
+                    AI Interview
+                  </h2>
+                  <p className="text-sm text-text-secondary mt-1">
+                    Answer a few questions to help generate a comprehensive RFP document
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleBackToSetup}
+                  className="text-text-secondary"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+              </div>
+            </div>
+            <RFPInterview
+              template={selectedTemplate}
+              projectInfo={projectInfo}
+              onComplete={handleInterviewComplete}
+              onSkip={handleSkipInterview}
+            />
+          </div>
         )}
       </div>
     </div>
