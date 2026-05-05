@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   Search,
-  Plus,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -48,56 +47,56 @@ type TenderData = {
 const allTendersData: TenderData[] = [
   {
     id: "1",
-    name: "Comprehensive Scope 3 Value Chain Emissions Analysis",
+    name: "Sustainable Office Supplies 2026",
     referenceId: "TND-2026-001",
     status: "active",
-    category: "Scope 3 / Value Chain",
+    category: "Office Supplies",
     submissions: 8,
-    deadline: "May 15, 2026",
-    budget: 450000,
-    owner: "Emma Thompson",
+    deadline: "Apr 15, 2026",
+    budget: 125000,
+    owner: "Sarah Chen",
   },
   {
     id: "2",
-    name: "SBTi Target Setting & Validation Support",
+    name: "Green IT Equipment Procurement",
     referenceId: "TND-2026-002",
     status: "evaluation",
-    category: "Target Setting (SBTi)",
+    category: "IT Equipment",
     submissions: 12,
-    deadline: "Apr 28, 2026",
-    budget: 320000,
+    deadline: "Mar 28, 2026",
+    budget: 450000,
     owner: "James Wilson",
   },
   {
     id: "3",
-    name: "Embodied Carbon Life Cycle Assessment (LCA)",
+    name: "Carbon-Neutral Logistics Services",
     referenceId: "TND-2026-003",
     status: "draft",
-    category: "Life Cycle Assessment (LCA)",
+    category: "Logistics",
     submissions: 0,
-    deadline: "June 1, 2026",
+    deadline: "May 1, 2026",
     budget: 280000,
     owner: "Maria Garcia",
   },
   {
     id: "4",
-    name: "ISSB (IFRS S1 & S2) Integration & Reporting",
+    name: "Renewable Energy Supply Contract",
     referenceId: "TND-2026-004",
     status: "closed",
-    category: "Regulatory Reporting (ISSB/CSRD)",
+    category: "Energy",
     submissions: 15,
-    deadline: "Mar 31, 2026",
-    budget: 420000,
-    owner: "Emma Thompson",
+    deadline: "Mar 10, 2026",
+    budget: 1200000,
+    owner: "Sarah Chen",
   },
   {
     id: "5",
-    name: "Renewable Energy Procurement & VPPA Structuring",
+    name: "Eco-Friendly Packaging Materials",
     referenceId: "TND-2026-005",
     status: "active",
-    category: "Renewable Energy (PPA/VPPA)",
+    category: "Packaging",
     submissions: 6,
-    deadline: "May 22, 2026",
+    deadline: "Apr 22, 2026",
     budget: 95000,
     owner: "James Wilson",
   },
@@ -264,10 +263,6 @@ export default function TendersPage() {
               Manage and track all your procurement RFPs
             </p>
           </div>
-          <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
-            <Plus className="size-4 mr-2" />
-            Create RFP
-          </Button>
         </div>
 
         {/* Tabs */}

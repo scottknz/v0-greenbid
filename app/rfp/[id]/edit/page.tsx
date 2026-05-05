@@ -8,7 +8,7 @@ import { RFPCopilot } from '@/components/rfp/RFPCopilot';
 import { VersionHistory } from '@/components/rfp/VersionHistory';
 import { RFPSettings } from '@/components/rfp/RFPSettings';
 import { getRFPById, updateRFP, createRFPVersion } from '@/lib/mock-rfp';
-import { RFPDocument, RFPVersion } from '@/types/rfp';
+import { RFP, RFPVersion } from '@/types/rfp';
 import { Button } from '@/components/ui/button';
 import { FileText, Eye, Download, Save, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
@@ -23,38 +23,14 @@ import { downloadRFPAsPDF } from '@/lib/pdf-export';
 export default function RFPEditPage() {
   const params = useParams();
   const rfpId = params.id as string;
-  const [rfp, setRfp] = useState<RFPDocument | null>(null);
+  const [rfp, setRfp] = useState<RFP | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const [copilotMessages, setCopilotMessages] = useState<Array<{ id: string; role: string; content: string }>>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: 'Welcome! I\'m your RFP copilot. I can help you draft sections, improve content, or answer questions about your RFP. Which section would you like to start with?'
-    }
-  ]);
-  const [currentSection, setCurrentSection] = useState<any>(null);
 
   useEffect(() => {
     const loadRFP = async () => {
       try {
-        // First check sessionStorage for draft RFP
-        const draftRFP = sessionStorage.getItem('draft-rfp');
-        if (draftRFP) {
-          try {
-            const data = JSON.parse(draftRFP);
-            setRfp(data as RFPDocument);
-            // Clear the draft from sessionStorage after loading
-            sessionStorage.removeItem('draft-rfp');
-            setLoading(false);
-            return;
-          } catch (e) {
-            console.error('Failed to parse draft RFP:', e);
-          }
-        }
-
-        // Otherwise try to load from mock data
         const data = getRFPById(rfpId);
         setRfp(data);
       } catch (error) {
@@ -162,18 +138,12 @@ export default function RFPEditPage() {
             </div>
           </div>
         ) : (
-          <RFPCopilot
-            messages={copilotMessages}
-            onSendMessage={(msg) => {
-              setCopilotMessages([...copilotMessages, { id: Date.now().toString(), role: 'user', content: msg }]);
-            }}
-            onAcceptSuggestion={() => {}}
-            onRejectSuggestion={() => {}}
-            onRegenerateSuggestion={() => {}}
-            isLoading={false}
-            currentSection={currentSection}
-            onSectionSelect={setCurrentSection}
-          />
+          <RFPCopilot rfp={rfp} onSectionUpdate={(section) => {
+            setRfp({
+              ...rfp,
+              sections: rfp.sections.map(s => s.id === section.id ? section : s)
+            });
+          }} />
         )}
       </div>
 
