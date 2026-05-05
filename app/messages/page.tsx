@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { DashboardShell } from "@/components/shell/DashboardShell"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -35,7 +35,6 @@ import {
 import {
   Search,
   Plus,
-  Filter,
   Globe,
   Lock,
   Paperclip,
@@ -43,14 +42,20 @@ import {
   X,
   CheckCircle,
   Download,
-  ArrowUpDown,
-  Calendar,
   MailOpen,
   Mail,
   Clock,
   AlertCircle,
   CheckCircle2,
   Circle,
+  Inbox,
+  Star,
+  Archive,
+  Trash2,
+  MoreVertical,
+  ChevronDown,
+  RefreshCw,
+  Tag,
 } from "lucide-react"
 
 // Mock RFPs data
@@ -86,13 +91,24 @@ const globalSuppliersData = [
 
 // Thread statuses
 const threadStatuses = [
-  { key: "awaiting", label: "Awaiting Response", color: "bg-amber-50 text-amber-700 border-amber-200", icon: Clock },
-  { key: "action", label: "Action Required", color: "bg-red-50 text-red-700 border-red-200", icon: AlertCircle },
-  { key: "open", label: "Open", color: "bg-blue-50 text-blue-700 border-blue-200", icon: Circle },
-  { key: "resolved", label: "Resolved", color: "bg-green-50 text-green-700 border-green-200", icon: CheckCircle2 },
+  { key: "awaiting", label: "Awaiting Response", color: "bg-amber-100 text-amber-800", icon: Clock },
+  { key: "action", label: "Action Required", color: "bg-red-100 text-red-800", icon: AlertCircle },
+  { key: "open", label: "Open", color: "bg-blue-100 text-blue-800", icon: Circle },
+  { key: "resolved", label: "Resolved", color: "bg-green-100 text-green-800", icon: CheckCircle2 },
 ]
 
-// Mock threads data - aggregated from all RFPs
+// Folder definitions
+const folders = [
+  { key: "inbox", label: "Inbox", icon: Inbox },
+  { key: "starred", label: "Starred", icon: Star },
+  { key: "awaiting", label: "Awaiting Response", icon: Clock },
+  { key: "action", label: "Action Required", icon: AlertCircle },
+  { key: "sent", label: "Sent", icon: Send },
+  { key: "all", label: "All Messages", icon: Mail },
+  { key: "archived", label: "Archived", icon: Archive },
+]
+
+// Mock threads data
 const allThreadsData = [
   {
     id: "t1",
@@ -100,19 +116,23 @@ const allThreadsData = [
     rfpTitle: "Sustainable Office Supplies 2026",
     subject: "Clarification on recycled content requirements",
     visibility: "all" as const,
-    status: "resolved" as const,
-    isRead: true,
+    status: "awaiting",
+    isRead: false,
+    isStarred: true,
+    isArchived: false,
     createdAt: "2026-03-10T09:30:00Z",
     updatedAt: "2026-03-12T14:20:00Z",
+    lastSender: "John Smith",
+    lastSenderType: "supplier" as const,
+    lastSenderCompany: "EcoSupply Co.",
     participants: ["s1", "s2", "s3"],
-    lastSenderType: "buyer" as const,
     messages: [
       {
         id: "m1",
-        senderId: "b1",
+        senderId: "buyer",
         senderName: "Sarah Chen",
         senderType: "buyer" as const,
-        content: "Please note that all paper products must contain a minimum of 80% post-consumer recycled content.",
+        content: "Please note that all paper products must contain a minimum of 80% post-consumer recycled content. This is a mandatory requirement.",
         attachments: [{ name: "Recycling_Standards.pdf", size: "245 KB", url: "#" }],
         timestamp: "2026-03-10T09:30:00Z",
       },
@@ -124,15 +144,6 @@ const allThreadsData = [
         senderType: "supplier" as const,
         content: "Thank you for the clarification. Can you confirm if this applies to all paper products or just A4 copy paper?",
         attachments: [],
-        timestamp: "2026-03-10T14:15:00Z",
-      },
-      {
-        id: "m3",
-        senderId: "b1",
-        senderName: "Sarah Chen",
-        senderType: "buyer" as const,
-        content: "The 80% requirement applies specifically to copy paper and printer paper. Specialty items should contain at least 50%.",
-        attachments: [],
         timestamp: "2026-03-12T14:20:00Z",
       },
     ],
@@ -143,15 +154,18 @@ const allThreadsData = [
     rfpTitle: "Sustainable Office Supplies 2026",
     subject: "Delivery schedule flexibility",
     visibility: "private" as const,
-    status: "awaiting" as const,
-    isRead: false,
+    status: "resolved",
+    isRead: true,
+    isStarred: false,
+    isArchived: false,
     createdAt: "2026-03-11T10:00:00Z",
     updatedAt: "2026-03-11T16:45:00Z",
+    lastSender: "David Thompson",
+    lastSenderType: "buyer" as const,
     participants: ["s2"],
-    lastSenderType: "supplier" as const,
     messages: [
       {
-        id: "m4",
+        id: "m3",
         senderId: "s2",
         senderName: "Emma Davis",
         senderCompany: "GreenOffice Ltd",
@@ -161,11 +175,11 @@ const allThreadsData = [
         timestamp: "2026-03-11T10:00:00Z",
       },
       {
-        id: "m5",
-        senderId: "b2",
+        id: "m4",
+        senderId: "buyer",
         senderName: "David Thompson",
         senderType: "buyer" as const,
-        content: "Thank you for flagging this early. We have some flexibility on timing.",
+        content: "Thank you for flagging this early. We have some flexibility on timing. Please include your preferred delivery schedule in your proposal.",
         attachments: [],
         timestamp: "2026-03-11T16:45:00Z",
       },
@@ -175,33 +189,37 @@ const allThreadsData = [
     id: "t3",
     rfpId: "rfp2",
     rfpTitle: "IT Infrastructure Renewal",
-    subject: "Server specifications clarification",
+    subject: "ISO 14001 certification timeline",
     visibility: "all" as const,
-    status: "action" as const,
+    status: "action",
     isRead: false,
-    createdAt: "2026-03-14T08:00:00Z",
-    updatedAt: "2026-03-15T09:30:00Z",
-    participants: ["s3", "s4"],
+    isStarred: false,
+    isArchived: false,
+    createdAt: "2026-03-13T08:00:00Z",
+    updatedAt: "2026-03-14T10:30:00Z",
+    lastSender: "Michael Brown",
     lastSenderType: "supplier" as const,
+    lastSenderCompany: "Sustainable Solutions Inc",
+    participants: ["s1", "s2", "s3", "s4", "s5"],
     messages: [
       {
-        id: "m6",
-        senderId: "b1",
+        id: "m5",
+        senderId: "buyer",
         senderName: "Sarah Chen",
         senderType: "buyer" as const,
-        content: "All server hardware must meet Energy Star 3.0 certification requirements.",
-        attachments: [{ name: "IT_Specs.pdf", size: "512 KB", url: "#" }],
-        timestamp: "2026-03-14T08:00:00Z",
+        content: "Several suppliers have asked about ISO 14001 certification. Please note: if you are currently in the certification process, please provide documentation.",
+        attachments: [{ name: "Certification_Requirements.pdf", size: "312 KB", url: "#" }],
+        timestamp: "2026-03-13T08:00:00Z",
       },
       {
-        id: "m7",
+        id: "m6",
         senderId: "s3",
         senderName: "Michael Brown",
         senderCompany: "Sustainable Solutions Inc",
         senderType: "supplier" as const,
-        content: "Does this apply to refurbished equipment as well? Some older models may not have the latest certification.",
-        attachments: [],
-        timestamp: "2026-03-15T09:30:00Z",
+        content: "We are currently in the final stages of certification. Expected completion date is April 15th. Please see attached status report.",
+        attachments: [{ name: "ISO_Status_Report.pdf", size: "156 KB", url: "#" }],
+        timestamp: "2026-03-14T10:30:00Z",
       },
     ],
   },
@@ -209,194 +227,165 @@ const allThreadsData = [
     id: "t4",
     rfpId: "rfp4",
     rfpTitle: "Fleet Management Services",
-    subject: "EV charging infrastructure requirements",
-    visibility: "all" as const,
-    status: "open" as const,
+    subject: "Question about pricing structure",
+    visibility: "private" as const,
+    status: "open",
     isRead: true,
-    createdAt: "2026-03-16T11:00:00Z",
-    updatedAt: "2026-03-16T11:00:00Z",
-    participants: ["s1", "s2", "s3", "s4", "s5"],
-    lastSenderType: "buyer" as const,
+    isStarred: true,
+    isArchived: false,
+    createdAt: "2026-03-14T11:30:00Z",
+    updatedAt: "2026-03-14T11:30:00Z",
+    lastSender: "Lisa Johnson",
+    lastSenderType: "supplier" as const,
+    lastSenderCompany: "EnviroTech Partners",
+    participants: ["s4"],
     messages: [
       {
-        id: "m8",
-        senderId: "b3",
-        senderName: "Emily Watson",
-        senderType: "buyer" as const,
-        content: "We are seeking proposals that include provisions for EV charging infrastructure at our main facilities.",
+        id: "m7",
+        senderId: "s4",
+        senderName: "Lisa Johnson",
+        senderCompany: "EnviroTech Partners",
+        senderType: "supplier" as const,
+        content: "Should we provide volume-based pricing tiers in our submission, or a single fixed price per unit? We can offer significant discounts at higher volumes.",
         attachments: [],
-        timestamp: "2026-03-16T11:00:00Z",
+        timestamp: "2026-03-14T11:30:00Z",
       },
     ],
   },
   {
     id: "t5",
-    rfpId: "rfp3",
-    rfpTitle: "Catering Services Contract",
-    subject: "Local sourcing requirements",
-    visibility: "private" as const,
-    status: "resolved" as const,
+    rfpId: "rfp1",
+    rfpTitle: "Sustainable Office Supplies 2026",
+    subject: "Updated submission deadline",
+    visibility: "all" as const,
+    status: "resolved",
     isRead: true,
-    createdAt: "2026-02-20T14:00:00Z",
-    updatedAt: "2026-02-25T10:30:00Z",
-    participants: ["s5"],
+    isStarred: false,
+    isArchived: false,
+    createdAt: "2026-03-08T14:00:00Z",
+    updatedAt: "2026-03-08T14:00:00Z",
+    lastSender: "Sarah Chen",
     lastSenderType: "buyer" as const,
+    participants: ["s1", "s2", "s3", "s4", "s5"],
     messages: [
       {
-        id: "m9",
-        senderId: "s5",
-        senderName: "Robert Williams",
-        senderCompany: "CleanSource Materials",
-        senderType: "supplier" as const,
-        content: "What percentage of ingredients need to be locally sourced?",
-        attachments: [],
-        timestamp: "2026-02-20T14:00:00Z",
-      },
-      {
-        id: "m10",
-        senderId: "b2",
-        senderName: "David Thompson",
+        id: "m8",
+        senderId: "buyer",
+        senderName: "Sarah Chen",
         senderType: "buyer" as const,
-        content: "We require at least 60% of fresh produce to be sourced within 100 miles of our facilities.",
-        attachments: [{ name: "Local_Sourcing_Policy.pdf", size: "89 KB", url: "#" }],
-        timestamp: "2026-02-25T10:30:00Z",
+        content: "Please note the submission deadline has been extended by one week to April 7th, 2026. This is to allow additional time for certification documentation.",
+        attachments: [],
+        timestamp: "2026-03-08T14:00:00Z",
       },
     ],
   },
 ]
 
 export default function MessagesPage() {
-  // Thread data state
+  // State
   const [threads, setThreads] = useState(allThreadsData)
+  const [selectedFolder, setSelectedFolder] = useState("inbox")
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(new Set())
-
-  // Filter states
   const [searchQuery, setSearchQuery] = useState("")
-  const [rfpFilter, setRfpFilter] = useState<string | null>(null)
-  const [buyerFilter, setBuyerFilter] = useState<string | null>(null)
-  const [supplierFilter, setSupplierFilter] = useState<string | null>(null)
-  const [visibilityFilter, setVisibilityFilter] = useState<"all" | "private" | null>(null)
-  const [statusFilter, setStatusFilter] = useState<string | null>(null)
-  const [hasAttachmentFilter, setHasAttachmentFilter] = useState<boolean | null>(null)
-  const [readFilter, setReadFilter] = useState<"read" | "unread" | null>(null)
-  const [dateFilter, setDateFilter] = useState<"today" | "week" | "month" | "all">("all")
-  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "rfp" | "supplier">("newest")
-
-  // Compose modal state
   const [composeOpen, setComposeOpen] = useState(false)
+  
+  // Compose state
   const [composeRfp, setComposeRfp] = useState("")
   const [composeSubject, setComposeSubject] = useState("")
   const [composeMessage, setComposeMessage] = useState("")
   const [composeRecipients, setComposeRecipients] = useState<string[]>([])
   const [composeVisibility, setComposeVisibility] = useState<"all" | "private">("private")
   const [composeAttachments, setComposeAttachments] = useState<{ name: string; size: string }[]>([])
-  const [showGlobalSuppliers, setShowGlobalSuppliers] = useState(false)
-
+  
   // Reply state
   const [replyMessage, setReplyMessage] = useState("")
   const [replyAttachments, setReplyAttachments] = useState<{ name: string; size: string }[]>([])
+  const [showGlobalSuppliers, setShowGlobalSuppliers] = useState(false)
 
-  // Selected thread
+  // Derived state
   const selectedThread = threads.find(t => t.id === selectedThreadId)
+  
+  // Filter threads based on folder
+  const getFilteredThreads = () => {
+    let filtered = threads.filter(t => !t.isArchived)
+    
+    // Apply search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(t => 
+        t.subject.toLowerCase().includes(query) ||
+        t.rfpTitle.toLowerCase().includes(query) ||
+        t.lastSender.toLowerCase().includes(query)
+      )
+    }
+    
+    // Apply folder filter
+    switch (selectedFolder) {
+      case "inbox":
+        return filtered.filter(t => !t.isArchived)
+      case "starred":
+        return filtered.filter(t => t.isStarred)
+      case "awaiting":
+        return filtered.filter(t => t.status === "awaiting")
+      case "action":
+        return filtered.filter(t => t.status === "action")
+      case "sent":
+        return filtered.filter(t => t.lastSenderType === "buyer")
+      case "all":
+        return threads.filter(t => !t.isArchived)
+      case "archived":
+        return threads.filter(t => t.isArchived)
+      default:
+        return filtered
+    }
+  }
+  
+  const filteredThreads = getFilteredThreads()
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+  
+  // Counts for folders
+  const unreadCount = threads.filter(t => !t.isRead && !t.isArchived).length
+  const starredCount = threads.filter(t => t.isStarred && !t.isArchived).length
+  const awaitingCount = threads.filter(t => t.status === "awaiting" && !t.isArchived).length
+  const actionCount = threads.filter(t => t.status === "action" && !t.isArchived).length
 
-  // Filter logic
-  const filteredThreads = threads
-    .filter(thread => {
-      // Search
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase()
-        const matchesSubject = thread.subject.toLowerCase().includes(query)
-        const matchesContent = thread.messages.some(m => m.content.toLowerCase().includes(query))
-        if (!matchesSubject && !matchesContent) return false
-      }
-      // RFP filter
-      if (rfpFilter && thread.rfpId !== rfpFilter) return false
-      // Buyer filter
-      if (buyerFilter && !thread.messages.some(m => m.senderType === "buyer" && m.senderId === buyerFilter)) return false
-      // Supplier filter
-      if (supplierFilter && !thread.participants.includes(supplierFilter)) return false
-      // Visibility filter
-      if (visibilityFilter === "all" && thread.visibility !== "all") return false
-      if (visibilityFilter === "private" && thread.visibility !== "private") return false
-      // Status filter
-      if (statusFilter && thread.status !== statusFilter) return false
-      // Attachment filter
-      if (hasAttachmentFilter === true && !thread.messages.some(m => m.attachments.length > 0)) return false
-      if (hasAttachmentFilter === false && thread.messages.some(m => m.attachments.length > 0)) return false
-      // Read filter
-      if (readFilter === "read" && !thread.isRead) return false
-      if (readFilter === "unread" && thread.isRead) return false
-      // Date filter
-      if (dateFilter !== "all") {
-        const threadDate = new Date(thread.updatedAt)
-        const now = new Date()
-        if (dateFilter === "today") {
-          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-          if (threadDate < today) return false
-        } else if (dateFilter === "week") {
-          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-          if (threadDate < weekAgo) return false
-        } else if (dateFilter === "month") {
-          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-          if (threadDate < monthAgo) return false
-        }
-      }
-      return true
-    })
-    .sort((a, b) => {
-      if (sortBy === "newest") return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      if (sortBy === "oldest") return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
-      if (sortBy === "rfp") return a.rfpTitle.localeCompare(b.rfpTitle)
-      if (sortBy === "supplier") {
-        const aSupplier = suppliersData.find(s => a.participants.includes(s.id))?.name || ""
-        const bSupplier = suppliersData.find(s => b.participants.includes(s.id))?.name || ""
-        return aSupplier.localeCompare(bSupplier)
-      }
-      return 0
-    })
-
-  // Count unread
-  const unreadCount = threads.filter(t => !t.isRead).length
-
-  // Has active filters
-  const hasActiveFilters = searchQuery || rfpFilter || buyerFilter || supplierFilter || visibilityFilter || statusFilter || hasAttachmentFilter !== null || readFilter || dateFilter !== "all"
-
-  // Clear all filters
-  const clearFilters = () => {
-    setSearchQuery("")
-    setRfpFilter(null)
-    setBuyerFilter(null)
-    setSupplierFilter(null)
-    setVisibilityFilter(null)
-    setStatusFilter(null)
-    setHasAttachmentFilter(null)
-    setReadFilter(null)
-    setDateFilter("all")
+  const getFolderCount = (key: string) => {
+    switch (key) {
+      case "inbox": return unreadCount
+      case "starred": return starredCount
+      case "awaiting": return awaitingCount
+      case "action": return actionCount
+      default: return 0
+    }
   }
 
-  // Format date helper
+  // Helpers
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr)
     const now = new Date()
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
     if (diffDays === 0) return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
-    if (diffDays === 1) return "Yesterday"
     if (diffDays < 7) return date.toLocaleDateString("en-GB", { weekday: "short" })
-    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+    if (date.getFullYear() === now.getFullYear()) return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" })
   }
 
-  // Toggle thread selection
-  const toggleThreadSelection = (threadId: string) => {
+  const handleSelectThread = (id: string) => {
+    setSelectedThreadId(id)
+    // Mark as read
+    setThreads(prev => prev.map(t => t.id === id ? { ...t, isRead: true } : t))
+  }
+
+  const toggleThreadSelection = (id: string) => {
     setSelectedThreadIds(prev => {
       const next = new Set(prev)
-      next.has(threadId) ? next.delete(threadId) : next.add(threadId)
+      next.has(id) ? next.delete(id) : next.add(id)
       return next
     })
   }
 
-  // Toggle all threads
-  const toggleAllThreads = () => {
+  const toggleSelectAll = () => {
     if (selectedThreadIds.size === filteredThreads.length) {
       setSelectedThreadIds(new Set())
     } else {
@@ -404,61 +393,53 @@ export default function MessagesPage() {
     }
   }
 
-  // Mark selected as read/unread
+  const toggleStar = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setThreads(prev => prev.map(t => t.id === id ? { ...t, isStarred: !t.isStarred } : t))
+  }
+
   const markSelectedAsRead = (read: boolean) => {
-    setThreads(prev => prev.map(t => 
-      selectedThreadIds.has(t.id) ? { ...t, isRead: read } : t
-    ))
+    setThreads(prev => prev.map(t => selectedThreadIds.has(t.id) ? { ...t, isRead: read } : t))
     setSelectedThreadIds(new Set())
   }
 
-  // Export to CSV
-  const exportToCSV = (threadsToExport: typeof threads, filename: string) => {
-    const headers = ["RFP", "Subject", "Visibility", "Status", "Last Updated", "Messages", "Has Attachments"]
-    const rows = threadsToExport.map(t => {
-      const hasAttachments = t.messages.some(m => m.attachments.length > 0)
-      return [
-        t.rfpTitle,
-        t.subject,
-        t.visibility === "all" ? "All Suppliers" : "Private",
-        threadStatuses.find(s => s.key === t.status)?.label || t.status,
-        new Date(t.updatedAt).toLocaleDateString("en-GB"),
-        t.messages.length.toString(),
-        hasAttachments ? "Yes" : "No",
-      ]
-    })
-    const csvContent = [headers, ...rows]
-      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
-      .join("\n")
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement("a")
-    link.href = url
-    link.download = filename
-    link.click()
-    URL.revokeObjectURL(url)
+  const archiveSelected = () => {
+    setThreads(prev => prev.map(t => selectedThreadIds.has(t.id) ? { ...t, isArchived: true } : t))
+    setSelectedThreadIds(new Set())
+    if (selectedThreadId && selectedThreadIds.has(selectedThreadId)) {
+      setSelectedThreadId(null)
+    }
   }
 
-  // Send new message
+  const updateThreadStatus = (id: string, status: string) => {
+    setThreads(prev => prev.map(t => t.id === id ? { ...t, status } : t))
+  }
+
+  const handleMakePublic = (id: string) => {
+    setThreads(prev => prev.map(t => t.id === id ? { ...t, visibility: "all" as const } : t))
+  }
+
   const handleSendMessage = () => {
     if (!composeRfp || !composeSubject.trim() || !composeMessage.trim()) return
     const rfp = rfpsData.find(r => r.id === composeRfp)
-    if (!rfp) return
     const newThread = {
       id: `t${Date.now()}`,
       rfpId: composeRfp,
-      rfpTitle: rfp.title,
+      rfpTitle: rfp?.title || "",
       subject: composeSubject,
       visibility: composeVisibility,
-      status: "open" as const,
+      status: "open",
       isRead: true,
+      isStarred: false,
+      isArchived: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      participants: composeRecipients,
+      lastSender: "Sarah Chen",
       lastSenderType: "buyer" as const,
+      participants: composeRecipients,
       messages: [{
         id: `m${Date.now()}`,
-        senderId: "b1",
+        senderId: "buyer",
         senderName: "Sarah Chen",
         senderType: "buyer" as const,
         content: composeMessage,
@@ -477,7 +458,6 @@ export default function MessagesPage() {
     setSelectedThreadId(newThread.id)
   }
 
-  // Send reply
   const handleSendReply = () => {
     if (!replyMessage.trim() || !selectedThreadId) return
     setThreads(prev => prev.map(thread => {
@@ -485,11 +465,12 @@ export default function MessagesPage() {
       return {
         ...thread,
         updatedAt: new Date().toISOString(),
+        lastSender: "Sarah Chen",
         lastSenderType: "buyer" as const,
-        status: "open" as const,
+        status: thread.status === "action" ? "awaiting" : thread.status,
         messages: [...thread.messages, {
           id: `m${Date.now()}`,
-          senderId: "b1",
+          senderId: "buyer",
           senderName: "Sarah Chen",
           senderType: "buyer" as const,
           content: replyMessage,
@@ -502,641 +483,554 @@ export default function MessagesPage() {
     setReplyAttachments([])
   }
 
-  // Mark thread as read when selected
-  const handleSelectThread = (threadId: string) => {
-    setSelectedThreadId(threadId)
-    setThreads(prev => prev.map(t => t.id === threadId ? { ...t, isRead: true } : t))
-  }
-
-  // Update thread status
-  const updateThreadStatus = (threadId: string, status: string) => {
-    setThreads(prev => prev.map(t => t.id === threadId ? { ...t, status: status as typeof t.status } : t))
-  }
-
-  // Make thread public
-  const handleMakePublic = (threadId: string) => {
-    setThreads(prev => prev.map(t => t.id === threadId ? { ...t, visibility: "all" as const } : t))
+  const exportToCSV = (threadsToExport: typeof threads, filename: string) => {
+    const headers = ["Subject", "RFP", "Status", "Visibility", "Last Sender", "Last Updated", "Messages"]
+    const rows = threadsToExport.map(t => [
+      t.subject,
+      t.rfpTitle,
+      threadStatuses.find(s => s.key === t.status)?.label || t.status,
+      t.visibility === "all" ? "All Suppliers" : "Private",
+      t.lastSender,
+      new Date(t.updatedAt).toLocaleDateString("en-GB"),
+      t.messages.length.toString(),
+    ])
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n")
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
     <DashboardShell>
-    <div className="space-y-6 p-5">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#111827]">Messages</h1>
-          <p className="text-sm text-[#6B7280] mt-1">
-            All communications across your RFPs
-            {unreadCount > 0 && (
-              <Badge className="ml-2 bg-[#16A34A] text-white">{unreadCount} unread</Badge>
-            )}
-          </p>
-        </div>
-        <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
-              <Plus className="size-4 mr-2" />
-              New Message
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>New Message</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {/* RFP Selection */}
-              <div className="space-y-2">
-                <Label>Select RFP</Label>
-                <Select value={composeRfp} onValueChange={setComposeRfp}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose an RFP..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {rfpsData.filter(r => r.status !== "closed").map(rfp => (
-                      <SelectItem key={rfp.id} value={rfp.id}>{rfp.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Subject */}
-              <div className="space-y-2">
-                <Label htmlFor="subject">Subject</Label>
-                <Input
-                  id="subject"
-                  placeholder="Enter message subject..."
-                  value={composeSubject}
-                  onChange={(e) => setComposeSubject(e.target.value)}
-                />
-              </div>
-
-              {/* Visibility */}
-              <div className="space-y-2">
-                <Label>Visibility</Label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={composeVisibility === "all" ? "default" : "outline"}
-                    size="sm"
-                    className={composeVisibility === "all" ? "bg-[#16A34A] hover:bg-[#15803D]" : ""}
-                    onClick={() => {
-                      setComposeVisibility("all")
-                      setComposeRecipients(suppliersData.map(s => s.id))
-                    }}
-                  >
-                    <Globe className="size-4 mr-1" />
-                    All Suppliers
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={composeVisibility === "private" ? "default" : "outline"}
-                    size="sm"
-                    className={composeVisibility === "private" ? "bg-[#16A34A] hover:bg-[#15803D]" : ""}
-                    onClick={() => setComposeVisibility("private")}
-                  >
-                    <Lock className="size-4 mr-1" />
-                    Private
-                  </Button>
-                </div>
-              </div>
-
-              {/* Recipients */}
-              {composeVisibility === "private" && (
+      <div className="flex flex-col h-[calc(100vh-64px)]">
+        {/* Top Bar - Search + Compose */}
+        <div className="flex items-center gap-4 px-4 py-3 border-b border-[#E5E7EB] bg-white">
+          <div className="relative flex-1 max-w-2xl">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#9CA3AF]" />
+            <Input
+              placeholder="Search messages..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-10 bg-[#F3F4F6] border-0 focus-visible:bg-white focus-visible:ring-1"
+            />
+          </div>
+          <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white shadow-sm">
+                <Plus className="size-4 mr-2" />
+                Compose
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>New Message</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                {/* RFP Selection */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Recipients</Label>
+                  <Label>Select RFP</Label>
+                  <Select value={composeRfp} onValueChange={setComposeRfp}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose an RFP..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rfpsData.filter(r => r.status !== "closed").map(rfp => (
+                        <SelectItem key={rfp.id} value={rfp.id}>{rfp.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Subject */}
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Subject</Label>
+                  <Input
+                    id="subject"
+                    placeholder="Enter message subject..."
+                    value={composeSubject}
+                    onChange={(e) => setComposeSubject(e.target.value)}
+                  />
+                </div>
+
+                {/* Visibility */}
+                <div className="space-y-2">
+                  <Label>Visibility</Label>
+                  <div className="flex gap-2">
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant={composeVisibility === "all" ? "default" : "outline"}
                       size="sm"
-                      className="h-7 text-xs text-[#16A34A] hover:text-[#15803D]"
-                      onClick={() => setShowGlobalSuppliers(!showGlobalSuppliers)}
+                      className={composeVisibility === "all" ? "bg-[#16A34A] hover:bg-[#15803D]" : ""}
+                      onClick={() => {
+                        setComposeVisibility("all")
+                        setComposeRecipients(suppliersData.map(s => s.id))
+                      }}
                     >
-                      <Globe className="size-3 mr-1" />
-                      {showGlobalSuppliers ? "Show registered" : "Add from global database"}
+                      <Globe className="size-4 mr-1" />
+                      All Suppliers
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={composeVisibility === "private" ? "default" : "outline"}
+                      size="sm"
+                      className={composeVisibility === "private" ? "bg-[#16A34A] hover:bg-[#15803D]" : ""}
+                      onClick={() => setComposeVisibility("private")}
+                    >
+                      <Lock className="size-4 mr-1" />
+                      Private
                     </Button>
                   </div>
-                  <div className="border border-[#E5E7EB] rounded-lg max-h-40 overflow-y-auto">
-                    {!showGlobalSuppliers ? (
-                      suppliersData.map(supplier => (
-                        <label
-                          key={supplier.id}
-                          className="flex items-center gap-3 px-3 py-2 hover:bg-[#F9FAFB] cursor-pointer border-b border-[#E5E7EB] last:border-b-0"
-                        >
-                          <Checkbox
-                            checked={composeRecipients.includes(supplier.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setComposeRecipients(prev => [...prev, supplier.id])
-                              } else {
-                                setComposeRecipients(prev => prev.filter(id => id !== supplier.id))
-                              }
-                            }}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[#111827] truncate">{supplier.name}</p>
-                            <p className="text-xs text-[#6B7280] truncate">{supplier.contact}</p>
-                          </div>
-                        </label>
-                      ))
-                    ) : (
-                      globalSuppliersData.map(supplier => (
-                        <label
-                          key={supplier.id}
-                          className="flex items-center gap-3 px-3 py-2 hover:bg-[#F9FAFB] cursor-pointer border-b border-[#E5E7EB] last:border-b-0"
-                        >
-                          <Checkbox
-                            checked={composeRecipients.includes(supplier.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setComposeRecipients(prev => [...prev, supplier.id])
-                              } else {
-                                setComposeRecipients(prev => prev.filter(id => id !== supplier.id))
-                              }
-                            }}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[#111827] truncate">{supplier.name}</p>
-                            <p className="text-xs text-[#6B7280] truncate">{supplier.contact} · {supplier.email}</p>
-                          </div>
-                          <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 shrink-0">
-                            Global
-                          </Badge>
-                        </label>
-                      ))
-                    )}
-                  </div>
-                  {composeRecipients.length > 0 && (
-                    <p className="text-xs text-[#6B7280]">{composeRecipients.length} recipient{composeRecipients.length !== 1 ? "s" : ""} selected</p>
-                  )}
                 </div>
-              )}
 
-              {/* Message */}
-              <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
-                <Textarea
-                  id="message"
-                  placeholder="Type your message..."
-                  value={composeMessage}
-                  onChange={(e) => setComposeMessage(e.target.value)}
-                  rows={5}
-                />
-              </div>
-
-              {/* Attachments */}
-              <div className="space-y-2">
-                <Label>Attachments</Label>
-                <div className="flex flex-wrap gap-2">
-                  {composeAttachments.map((file, idx) => (
-                    <Badge key={idx} variant="outline" className="bg-[#F3F4F6] text-[#6B7280] pr-1">
-                      <Paperclip className="size-3 mr-1" />
-                      {file.name}
-                      <button
+                {/* Recipients (only for private) */}
+                {composeVisibility === "private" && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Recipients</Label>
+                      <Button
                         type="button"
-                        className="ml-1 hover:text-red-600"
-                        onClick={() => setComposeAttachments(prev => prev.filter((_, i) => i !== idx))}
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs text-[#16A34A] hover:text-[#15803D]"
+                        onClick={() => setShowGlobalSuppliers(!showGlobalSuppliers)}
                       >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-6 text-xs"
-                    onClick={() => setComposeAttachments(prev => [...prev, { name: `Document_${prev.length + 1}.pdf`, size: "256 KB" }])}
-                  >
-                    <Paperclip className="size-3 mr-1" />
-                    Add file
-                  </Button>
+                        <Globe className="size-3 mr-1" />
+                        {showGlobalSuppliers ? "Show registered" : "Add from global"}
+                      </Button>
+                    </div>
+                    <div className="border border-[#E5E7EB] rounded-lg max-h-40 overflow-y-auto">
+                      {!showGlobalSuppliers ? (
+                        suppliersData.map(supplier => (
+                          <label
+                            key={supplier.id}
+                            className="flex items-center gap-3 px-3 py-2 hover:bg-[#F9FAFB] cursor-pointer border-b border-[#E5E7EB] last:border-b-0"
+                          >
+                            <Checkbox
+                              checked={composeRecipients.includes(supplier.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setComposeRecipients(prev => [...prev, supplier.id])
+                                } else {
+                                  setComposeRecipients(prev => prev.filter(id => id !== supplier.id))
+                                }
+                              }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-[#111827] truncate">{supplier.name}</p>
+                              <p className="text-xs text-[#6B7280] truncate">{supplier.contact}</p>
+                            </div>
+                          </label>
+                        ))
+                      ) : (
+                        globalSuppliersData.map(supplier => (
+                          <label
+                            key={supplier.id}
+                            className="flex items-center gap-3 px-3 py-2 hover:bg-[#F9FAFB] cursor-pointer border-b border-[#E5E7EB] last:border-b-0"
+                          >
+                            <Checkbox
+                              checked={composeRecipients.includes(supplier.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setComposeRecipients(prev => [...prev, supplier.id])
+                                } else {
+                                  setComposeRecipients(prev => prev.filter(id => id !== supplier.id))
+                                }
+                              }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-[#111827] truncate">{supplier.name}</p>
+                              <p className="text-xs text-[#6B7280] truncate">{supplier.contact}</p>
+                            </div>
+                            <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 shrink-0">
+                              Global
+                            </Badge>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Message */}
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea
+                    id="message"
+                    placeholder="Type your message..."
+                    value={composeMessage}
+                    onChange={(e) => setComposeMessage(e.target.value)}
+                    rows={5}
+                  />
+                </div>
+
+                {/* Attachments */}
+                <div className="space-y-2">
+                  <Label>Attachments</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {composeAttachments.map((file, idx) => (
+                      <Badge key={idx} variant="outline" className="bg-[#F3F4F6] text-[#6B7280] pr-1">
+                        <Paperclip className="size-3 mr-1" />
+                        {file.name}
+                        <button
+                          type="button"
+                          className="ml-1 hover:text-red-600"
+                          onClick={() => setComposeAttachments(prev => prev.filter((_, i) => i !== idx))}
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-xs"
+                      onClick={() => setComposeAttachments(prev => [...prev, { name: `Document_${prev.length + 1}.pdf`, size: "256 KB" }])}
+                    >
+                      <Paperclip className="size-3 mr-1" />
+                      Add file
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setComposeOpen(false)}>Cancel</Button>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setComposeOpen(false)}>Cancel</Button>
+                <Button
+                  className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                  onClick={handleSendMessage}
+                  disabled={!composeRfp || !composeSubject.trim() || !composeMessage.trim() || (composeVisibility === "private" && composeRecipients.length === 0)}
+                >
+                  <Send className="size-4 mr-1" />
+                  Send
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Main Content - 3 Column Layout */}
+        <div className="flex flex-1 min-h-0">
+          {/* Left Sidebar - Folders */}
+          <div className="w-56 border-r border-[#E5E7EB] bg-[#FAFAFA] p-3 shrink-0">
+            <nav className="space-y-1">
+              {folders.map(folder => {
+                const count = getFolderCount(folder.key)
+                const isActive = selectedFolder === folder.key
+                const Icon = folder.icon
+                return (
+                  <button
+                    key={folder.key}
+                    onClick={() => {
+                      setSelectedFolder(folder.key)
+                      setSelectedThreadId(null)
+                      setSelectedThreadIds(new Set())
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                      isActive 
+                        ? "bg-[#16A34A]/10 text-[#16A34A] font-medium" 
+                        : "text-[#4B5563] hover:bg-[#F3F4F6]"
+                    }`}
+                  >
+                    <Icon className={`size-4 ${isActive ? "text-[#16A34A]" : "text-[#9CA3AF]"}`} />
+                    <span className="flex-1 text-left">{folder.label}</span>
+                    {count > 0 && (
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                        isActive ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#6B7280]"
+                      }`}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </nav>
+
+            {/* Export section */}
+            <div className="mt-6 pt-4 border-t border-[#E5E7EB]">
+              <p className="text-xs font-medium text-[#9CA3AF] px-3 mb-2">EXPORT</p>
               <Button
-                className="bg-[#16A34A] hover:bg-[#15803D] text-white"
-                onClick={handleSendMessage}
-                disabled={!composeRfp || !composeSubject.trim() || !composeMessage.trim() || (composeVisibility === "private" && composeRecipients.length === 0)}
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start text-[#6B7280] hover:text-[#111827]"
+                onClick={() => exportToCSV(filteredThreads, "messages.csv")}
               >
-                <Send className="size-4 mr-1" />
-                Send Message
+                <Download className="size-4 mr-2" />
+                Download All
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Filter Bar */}
-      <Card className="border-[#E5E7EB] bg-white">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Search */}
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#9CA3AF]" />
-              <Input
-                placeholder="Search messages..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 text-sm"
-              />
+              {selectedThreadIds.size > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-[#6B7280] hover:text-[#111827]"
+                  onClick={() => {
+                    const selected = threads.filter(t => selectedThreadIds.has(t.id))
+                    exportToCSV(selected, "messages_selection.csv")
+                  }}
+                >
+                  <Download className="size-4 mr-2" />
+                  Download Selected ({selectedThreadIds.size})
+                </Button>
+              )}
             </div>
-
-            {/* RFP Filter */}
-            <Select value={rfpFilter || "all"} onValueChange={(v) => setRfpFilter(v === "all" ? null : v)}>
-              <SelectTrigger className="w-[180px] h-9">
-                <SelectValue placeholder="All RFPs" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All RFPs</SelectItem>
-                {rfpsData.map(rfp => (
-                  <SelectItem key={rfp.id} value={rfp.id}>{rfp.title}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Status Filter */}
-            <Select value={statusFilter || "all"} onValueChange={(v) => setStatusFilter(v === "all" ? null : v)}>
-              <SelectTrigger className="w-[160px] h-9">
-                <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                {threadStatuses.map(status => (
-                  <SelectItem key={status.key} value={status.key}>{status.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* More Filters Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 border-[#E5E7EB]">
-                  <Filter className="size-4 mr-2" />
-                  More Filters
-                  {(buyerFilter || supplierFilter || visibilityFilter || hasAttachmentFilter !== null || readFilter) && (
-                    <Badge className="ml-2 bg-[#16A34A] text-white text-xs px-1.5">
-                      {[buyerFilter, supplierFilter, visibilityFilter, hasAttachmentFilter !== null, readFilter].filter(Boolean).length}
-                    </Badge>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <div className="px-2 py-1.5 text-xs font-medium text-[#6B7280]">Visibility</div>
-                <DropdownMenuItem onClick={() => setVisibilityFilter(null)}>
-                  All {visibilityFilter === null && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setVisibilityFilter("all")}>
-                  <Globe className="size-4 mr-2" /> Public {visibilityFilter === "all" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setVisibilityFilter("private")}>
-                  <Lock className="size-4 mr-2" /> Private {visibilityFilter === "private" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <div className="px-2 py-1.5 text-xs font-medium text-[#6B7280]">Read Status</div>
-                <DropdownMenuItem onClick={() => setReadFilter(null)}>
-                  All {readFilter === null && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReadFilter("unread")}>
-                  <Mail className="size-4 mr-2" /> Unread Only {readFilter === "unread" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReadFilter("read")}>
-                  <MailOpen className="size-4 mr-2" /> Read Only {readFilter === "read" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <div className="px-2 py-1.5 text-xs font-medium text-[#6B7280]">Attachments</div>
-                <DropdownMenuItem onClick={() => setHasAttachmentFilter(null)}>
-                  All {hasAttachmentFilter === null && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHasAttachmentFilter(true)}>
-                  <Paperclip className="size-4 mr-2" /> Has Attachments {hasAttachmentFilter === true && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setHasAttachmentFilter(false)}>
-                  No Attachments {hasAttachmentFilter === false && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Date Filter */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 border-[#E5E7EB]">
-                  <Calendar className="size-4 mr-2" />
-                  {dateFilter === "all" ? "All Time" : dateFilter === "today" ? "Today" : dateFilter === "week" ? "Last 7 Days" : "Last 30 Days"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => setDateFilter("all")}>
-                  All Time {dateFilter === "all" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateFilter("today")}>
-                  Today {dateFilter === "today" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateFilter("week")}>
-                  Last 7 Days {dateFilter === "week" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setDateFilter("month")}>
-                  Last 30 Days {dateFilter === "month" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Sort */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-9">
-                  <ArrowUpDown className="size-4 mr-2" />
-                  {sortBy === "newest" ? "Newest" : sortBy === "oldest" ? "Oldest" : sortBy === "rfp" ? "By RFP" : "By Supplier"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setSortBy("newest")}>
-                  Newest First {sortBy === "newest" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy("oldest")}>
-                  Oldest First {sortBy === "oldest" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy("rfp")}>
-                  By RFP {sortBy === "rfp" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy("supplier")}>
-                  By Supplier {sortBy === "supplier" && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Clear Filters */}
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" className="h-9 text-[#6B7280] hover:text-red-600" onClick={clearFilters}>
-                <X className="size-4 mr-1" />
-                Clear
-              </Button>
-            )}
           </div>
 
-          {/* Bulk Actions */}
-          {selectedThreadIds.size > 0 && (
-            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-[#E5E7EB]">
-              <span className="text-sm text-[#6B7280]">{selectedThreadIds.size} selected</span>
-              <Button variant="outline" size="sm" className="h-8" onClick={() => markSelectedAsRead(true)}>
-                <MailOpen className="size-4 mr-1" />
-                Mark Read
+          {/* Middle - Thread List */}
+          <div className="w-96 border-r border-[#E5E7EB] bg-white flex flex-col shrink-0">
+            {/* Toolbar */}
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-[#E5E7EB] bg-[#FAFAFA]">
+              <Checkbox
+                checked={filteredThreads.length > 0 && selectedThreadIds.size === filteredThreads.length}
+                onCheckedChange={toggleSelectAll}
+                aria-label="Select all"
+              />
+              <Button variant="ghost" size="icon" className="size-8" onClick={() => window.location.reload()}>
+                <RefreshCw className="size-4 text-[#6B7280]" />
               </Button>
-              <Button variant="outline" size="sm" className="h-8" onClick={() => markSelectedAsRead(false)}>
-                <Mail className="size-4 mr-1" />
-                Mark Unread
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 text-[#6B7280]" onClick={() => setSelectedThreadIds(new Set())}>
-                Clear Selection
-              </Button>
+              {selectedThreadIds.size > 0 && (
+                <>
+                  <div className="w-px h-4 bg-[#E5E7EB]" />
+                  <Button variant="ghost" size="icon" className="size-8" onClick={() => archiveSelected()}>
+                    <Archive className="size-4 text-[#6B7280]" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="size-8" onClick={() => markSelectedAsRead(true)}>
+                    <MailOpen className="size-4 text-[#6B7280]" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="size-8" onClick={() => markSelectedAsRead(false)}>
+                    <Mail className="size-4 text-[#6B7280]" />
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="size-8">
+                        <Tag className="size-4 text-[#6B7280]" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {threadStatuses.map(status => (
+                        <DropdownMenuItem key={status.key} onClick={() => {
+                          setThreads(prev => prev.map(t => selectedThreadIds.has(t.id) ? { ...t, status: status.key } : t))
+                          setSelectedThreadIds(new Set())
+                        }}>
+                          <status.icon className="size-4 mr-2" />
+                          {status.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
+              <div className="flex-1" />
+              <span className="text-xs text-[#9CA3AF]">
+                {filteredThreads.length} message{filteredThreads.length !== 1 ? "s" : ""}
+              </span>
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Results Header */}
-      <div className="flex items-center justify-between text-sm text-[#6B7280]">
-        <div className="flex items-center gap-3">
-          <span>Showing {filteredThreads.length} of {threads.length} conversations</span>
-          {selectedThreadIds.size > 0 && (
-            <span className="text-[#16A34A] font-medium">
-              {selectedThreadIds.size} selected
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 border-[#E5E7EB]"
-            disabled={selectedThreadIds.size === 0}
-            onClick={() => {
-              const selected = threads.filter(t => selectedThreadIds.has(t.id))
-              exportToCSV(selected, "messages_selection.csv")
-            }}
-          >
-            <Download className="size-4 mr-2" />
-            Download Selection
-            {selectedThreadIds.size > 0 && (
-              <Badge className="ml-2 bg-[#16A34A] text-white text-xs px-1.5">{selectedThreadIds.size}</Badge>
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 border-[#E5E7EB]"
-            onClick={() => exportToCSV(threads, "all_messages.csv")}
-          >
-            <Download className="size-4 mr-2" />
-            Download All
-          </Button>
-        </div>
-      </div>
-
-      {/* Two-Panel Layout */}
-      <div className="flex gap-4 h-[calc(100vh-380px)] min-h-[500px]">
-        {/* Thread List */}
-        <Card className="border-[#E5E7EB] bg-white w-[420px] flex flex-col shrink-0 overflow-hidden pt-0">
-          <CardHeader className="pb-3 border-b border-[#E5E7EB] flex flex-row items-center gap-3">
-            <Checkbox
-              checked={filteredThreads.length > 0 && selectedThreadIds.size === filteredThreads.length}
-              onCheckedChange={toggleAllThreads}
-              aria-label="Select all"
-            />
-            <CardTitle className="text-sm font-medium text-[#6B7280]">
-              {filteredThreads.length} conversation{filteredThreads.length !== 1 ? "s" : ""}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 flex-1 overflow-y-auto">
-            {filteredThreads.length === 0 ? (
-              <div className="p-6 text-center text-[#6B7280]">
-                <Mail className="size-8 mx-auto mb-2 opacity-40" />
-                <p className="text-sm">No messages found</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-[#E5E7EB]">
-                {filteredThreads.map(thread => {
-                  const lastMessage = thread.messages[thread.messages.length - 1]
+            {/* Thread List */}
+            <div className="flex-1 overflow-y-auto">
+              {filteredThreads.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-[#9CA3AF]">
+                  <Mail className="size-12 mb-3 opacity-30" />
+                  <p className="font-medium">No messages</p>
+                  <p className="text-sm">Messages will appear here</p>
+                </div>
+              ) : (
+                filteredThreads.map(thread => {
                   const isSelected = selectedThreadId === thread.id
                   const statusInfo = threadStatuses.find(s => s.key === thread.status)
-                  const StatusIcon = statusInfo?.icon || Circle
                   return (
                     <div
                       key={thread.id}
-                      className={`flex items-start gap-3 px-4 py-3 hover:bg-[#F9FAFB] transition-colors cursor-pointer ${isSelected ? "bg-[#F0FDF4] border-l-2 border-l-[#16A34A]" : ""}`}
+                      className={`flex items-start gap-2 px-3 py-2.5 border-b border-[#F3F4F6] cursor-pointer transition-colors ${
+                        isSelected ? "bg-[#EBF5FF]" : "hover:bg-[#F9FAFB]"
+                      } ${!thread.isRead ? "bg-white" : "bg-[#FAFAFA]"}`}
+                      onClick={() => handleSelectThread(thread.id)}
                     >
                       <Checkbox
                         checked={selectedThreadIds.has(thread.id)}
                         onCheckedChange={() => toggleThreadSelection(thread.id)}
                         onClick={(e) => e.stopPropagation()}
-                        aria-label={`Select ${thread.subject}`}
                         className="mt-1"
                       />
                       <button
-                        className="flex-1 text-left min-w-0"
-                        onClick={() => handleSelectThread(thread.id)}
+                        onClick={(e) => toggleStar(thread.id, e)}
+                        className={`mt-0.5 ${thread.isStarred ? "text-amber-400" : "text-[#D1D5DB] hover:text-amber-400"}`}
                       >
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-2 min-w-0">
-                            {!thread.isRead && (
-                              <span className="size-2 rounded-full bg-[#16A34A] shrink-0" />
-                            )}
-                            <p className={`text-sm line-clamp-1 ${!thread.isRead ? "font-semibold text-[#111827]" : "font-medium text-[#111827]"} ${isSelected ? "text-[#16A34A]" : ""}`}>
-                              {thread.subject}
-                            </p>
-                          </div>
-                          <span className="text-xs text-[#9CA3AF] shrink-0">{formatDate(thread.updatedAt)}</span>
+                        <Star className={`size-4 ${thread.isStarred ? "fill-current" : ""}`} />
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className={`text-sm truncate ${!thread.isRead ? "font-semibold text-[#111827]" : "text-[#4B5563]"}`}>
+                            {thread.lastSenderType === "supplier" ? thread.lastSender : "Me"}
+                          </span>
+                          {thread.visibility === "all" && (
+                            <Globe className="size-3 text-blue-500 shrink-0" />
+                          )}
+                          {thread.visibility === "private" && (
+                            <Lock className="size-3 text-[#9CA3AF] shrink-0" />
+                          )}
                         </div>
-                        <p className="text-xs text-[#6B7280] line-clamp-1 mb-1.5">{thread.rfpTitle}</p>
-                        <p className="text-xs text-[#9CA3AF] line-clamp-1 mb-2">{lastMessage.content}</p>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline" className={`text-xs ${statusInfo?.color}`}>
-                            <StatusIcon className="size-3 mr-1" />
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className={`text-sm truncate ${!thread.isRead ? "font-medium text-[#111827]" : "text-[#4B5563]"}`}>
+                            {thread.subject}
+                          </span>
+                          {thread.messages.some(m => m.attachments.length > 0) && (
+                            <Paperclip className="size-3 text-[#9CA3AF] shrink-0" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-[#9CA3AF] truncate">{thread.rfpTitle}</span>
+                          <Badge className={`text-[10px] px-1.5 py-0 h-4 ${statusInfo?.color} border-0`}>
                             {statusInfo?.label}
                           </Badge>
-                          <Badge
-                            variant="outline"
-                            className={`text-xs ${thread.visibility === "all" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-gray-50 text-gray-600 border-gray-200"}`}
-                          >
-                            {thread.visibility === "all" ? (
-                              <><Globe className="size-3 mr-1" />All</>
-                            ) : (
-                              <><Lock className="size-3 mr-1" />Private</>
-                            )}
-                          </Badge>
-                          {thread.messages.some(m => m.attachments.length > 0) && (
-                            <Paperclip className="size-3 text-[#9CA3AF]" />
-                          )}
-                          <span className="text-xs text-[#9CA3AF]">{thread.messages.length}</span>
                         </div>
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Thread Detail */}
-        <Card className="border-[#E5E7EB] bg-white flex-1 flex flex-col min-w-0 overflow-hidden pt-0">
-          {selectedThread ? (
-            <>
-              <CardHeader className="pb-3 border-b border-[#E5E7EB]">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <CardTitle className="text-base truncate">{selectedThread.subject}</CardTitle>
-                    <p className="text-xs text-[#6B7280] mt-0.5">{selectedThread.rfpTitle}</p>
-                    <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${threadStatuses.find(s => s.key === selectedThread.status)?.color}`}
-                      >
-                        {(() => {
-                          const StatusIcon = threadStatuses.find(s => s.key === selectedThread.status)?.icon || Circle
-                          return <StatusIcon className="size-3 mr-1" />
-                        })()}
-                        {threadStatuses.find(s => s.key === selectedThread.status)?.label}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${selectedThread.visibility === "all" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-gray-50 text-gray-600 border-gray-200"}`}
-                      >
-                        {selectedThread.visibility === "all" ? (
-                          <><Globe className="size-3 mr-1" />All Suppliers</>
-                        ) : (
-                          <><Lock className="size-3 mr-1" />Private</>
-                        )}
-                      </Badge>
-                      <span className="text-xs text-[#9CA3AF]">
-                        Started {new Date(selectedThread.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      </div>
+                      <span className="text-xs text-[#9CA3AF] shrink-0 mt-0.5">
+                        {formatDate(thread.updatedAt)}
                       </span>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {/* Status dropdown */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          Status
+                  )
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Right - Thread Detail */}
+          <div className="flex-1 bg-white flex flex-col min-w-0">
+            {selectedThread ? (
+              <>
+                {/* Thread Header */}
+                <div className="px-6 py-4 border-b border-[#E5E7EB]">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <h2 className="text-lg font-semibold text-[#111827] truncate">{selectedThread.subject}</h2>
+                      <p className="text-sm text-[#6B7280] mt-0.5">{selectedThread.rfpTitle}</p>
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <Badge className={`text-xs ${threadStatuses.find(s => s.key === selectedThread.status)?.color} border-0`}>
+                          {(() => {
+                            const StatusIcon = threadStatuses.find(s => s.key === selectedThread.status)?.icon || Circle
+                            return <StatusIcon className="size-3 mr-1" />
+                          })()}
+                          {threadStatuses.find(s => s.key === selectedThread.status)?.label}
+                        </Badge>
+                        <Badge variant="outline" className={`text-xs ${selectedThread.visibility === "all" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-gray-50 text-gray-600 border-gray-200"}`}>
+                          {selectedThread.visibility === "all" ? (
+                            <><Globe className="size-3 mr-1" />All Suppliers</>
+                          ) : (
+                            <><Lock className="size-3 mr-1" />Private</>
+                          )}
+                        </Badge>
+                        <span className="text-xs text-[#9CA3AF]">{selectedThread.messages.length} message{selectedThread.messages.length !== 1 ? "s" : ""}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            Status <ChevronDown className="size-4 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {threadStatuses.map(status => (
+                            <DropdownMenuItem key={status.key} onClick={() => updateThreadStatus(selectedThread.id, status.key)}>
+                              <status.icon className="size-4 mr-2" />
+                              {status.label}
+                              {selectedThread.status === status.key && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      {selectedThread.visibility === "private" && (
+                        <Button variant="outline" size="sm" onClick={() => handleMakePublic(selectedThread.id)}>
+                          <Globe className="size-4 mr-1" />
+                          Make Public
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {threadStatuses.map(status => (
-                          <DropdownMenuItem key={status.key} onClick={() => updateThreadStatus(selectedThread.id, status.key)}>
-                            <status.icon className="size-4 mr-2" />
-                            {status.label}
-                            {selectedThread.status === status.key && <CheckCircle className="size-4 ml-auto text-[#16A34A]" />}
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="size-8">
+                            <MoreVertical className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => toggleStar(selectedThread.id, {} as React.MouseEvent)}>
+                            <Star className={`size-4 mr-2 ${selectedThread.isStarred ? "fill-amber-400 text-amber-400" : ""}`} />
+                            {selectedThread.isStarred ? "Unstar" : "Star"}
                           </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    {selectedThread.visibility === "private" && (
-                      <Button variant="outline" size="sm" onClick={() => handleMakePublic(selectedThread.id)}>
-                        <Globe className="size-4 mr-1" />
-                        Make Public
-                      </Button>
-                    )}
+                          <DropdownMenuItem onClick={() => {
+                            setThreads(prev => prev.map(t => t.id === selectedThread.id ? { ...t, isArchived: true } : t))
+                            setSelectedThreadId(null)
+                          }}>
+                            <Archive className="size-4 mr-2" />
+                            Archive
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => exportToCSV([selectedThread], `thread_${selectedThread.id}.csv`)}>
+                            <Download className="size-4 mr-2" />
+                            Export
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-                {selectedThread.messages.map(message => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${message.senderType === "buyer" ? "flex-row-reverse" : ""}`}
-                  >
-                    <Avatar className="size-8 shrink-0">
-                      <AvatarFallback className={`text-xs ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#F3F4F6] text-[#6B7280]"}`}>
-                        {message.senderName.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className={`flex-1 max-w-[75%] ${message.senderType === "buyer" ? "text-right" : ""}`}>
-                      <div className={`inline-block text-left rounded-lg px-4 py-2.5 ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#F3F4F6] text-[#111827]"}`}>
+
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                  {selectedThread.messages.map((message, idx) => (
+                    <div key={message.id} className="flex gap-4">
+                      <Avatar className="size-10 shrink-0">
+                        <AvatarFallback className={`text-sm ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#4B5563]"}`}>
+                          {message.senderName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className={`text-xs font-medium ${message.senderType === "buyer" ? "text-green-100" : "text-[#6B7280]"}`}>
-                            {message.senderName}
-                            {message.senderType === "supplier" && message.senderCompany && ` · ${message.senderCompany}`}
+                          <span className="font-medium text-[#111827]">{message.senderName}</span>
+                          {message.senderType === "supplier" && message.senderCompany && (
+                            <span className="text-sm text-[#6B7280]">{message.senderCompany}</span>
+                          )}
+                          <span className="text-xs text-[#9CA3AF]">
+                            {new Date(message.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </div>
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <div className="text-sm text-[#374151] whitespace-pre-wrap">{message.content}</div>
                         {message.attachments.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-2">
-                            {message.attachments.map((att, idx) => (
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            {message.attachments.map((att, i) => (
                               <a
-                                key={idx}
+                                key={i}
                                 href={att.url}
-                                className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${message.senderType === "buyer" ? "bg-green-600 hover:bg-green-700 text-white" : "bg-white border border-[#E5E7EB] hover:bg-[#F9FAFB] text-[#6B7280]"}`}
+                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] text-sm"
                               >
-                                <Paperclip className="size-3" />
-                                {att.name}
+                                <Paperclip className="size-4 text-[#6B7280]" />
+                                <span className="text-[#111827]">{att.name}</span>
+                                <span className="text-xs text-[#9CA3AF]">{att.size}</span>
                               </a>
                             ))}
                           </div>
                         )}
                       </div>
-                      <p className={`text-xs text-[#9CA3AF] mt-1 ${message.senderType === "buyer" ? "text-right" : ""}`}>
-                        {new Date(message.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      </p>
                     </div>
-                  </div>
-                ))}
-              </CardContent>
-              {/* Reply Composer */}
-              <div className="border-t border-[#E5E7EB] p-4">
-                <div className="flex gap-2">
-                  <div className="flex-1 space-y-2">
+                  ))}
+                </div>
+
+                {/* Reply Composer */}
+                <div className="border-t border-[#E5E7EB] p-4 bg-[#FAFAFA]">
+                  <div className="bg-white rounded-lg border border-[#E5E7EB] p-3">
                     <Textarea
-                      placeholder="Type your reply..."
+                      placeholder="Write a reply..."
                       value={replyMessage}
                       onChange={(e) => setReplyMessage(e.target.value)}
-                      rows={2}
-                      className="resize-none"
+                      rows={3}
+                      className="border-0 p-0 resize-none focus-visible:ring-0 text-sm"
                     />
                     {replyAttachments.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-[#E5E7EB]">
                         {replyAttachments.map((file, idx) => (
                           <Badge key={idx} variant="outline" className="bg-[#F3F4F6] text-[#6B7280] pr-1">
                             <Paperclip className="size-3 mr-1" />
@@ -1152,40 +1046,40 @@ export default function MessagesPage() {
                         ))}
                       </div>
                     )}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-9 w-9"
-                      onClick={() => setReplyAttachments(prev => [...prev, { name: `Attachment_${prev.length + 1}.pdf`, size: "128 KB" }])}
-                    >
-                      <Paperclip className="size-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      className="h-9 w-9 bg-[#16A34A] hover:bg-[#15803D] text-white"
-                      onClick={handleSendReply}
-                      disabled={!replyMessage.trim()}
-                    >
-                      <Send className="size-4" />
-                    </Button>
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#E5E7EB]">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setReplyAttachments(prev => [...prev, { name: `Attachment_${prev.length + 1}.pdf`, size: "128 KB" }])}
+                      >
+                        <Paperclip className="size-4 mr-1" />
+                        Attach
+                      </Button>
+                      <Button
+                        className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                        size="sm"
+                        onClick={handleSendReply}
+                        disabled={!replyMessage.trim()}
+                      >
+                        <Send className="size-4 mr-1" />
+                        Send
+                      </Button>
+                    </div>
                   </div>
                 </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-[#9CA3AF]">
+                <div className="text-center">
+                  <Mail className="size-16 mx-auto mb-4 opacity-20" />
+                  <p className="text-lg font-medium text-[#6B7280]">Select a message</p>
+                  <p className="text-sm mt-1">Choose a conversation from the list to view</p>
+                </div>
               </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-[#6B7280]">
-              <div className="text-center">
-                <Mail className="size-12 mx-auto mb-3 opacity-30" />
-                <p className="font-medium">Select a conversation</p>
-                <p className="text-sm text-[#9CA3AF] mt-1">Choose a thread from the list to view messages</p>
-              </div>
-            </div>
-          )}
-        </Card>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
     </DashboardShell>
   )
 }
