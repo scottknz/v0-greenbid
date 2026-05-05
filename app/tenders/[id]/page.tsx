@@ -57,7 +57,6 @@ import {
   Star,
   Sparkles,
   Save,
-  FileText,
   Loader2,
 } from "lucide-react"
 
@@ -1816,7 +1815,28 @@ export default function TenderDetailPage() {
             <Card className="border-[#E5E7EB] bg-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <div>
-                  <CardTitle className="text-lg">Evaluation Criteria</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-lg">Evaluation Criteria</CardTitle>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs border-[#E5E7EB] text-[#6B7280] hover:text-[#16A34A] hover:border-[#16A34A]"
+                      onClick={generateCriteriaFromRfp}
+                      disabled={generatingFromRfp}
+                    >
+                      {generatingFromRfp ? (
+                        <>
+                          <Loader2 className="size-3 mr-1 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="size-3 mr-1" />
+                          Generate from RFP
+                        </>
+                      )}
+                    </Button>
+                  </div>
                   <CardDescription>Configure weightings and instructions for each evaluation category</CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
