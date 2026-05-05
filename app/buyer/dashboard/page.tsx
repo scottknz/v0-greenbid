@@ -32,14 +32,14 @@ const mockTenders: TenderRow[] = [
 const mockActivities: ActivityItem[] = [
   { id: '1', icon: CheckCircle2, action: 'Score confirmed for', target: 'Cloud Infrastructure Upgrade 2026', timestamp: '2 hours ago', isUnread: true },
   { id: '2', icon: Mail, action: 'Submission received from GreenTech Ltd', timestamp: '5 hours ago', isUnread: true },
-  { id: '3', icon: FileText, action: 'Tender published:', target: 'Scope 3 Emissions Audit', timestamp: '1 day ago' },
+  { id: '3', icon: FileText, action: 'RFP published:', target: 'Scope 3 Emissions Audit', timestamp: '1 day ago' },
   { id: '4', icon: Award, action: 'Contract awarded for', target: 'Fleet Electrification Program', timestamp: '2 days ago' },
 ];
 
 const tenderColumns = [
   {
     key: 'name',
-    header: 'Tender Name',
+    header: 'RFP Name',
     cell: (row: TenderRow) => <span className="font-medium">{row.name}</span>,
     className: 'w-[40%]',
   },
@@ -88,13 +88,13 @@ export default function BuyerDashboardPage() {
       <div className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-6">
         <h1 className="text-lg font-semibold text-text-primary">Dashboard</h1>
         <Button className="bg-brand-green hover:bg-brand-green-mid text-white h-9 px-4 rounded-md">
-          + New Tender
+          + Create RFP
         </Button>
       </div>
 
       <div className="flex-1 p-6 space-y-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Active Tenders" value={12} icon={FileText} valueColor="text-brand-green" />
+          <StatCard title="Active RFPs" value={12} icon={FileText} valueColor="text-brand-green" />
           <StatCard title="Awaiting Review" value={4} icon={AlertCircle} valueColor="text-warning" trend="up" trendValue="+2" trendLabel="since yesterday" />
           <StatCard title="Suppliers Invited" value={38} icon={Users} valueColor="text-info" />
           <StatCard title="Awarded YTD" value={24} icon={Award} />
@@ -103,7 +103,7 @@ export default function BuyerDashboardPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
             <div className="flex flex-col gap-4">
-              <h2 className="text-sm font-semibold text-text-primary">Active Tenders</h2>
+              <h2 className="text-sm font-semibold text-text-primary">Active RFPs</h2>
               <DataTable
                 data={mockTenders}
                 columns={tenderColumns}

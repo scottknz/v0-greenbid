@@ -43,7 +43,12 @@ export function Sidebar({ variant }: SidebarProps) {
               {item.label}
             </span>
           )}
-          {item.badge && !isSidebarCollapsed && (
+          {item.badgeCount && item.badgeCount > 0 && !isSidebarCollapsed && (
+            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-green px-1.5 text-xs font-medium text-white" aria-hidden="true">
+              {item.badgeCount}
+            </span>
+          )}
+          {item.badge && !item.badgeCount && !isSidebarCollapsed && (
             <span className="ml-auto flex h-2 w-2 rounded-full bg-brand-green" aria-hidden="true" />
           )}
         </>
@@ -120,10 +125,10 @@ export function Sidebar({ variant }: SidebarProps) {
             'bg-brand-green text-white hover:bg-brand-green/90',
             isSidebarCollapsed ? 'h-9 w-9 p-0' : ''
           )}
-          aria-label="New Tender"
+          aria-label="Create RFP"
         >
           <Plus className="h-4 w-4 shrink-0" />
-          {!isSidebarCollapsed && <span>New Tender</span>}
+          {!isSidebarCollapsed && <span>Create RFP</span>}
         </Link>
         <div className="h-2" />
         {renderNavItems(mainItems)}

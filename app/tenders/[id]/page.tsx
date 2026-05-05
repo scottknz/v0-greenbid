@@ -18,6 +18,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -63,6 +64,11 @@ import {
   MessageSquare,
   ClipboardList,
   ArrowUpDown,
+  MessageCircle,
+  Paperclip,
+  Reply,
+  Globe,
+  Lock,
 } from "lucide-react"
 
 // Mock data - in production this would come from an API
@@ -72,7 +78,7 @@ const tenderData = {
   referenceId: "TND-2026-001",
   status: "active" as const,
   category: "Office Supplies",
-  description: "Procurement of sustainable and eco-friendly office supplies including recycled paper products, biodegradable pens and markers, energy-efficient desk accessories, and environmentally certified furniture items. This tender aims to reduce our carbon footprint while maintaining high-quality standards for workplace materials.",
+  description: "Procurement of sustainable and eco-friendly office supplies including recycled paper products, biodegradable pens and markers, energy-efficient desk accessories, and environmentally certified furniture items. This RFP aims to reduce our carbon footprint while maintaining high-quality standards for workplace materials.",
   requirements: [
     "All paper products must contain minimum 80% post-consumer recycled content",
     "Plastic items must be recyclable or biodegradable",
@@ -82,13 +88,13 @@ const tenderData = {
   ],
   evaluationCriteria: [
     { 
-      name: "Completeness", 
+      name: "Content", 
       weight: 15,
-      instructions: "Assess whether the supplier has provided all required documentation and addressed all sections of the tender. Look for completeness of responses and adherence to submission guidelines.",
+      instructions: "Assess whether the supplier has provided all required documentation and addressed all sections of the RFP. Look for completeness of responses and adherence to submission guidelines.",
       instructionsSaved: true,
       subcategories: [
         { name: "Documentation completeness", description: "Verify all required documents are submitted including company profile, technical proposal, pricing, certifications, and references.", saved: true },
-        { name: "Response coverage", description: "Check that all sections of the tender specification have been addressed with appropriate detail and clarity.", saved: true },
+        { name: "Response coverage", description: "Check that all sections of the RFP specification have been addressed with appropriate detail and clarity.", saved: true },
         { name: "Compliance with requirements", description: "Confirm adherence to mandatory requirements including format, deadlines, and submission guidelines.", saved: true }
       ]
     },
@@ -116,18 +122,6 @@ const tenderData = {
       ]
     },
     { 
-      name: "Price", 
-      weight: 20,
-      instructions: "Analyze pricing competitiveness, value for money, payment terms offered, and total cost of ownership including any hidden costs or long-term implications.",
-      instructionsSaved: true,
-      subcategories: [
-        { name: "Base pricing", description: "Compare proposed pricing against market rates, budget constraints, and competitor offerings.", saved: true },
-        { name: "Value for money", description: "Assess the overall value proposition considering quality, service levels, and long-term benefits relative to cost.", saved: true },
-        { name: "Payment terms", description: "Evaluate flexibility of payment schedules, early payment discounts, and financing options offered.", saved: true },
-        { name: "Total cost of ownership", description: "Calculate all costs including implementation, maintenance, training, and disposal over the contract period.", saved: true }
-      ]
-    },
-    { 
       name: "Sustainability", 
       weight: 20,
       instructions: "Assess environmental impact, carbon footprint reduction measures, ethical sourcing practices, and social responsibility initiatives aligned with our ESG goals.",
@@ -149,6 +143,18 @@ const tenderData = {
         { name: "Supply chain reliability", description: "Evaluate supplier network diversity, delivery track record, and contingency arrangements.", saved: true },
         { name: "Business continuity", description: "Review documented BCP, disaster recovery plans, and crisis management procedures.", saved: true },
         { name: "Insurance coverage", description: "Verify adequate liability, professional indemnity, and product insurance coverage levels.", saved: true }
+      ]
+    },
+    { 
+      name: "Price", 
+      weight: 20,
+      instructions: "Analyze pricing competitiveness, value for money, payment terms offered, and total cost of ownership including any hidden costs or long-term implications.",
+      instructionsSaved: true,
+      subcategories: [
+        { name: "Base pricing", description: "Compare proposed pricing against market rates, budget constraints, and competitor offerings.", saved: true },
+        { name: "Value for money", description: "Assess the overall value proposition considering quality, service levels, and long-term benefits relative to cost.", saved: true },
+        { name: "Payment terms", description: "Evaluate flexibility of payment schedules, early payment discounts, and financing options offered.", saved: true },
+        { name: "Total cost of ownership", description: "Calculate all costs including implementation, maintenance, training, and disposal over the contract period.", saved: true }
       ]
     },
   ],
@@ -173,12 +179,12 @@ const submissionsData = [
     totalHours: 240,
     completionDate: "Jun 30, 2026",
     scores: {
-      completeness: 95,
+      content: 95,
       quality: 88,
       capability: 92,
-      price: 85,
       sustainability: 90,
       risk: 87,
+      price: 85,
     },
     weightedScore: 89,
     documents: [
@@ -200,12 +206,12 @@ const submissionsData = [
     totalHours: 220,
     completionDate: "Jul 15, 2026",
     scores: {
-      completeness: 100,
+      content: 100,
       quality: 85,
       capability: 88,
-      price: 92,
       sustainability: 86,
       risk: 91,
+      price: 92,
     },
     weightedScore: 90,
     documents: [
@@ -226,12 +232,12 @@ const submissionsData = [
     totalHours: 280,
     completionDate: "Aug 1, 2026",
     scores: {
-      completeness: 90,
+      content: 90,
       quality: 95,
       capability: 90,
-      price: 78,
       sustainability: 94,
       risk: 82,
+      price: 78,
     },
     weightedScore: 87,
     documents: [
@@ -300,12 +306,12 @@ const assessmentData: Record<string, {
   s1: {
     categories: [
       {
-        name: "Completeness",
+        name: "Content",
         aiScore: 95,
         actualScore: 95,
         subcategories: [
           { name: "Documentation completeness", aiScore: 98, actualScore: 98, aiJustification: "All required documents have been submitted including company profile, technical proposal, pricing schedule, certifications, and references. The submission follows the required format and structure.", humanJustification: "" },
-          { name: "Response coverage", aiScore: 94, actualScore: 94, aiJustification: "The proposal addresses 94% of the requirements outlined in the tender specification. Minor gaps identified in the waste management section.", humanJustification: "" },
+          { name: "Response coverage", aiScore: 94, actualScore: 94, aiJustification: "The proposal addresses 94% of the requirements outlined in the RFP specification. Minor gaps identified in the waste management section.", humanJustification: "" },
           { name: "Compliance with requirements", aiScore: 93, actualScore: 93, aiJustification: "Strong compliance with ISO 14001 requirements. All paper products exceed the 80% recycled content threshold. Delivery vehicles confirmed as Euro 6 compliant.", humanJustification: "" },
         ]
       },
@@ -331,17 +337,6 @@ const assessmentData: Record<string, {
         ]
       },
       {
-        name: "Price",
-        aiScore: 85,
-        actualScore: 85,
-        subcategories: [
-          { name: "Base pricing", aiScore: 82, actualScore: 82, aiJustification: "Pricing is 5% above market average but includes premium sustainable materials.", humanJustification: "" },
-          { name: "Value for money", aiScore: 88, actualScore: 88, aiJustification: "Total cost of ownership analysis shows 12% savings over 3-year period due to durability.", humanJustification: "" },
-          { name: "Payment terms", aiScore: 84, actualScore: 84, aiJustification: "Offers Net 45 payment terms with 2% early payment discount.", humanJustification: "" },
-          { name: "Total cost of ownership", aiScore: 86, actualScore: 86, aiJustification: "Comprehensive TCO breakdown provided including maintenance, replacement, and disposal costs.", humanJustification: "" },
-        ]
-      },
-      {
         name: "Sustainability",
         aiScore: 90,
         actualScore: 90,
@@ -363,12 +358,23 @@ const assessmentData: Record<string, {
           { name: "Insurance coverage", aiScore: 87, actualScore: 87, aiJustification: "Adequate liability coverage of $5M. Product liability and professional indemnity in place.", humanJustification: "" },
         ]
       },
+      {
+        name: "Price",
+        aiScore: 85,
+        actualScore: 85,
+        subcategories: [
+          { name: "Base pricing", aiScore: 82, actualScore: 82, aiJustification: "Pricing is 5% above market average but includes premium sustainable materials.", humanJustification: "" },
+          { name: "Value for money", aiScore: 88, actualScore: 88, aiJustification: "Total cost of ownership analysis shows 12% savings over 3-year period due to durability.", humanJustification: "" },
+          { name: "Payment terms", aiScore: 84, actualScore: 84, aiJustification: "Offers Net 45 payment terms with 2% early payment discount.", humanJustification: "" },
+          { name: "Total cost of ownership", aiScore: 86, actualScore: 86, aiJustification: "Comprehensive TCO breakdown provided including maintenance, replacement, and disposal costs.", humanJustification: "" },
+        ]
+      },
     ]
   },
   s2: {
     categories: [
       {
-        name: "Completeness",
+        name: "Content",
         aiScore: 100,
         actualScore: 100,
         subcategories: [
@@ -383,7 +389,7 @@ const assessmentData: Record<string, {
         actualScore: 85,
         subcategories: [
           { name: "Product/service quality", aiScore: 86, actualScore: 86, aiJustification: "Good quality products with consistent customer feedback. Some variation noted in batch quality.", humanJustification: "" },
-          { name: "Quality certifications", aiScore: 84, actualScore: 84, aiJustification: "ISO 9001 certified. EU Ecolabel for 65% of product range - below tender preference.", humanJustification: "" },
+          { name: "Quality certifications", aiScore: 84, actualScore: 84, aiJustification: "ISO 9001 certified. EU Ecolabel for 65% of product range - below RFP preference.", humanJustification: "" },
           { name: "Quality management processes", aiScore: 85, actualScore: 85, aiJustification: "Standard QMS in place with documented procedures. Room for improvement in traceability.", humanJustification: "" },
         ]
       },
@@ -396,17 +402,6 @@ const assessmentData: Record<string, {
           { name: "Relevant experience", aiScore: 89, actualScore: 89, aiJustification: "Strong track record with mid-market clients. Limited Fortune 500 experience.", humanJustification: "" },
           { name: "Team qualifications", aiScore: 88, actualScore: 88, aiJustification: "Team includes procurement specialists and environmental consultants.", humanJustification: "" },
           { name: "Infrastructure", aiScore: 88, actualScore: 88, aiJustification: "Modern facilities with room to scale. Strategic warehouse locations.", humanJustification: "" },
-        ]
-      },
-      {
-        name: "Price",
-        aiScore: 92,
-        actualScore: 92,
-        subcategories: [
-          { name: "Base pricing", aiScore: 94, actualScore: 94, aiJustification: "Most competitive pricing among evaluated submissions. 8% below market average.", humanJustification: "" },
-          { name: "Value for money", aiScore: 91, actualScore: 91, aiJustification: "Excellent price-to-quality ratio. Bulk discount structure favorable.", humanJustification: "" },
-          { name: "Payment terms", aiScore: 90, actualScore: 90, aiJustification: "Flexible Net 60 terms available. Volume-based pricing tiers.", humanJustification: "" },
-          { name: "Total cost of ownership", aiScore: 93, actualScore: 93, aiJustification: "Lowest overall TCO projection over contract period.", humanJustification: "" },
         ]
       },
       {
@@ -431,12 +426,23 @@ const assessmentData: Record<string, {
           { name: "Insurance coverage", aiScore: 92, actualScore: 92, aiJustification: "Comprehensive insurance package exceeding requirements.", humanJustification: "" },
         ]
       },
+      {
+        name: "Price",
+        aiScore: 92,
+        actualScore: 92,
+        subcategories: [
+          { name: "Base pricing", aiScore: 94, actualScore: 94, aiJustification: "Most competitive pricing among evaluated submissions. 8% below market average.", humanJustification: "" },
+          { name: "Value for money", aiScore: 91, actualScore: 91, aiJustification: "Excellent price-to-quality ratio. Bulk discount structure favorable.", humanJustification: "" },
+          { name: "Payment terms", aiScore: 90, actualScore: 90, aiJustification: "Flexible Net 60 terms available. Volume-based pricing tiers.", humanJustification: "" },
+          { name: "Total cost of ownership", aiScore: 93, actualScore: 93, aiJustification: "Lowest overall TCO projection over contract period.", humanJustification: "" },
+        ]
+      },
     ]
   },
   s3: {
     categories: [
       {
-        name: "Completeness",
+        name: "Content",
         aiScore: 90,
         actualScore: 90,
         subcategories: [
@@ -467,17 +473,6 @@ const assessmentData: Record<string, {
         ]
       },
       {
-        name: "Price",
-        aiScore: 78,
-        actualScore: 78,
-        subcategories: [
-          { name: "Base pricing", aiScore: 75, actualScore: 75, aiJustification: "Premium pricing - 15% above market average. Reflects quality positioning.", humanJustification: "" },
-          { name: "Value for money", aiScore: 82, actualScore: 82, aiJustification: "Higher upfront cost offset by superior durability and lower replacement frequency.", humanJustification: "" },
-          { name: "Payment terms", aiScore: 78, actualScore: 78, aiJustification: "Standard Net 30 terms. Limited flexibility on pricing.", humanJustification: "" },
-          { name: "Total cost of ownership", aiScore: 77, actualScore: 77, aiJustification: "Highest TCO among evaluated suppliers despite quality benefits.", humanJustification: "" },
-        ]
-      },
-      {
         name: "Sustainability",
         aiScore: 94,
         actualScore: 94,
@@ -499,12 +494,23 @@ const assessmentData: Record<string, {
           { name: "Insurance coverage", aiScore: 83, actualScore: 83, aiJustification: "Adequate coverage meeting minimum requirements.", humanJustification: "" },
         ]
       },
+      {
+        name: "Price",
+        aiScore: 78,
+        actualScore: 78,
+        subcategories: [
+          { name: "Base pricing", aiScore: 75, actualScore: 75, aiJustification: "Premium pricing - 15% above market average. Reflects quality positioning.", humanJustification: "" },
+          { name: "Value for money", aiScore: 82, actualScore: 82, aiJustification: "Higher upfront cost offset by superior durability and lower replacement frequency.", humanJustification: "" },
+          { name: "Payment terms", aiScore: 78, actualScore: 78, aiJustification: "Standard Net 30 terms. Limited flexibility on pricing.", humanJustification: "" },
+          { name: "Total cost of ownership", aiScore: 77, actualScore: 77, aiJustification: "Highest TCO among evaluated suppliers despite quality benefits.", humanJustification: "" },
+        ]
+      },
     ]
   },
 }
 
 const documentsData = [
-  { name: "Tender Specification Document.pdf", type: "PDF", size: "2.4 MB", uploadedDate: "Mar 1, 2026", uploadedBy: "Sarah Chen" },
+  { name: "RFP Specification Document.pdf", type: "PDF", size: "2.4 MB", uploadedDate: "Mar 1, 2026", uploadedBy: "Sarah Chen" },
   { name: "ESG Requirements Checklist.xlsx", type: "Excel", size: "156 KB", uploadedDate: "Mar 1, 2026", uploadedBy: "Sarah Chen" },
   { name: "Supplier Questionnaire Template.docx", type: "Word", size: "89 KB", uploadedDate: "Mar 2, 2026", uploadedBy: "Sarah Chen" },
   { name: "Budget Breakdown.xlsx", type: "Excel", size: "234 KB", uploadedDate: "Mar 3, 2026", uploadedBy: "James Wilson" },
@@ -534,11 +540,11 @@ const activityData = [
   { id: "a11", type: "document", action: "Document uploaded", detail: "Technical Requirements v2.pdf uploaded", person: "James Wilson", date: "2026-03-10", time: "9:00 AM" },
   { id: "a12", type: "team", action: "Team member added", detail: "Emily Rodriguez joined as ESG Evaluator", person: "Sarah Chen", date: "2026-03-08", time: "2:00 PM" },
   { id: "a13", type: "document", action: "Document uploaded", detail: "Budget Breakdown.xlsx added", person: "James Wilson", date: "2026-03-03", time: "3:45 PM" },
-  { id: "a14", type: "tender", action: "Supplier invited", detail: "5 additional suppliers invited to tender", person: "Sarah Chen", date: "2026-03-02", time: "10:30 AM" },
-  { id: "a15", type: "tender", action: "Tender published", detail: "Tender made available to invited suppliers", person: "Sarah Chen", date: "2026-03-01", time: "9:00 AM" },
+  { id: "a14", type: "tender", action: "Supplier invited", detail: "5 additional suppliers invited to RFP", person: "Sarah Chen", date: "2026-03-02", time: "10:30 AM" },
+  { id: "a15", type: "tender", action: "RFP published", detail: "RFP made available to invited suppliers", person: "Sarah Chen", date: "2026-03-01", time: "9:00 AM" },
   { id: "a16", type: "document", action: "Document uploaded", detail: "RFP Document.pdf uploaded", person: "Sarah Chen", date: "2026-02-28", time: "4:00 PM" },
   { id: "a17", type: "team", action: "Team member added", detail: "James Wilson joined as Budget Reviewer", person: "Sarah Chen", date: "2026-02-26", time: "11:00 AM" },
-  { id: "a18", type: "tender", action: "Tender created", detail: "Initial tender draft created", person: "Sarah Chen", date: "2026-02-25", time: "2:00 PM" },
+  { id: "a18", type: "tender", action: "RFP created", detail: "Initial RFP draft created", person: "Sarah Chen", date: "2026-02-25", time: "2:00 PM" },
 ]
 
 // Team members for this tender
@@ -557,13 +563,145 @@ const companyMembersData = [
   { id: "c4", name: "Jennifer Adams", email: "jennifer.adams@company.com", companyTitle: "Compliance Officer" },
 ]
 
+// Q&A Threads mock data
+const qaThreadsData = [
+  {
+    id: "t1",
+    subject: "Clarification on recycled content requirements",
+    visibility: "all" as const,
+    createdAt: "2026-03-10T09:30:00Z",
+    updatedAt: "2026-03-12T14:20:00Z",
+    participants: ["s1", "s2", "s3"],
+    messages: [
+      {
+        id: "m1",
+        threadId: "t1",
+        senderId: "buyer",
+        senderName: "Sarah Chen",
+        senderType: "buyer" as const,
+        content: "Please note that all paper products must contain a minimum of 80% post-consumer recycled content. This is a mandatory requirement and submissions not meeting this threshold will be marked non-compliant.",
+        attachments: [
+          { name: "Recycling_Standards.pdf", size: "245 KB", url: "#" }
+        ],
+        timestamp: "2026-03-10T09:30:00Z",
+      },
+      {
+        id: "m2",
+        threadId: "t1",
+        senderId: "s1",
+        senderName: "John Smith",
+        senderCompany: "EcoSupply Co.",
+        senderType: "supplier" as const,
+        content: "Thank you for the clarification. Can you confirm if this applies to all paper products or just A4 copy paper? Our specialty papers (card stock, envelopes) use different recycling streams.",
+        attachments: [],
+        timestamp: "2026-03-10T14:15:00Z",
+      },
+      {
+        id: "m3",
+        threadId: "t1",
+        senderId: "buyer",
+        senderName: "Sarah Chen",
+        senderType: "buyer" as const,
+        content: "Good question. The 80% requirement applies specifically to copy paper and printer paper. Specialty items like card stock and envelopes should contain at least 50% recycled content where technically feasible.",
+        attachments: [],
+        timestamp: "2026-03-12T14:20:00Z",
+      },
+    ],
+  },
+  {
+    id: "t2",
+    subject: "Delivery schedule flexibility",
+    visibility: "private" as const,
+    createdAt: "2026-03-11T10:00:00Z",
+    updatedAt: "2026-03-11T16:45:00Z",
+    participants: ["s2"],
+    messages: [
+      {
+        id: "m4",
+        threadId: "t2",
+        senderId: "s2",
+        senderName: "Emma Davis",
+        senderCompany: "GreenOffice Ltd",
+        senderType: "supplier" as const,
+        content: "We wanted to discuss the delivery schedule privately. Our logistics partner has capacity constraints in June. Would there be flexibility to front-load deliveries in May or extend into July?",
+        attachments: [
+          { name: "Delivery_Capacity_Analysis.xlsx", size: "128 KB", url: "#" }
+        ],
+        timestamp: "2026-03-11T10:00:00Z",
+      },
+      {
+        id: "m5",
+        threadId: "t2",
+        senderId: "buyer",
+        senderName: "David Thompson",
+        senderType: "buyer" as const,
+        content: "Thank you for flagging this early. We have some flexibility on timing. Please include your preferred delivery schedule in your proposal and we will evaluate it alongside other factors.",
+        attachments: [],
+        timestamp: "2026-03-11T16:45:00Z",
+      },
+    ],
+  },
+  {
+    id: "t3",
+    subject: "ISO 14001 certification timeline",
+    visibility: "all" as const,
+    createdAt: "2026-03-13T08:00:00Z",
+    updatedAt: "2026-03-13T08:00:00Z",
+    participants: ["s1", "s2", "s3", "s4", "s5"],
+    messages: [
+      {
+        id: "m6",
+        threadId: "t3",
+        senderId: "buyer",
+        senderName: "Sarah Chen",
+        senderType: "buyer" as const,
+        content: "Several suppliers have asked about ISO 14001 certification. Please note: if you are currently in the certification process, please provide documentation of your application status and expected certification date. Applications will be considered if certification is expected before contract commencement.",
+        attachments: [
+          { name: "Certification_Requirements.pdf", size: "312 KB", url: "#" }
+        ],
+        timestamp: "2026-03-13T08:00:00Z",
+      },
+    ],
+  },
+  {
+    id: "t4",
+    subject: "Question about pricing structure",
+    visibility: "private" as const,
+    createdAt: "2026-03-14T11:30:00Z",
+    updatedAt: "2026-03-14T11:30:00Z",
+    participants: ["s3"],
+    messages: [
+      {
+        id: "m7",
+        threadId: "t4",
+        senderId: "s3",
+        senderName: "Michael Brown",
+        senderCompany: "Sustainable Solutions Inc",
+        senderType: "supplier" as const,
+        content: "Should we provide volume-based pricing tiers in our submission, or a single fixed price per unit? We can offer significant discounts at higher volumes.",
+        attachments: [],
+        timestamp: "2026-03-14T11:30:00Z",
+      },
+    ],
+  },
+]
+
+// Global supplier database (suppliers not yet registered for this RFP)
+const globalSuppliersData = [
+  { id: "g1", name: "RecycleFirst Corp", contact: "Alex Turner", email: "alex@recyclefirst.com" },
+  { id: "g2", name: "EcoMaterials Global", contact: "Nina Patel", email: "nina@ecomaterials.com" },
+  { id: "g3", name: "GreenPrint Solutions", contact: "Tom Wilson", email: "tom@greenprint.com" },
+  { id: "g4", name: "SustainaPaper Ltd", contact: "Rachel Green", email: "rachel@sustainapaper.co.uk" },
+]
+
 const tabs = [
   { key: "overview", label: "Overview" },
   { key: "team", label: "Team", count: teamMembersData.length },
-  { key: "submissions", label: "Submissions", count: tenderData.submissions },
-  { key: "criteria", label: "Evaluation Criteria" },
-  { key: "results", label: "Results" },
   { key: "documents", label: "Documents", count: documentsData.length },
+  { key: "submissions", label: "Submissions", count: tenderData.submissions },
+  { key: "qa", label: "Q&A", count: qaThreadsData.length },
+  { key: "criteria", label: "Scoring" },
+  { key: "results", label: "Results" },
   { key: "activity", label: "Activity" },
 ]
 
@@ -575,9 +713,7 @@ export default function TenderDetailPage() {
   const [editableCriteria, setEditableCriteria] = useState(tenderData.evaluationCriteria)
   const [expandedCriteria, setExpandedCriteria] = useState<string[]>([])
   const [expandedEvalCriteria, setExpandedEvalCriteria] = useState<string[]>([])
-  const [selectedAssessment, setSelectedAssessment] = useState<string | null>(null)
-  const [assessmentScores, setAssessmentScores] = useState<Record<string, typeof assessmentData.s1>>(assessmentData)
-  const [expandedAiJustification, setExpandedAiJustification] = useState<Record<string, boolean>>({})
+
   const [ownerEditOpen, setOwnerEditOpen] = useState(false)
   const [editableOwner, setEditableOwner] = useState({ name: tenderData.owner, email: tenderData.ownerEmail })
   const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
@@ -598,7 +734,146 @@ export default function TenderDetailPage() {
   const [activityDateFrom, setActivityDateFrom] = useState("")
   const [activityDateTo, setActivityDateTo] = useState("")
   const [activitySortOrder, setActivitySortOrder] = useState<"asc" | "desc">("desc")
+  const [selectedActivityRows, setSelectedActivityRows] = useState<Set<string>>(new Set())
+
+  const toggleActivityRow = (id: string) => {
+    setSelectedActivityRows(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleAllActivityRows = (rows: typeof activityData) => {
+    if (rows.every(a => selectedActivityRows.has(a.id))) {
+      setSelectedActivityRows(new Set())
+    } else {
+      setSelectedActivityRows(new Set(rows.map(a => a.id)))
+    }
+  }
+
+  const exportActivitiesToCSV = (activities: typeof activityData, filename: string) => {
+    const headers = ["Type", "Action", "Details", "Person", "Date", "Time"]
+    const rows = activities.map(a => {
+      const typeLabel = activityTypes.find(t => t.key === a.type)?.label ?? a.type
+      return [typeLabel, a.action, a.detail, a.person, formatActivityDate(a.date), a.time]
+    })
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n")
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  // Q&A state
+  const [qaThreads, setQaThreads] = useState(qaThreadsData)
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
+  const [qaSearch, setQaSearch] = useState("")
+  const [qaVisibilityFilter, setQaVisibilityFilter] = useState<"all" | "private" | "public" | null>(null)
+  const [composeOpen, setComposeOpen] = useState(false)
+  const [composeSubject, setComposeSubject] = useState("")
+  const [composeMessage, setComposeMessage] = useState("")
+  const [composeRecipients, setComposeRecipients] = useState<string[]>([])
+  const [composeVisibility, setComposeVisibility] = useState<"all" | "private">("private")
+  const [composeAttachments, setComposeAttachments] = useState<{ name: string; size: string }[]>([])
+  const [replyMessage, setReplyMessage] = useState("")
+  const [replyAttachments, setReplyAttachments] = useState<{ name: string; size: string }[]>([])
+  const [showGlobalSuppliers, setShowGlobalSuppliers] = useState(false)
+
+  // Q&A helpers
+  const selectedThread = qaThreads.find(t => t.id === selectedThreadId)
   
+  const filteredThreads = qaThreads
+    .filter(thread => {
+      if (qaSearch && !thread.subject.toLowerCase().includes(qaSearch.toLowerCase())) {
+        return false
+      }
+      if (qaVisibilityFilter === "public" && thread.visibility !== "all") {
+        return false
+      }
+      if (qaVisibilityFilter === "private" && thread.visibility !== "private") {
+        return false
+      }
+      return true
+    })
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+
+  const formatQaDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const now = new Date()
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+    if (diffDays === 0) return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
+    if (diffDays === 1) return "Yesterday"
+    if (diffDays < 7) return date.toLocaleDateString("en-GB", { weekday: "short" })
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+  }
+
+  const handleSendMessage = () => {
+    if (!composeSubject.trim() || !composeMessage.trim()) return
+    const newThread = {
+      id: `t${Date.now()}`,
+      subject: composeSubject,
+      visibility: composeVisibility,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      participants: composeRecipients,
+      messages: [{
+        id: `m${Date.now()}`,
+        threadId: `t${Date.now()}`,
+        senderId: "buyer",
+        senderName: tenderData.owner,
+        senderType: "buyer" as const,
+        content: composeMessage,
+        attachments: composeAttachments.map(a => ({ ...a, url: "#" })),
+        timestamp: new Date().toISOString(),
+      }],
+    }
+    setQaThreads(prev => [newThread, ...prev])
+    setComposeOpen(false)
+    setComposeSubject("")
+    setComposeMessage("")
+    setComposeRecipients([])
+    setComposeVisibility("private")
+    setComposeAttachments([])
+    setSelectedThreadId(newThread.id)
+  }
+
+  const handleSendReply = () => {
+    if (!replyMessage.trim() || !selectedThreadId) return
+    setQaThreads(prev => prev.map(thread => {
+      if (thread.id !== selectedThreadId) return thread
+      return {
+        ...thread,
+        updatedAt: new Date().toISOString(),
+        messages: [...thread.messages, {
+          id: `m${Date.now()}`,
+          threadId: selectedThreadId,
+          senderId: "buyer",
+          senderName: tenderData.owner,
+          senderType: "buyer" as const,
+          content: replyMessage,
+          attachments: replyAttachments.map(a => ({ ...a, url: "#" })),
+          timestamp: new Date().toISOString(),
+        }],
+      }
+    }))
+    setReplyMessage("")
+    setReplyAttachments([])
+  }
+
+  const handleMakePublic = (threadId: string) => {
+    setQaThreads(prev => prev.map(thread => 
+      thread.id === threadId ? { ...thread, visibility: "all" as const } : thread
+    ))
+  }
+
+  const getSupplierById = (id: string) => submissionsData.find(s => s.id === id)
+
   // Get unique people from activity data
   const activityPeople = [...new Set(activityData.map(a => a.person))]
   
@@ -782,7 +1057,7 @@ export default function TenderDetailPage() {
     
     // In production, this would call an AI API
     const aiDescriptions: Record<string, string> = {
-      default: `Evaluate the ${subcategory.name.toLowerCase()} aspect within the context of ${criteria.name.toLowerCase()}. Consider relevant documentation, evidence, and alignment with tender requirements.`
+      default: `Evaluate the ${subcategory.name.toLowerCase()} aspect within the context of ${criteria.name.toLowerCase()}. Consider relevant documentation, evidence, and alignment with RFP requirements.`
     }
     
     const description = aiDescriptions.default
@@ -829,13 +1104,13 @@ export default function TenderDetailPage() {
   const generateCriteriaFromRfp = async () => {
     setGeneratingFromRfp(true)
     // Simulate AI processing the RFP documents and requirements
-    // In production, this would analyze uploaded RFP documents and tender requirements
+    // In production, this would analyze uploaded RFP documents and requirements
     await new Promise(resolve => setTimeout(resolve, 1500))
     
     // Generate criteria based on RFP content (simulated AI response)
     const generatedCriteria = [
       { 
-        name: "Completeness", 
+        name: "Content", 
         weight: 10,
         instructions: "Assess whether the supplier has provided all required documentation as specified in Section 3 of the RFP. Verify adherence to submission format, deadline compliance, and completeness of all mandatory sections.",
         instructionsSaved: false,
@@ -868,17 +1143,6 @@ export default function TenderDetailPage() {
         ]
       },
       { 
-        name: "Commercial", 
-        weight: 20,
-        instructions: "Analyze pricing competitiveness, total cost of ownership, and commercial terms against budget parameters in RFP Section 6.",
-        instructionsSaved: false,
-        subcategories: [
-          { name: "Pricing competitiveness", description: "Compare unit pricing and volume discounts against market benchmarks and budget allocation in RFP Section 6.1.", saved: false },
-          { name: "Total cost of ownership", description: "Calculate all costs including delivery, installation, maintenance, and disposal as per TCO model in RFP Appendix C.", saved: false },
-          { name: "Payment and contract terms", description: "Evaluate payment schedules, warranty terms, and contract flexibility per RFP Section 6.3 requirements.", saved: false }
-        ]
-      },
-      { 
         name: "Sustainability & ESG", 
         weight: 25,
         instructions: "Assess environmental credentials, carbon footprint, ethical sourcing, and social responsibility against ESG requirements in RFP Section 7.",
@@ -901,6 +1165,17 @@ export default function TenderDetailPage() {
           { name: "Business continuity", description: "Review BCP documentation, insurance coverage, and disaster recovery capabilities per RFP Section 8.3.", saved: false }
         ]
       },
+      { 
+        name: "Commercial", 
+        weight: 20,
+        instructions: "Analyze pricing competitiveness, total cost of ownership, and commercial terms against budget parameters in RFP Section 6.",
+        instructionsSaved: false,
+        subcategories: [
+          { name: "Pricing competitiveness", description: "Compare unit pricing and volume discounts against market benchmarks and budget allocation in RFP Section 6.1.", saved: false },
+          { name: "Total cost of ownership", description: "Calculate all costs including delivery, installation, maintenance, and disposal as per TCO model in RFP Appendix C.", saved: false },
+          { name: "Payment and contract terms", description: "Evaluate payment schedules, warranty terms, and contract flexibility per RFP Section 6.3 requirements.", saved: false }
+        ]
+      },
     ]
     
     setEditableCriteria(generatedCriteria)
@@ -911,50 +1186,6 @@ export default function TenderDetailPage() {
     setExpandedEvalCriteria(prev => 
       prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
     )
-  }
-
-  const updateAssessmentScore = (submissionId: string, categoryIndex: number, subcategoryIndex: number, score: number) => {
-    setAssessmentScores(prev => {
-      const updated = { ...prev }
-      if (updated[submissionId]) {
-        updated[submissionId] = {
-          ...updated[submissionId],
-          categories: updated[submissionId].categories.map((cat, ci) => 
-            ci === categoryIndex ? {
-              ...cat,
-              subcategories: cat.subcategories.map((sub, si) => 
-                si === subcategoryIndex ? { ...sub, actualScore: score } : sub
-              )
-            } : cat
-          )
-        }
-      }
-      return updated
-    })
-  }
-
-  const updateAssessmentJustification = (submissionId: string, categoryIndex: number, subcategoryIndex: number, justification: string) => {
-    setAssessmentScores(prev => {
-      const updated = { ...prev }
-      if (updated[submissionId]) {
-        updated[submissionId] = {
-          ...updated[submissionId],
-          categories: updated[submissionId].categories.map((cat, ci) => 
-            ci === categoryIndex ? {
-              ...cat,
-              subcategories: cat.subcategories.map((sub, si) => 
-                si === subcategoryIndex ? { ...sub, humanJustification: justification } : sub
-              )
-            } : cat
-          )
-        }
-      }
-      return updated
-    })
-  }
-
-  const toggleAiJustification = (key: string) => {
-    setExpandedAiJustification(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
   const saveCriteria = () => {
@@ -999,7 +1230,7 @@ export default function TenderDetailPage() {
             onClick={() => router.push("/tenders")}
           >
             <ArrowLeft className="size-4 mr-1" />
-            Back to Tenders
+            Back to RFPs
           </Button>
         </div>
 
@@ -1040,7 +1271,7 @@ export default function TenderDetailPage() {
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Copy className="size-4 mr-2" />
-                  Duplicate Tender
+                  Duplicate RFP
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Download className="size-4 mr-2" />
@@ -1049,7 +1280,7 @@ export default function TenderDetailPage() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-red-600">
                   <Archive className="size-4 mr-2" />
-                  Archive Tender
+                  Archive RFP
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -1113,35 +1344,26 @@ export default function TenderDetailPage() {
         </div>
 
         {/* Tabs */}
-        <div className="border-b border-[#E5E7EB]">
-          <nav className="flex gap-6" aria-label="Tabs">
+        <div className="border-b border-[#E5E7EB] bg-[#FAFAFA]">
+          <nav className="flex gap-1" aria-label="Tabs">
             {tabs.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`relative pb-3 text-sm font-medium transition-colors ${
+                className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
                   activeTab === tab.key
-                    ? "text-[#16A34A]"
-                    : "text-[#6B7280] hover:text-[#111827]"
+                    ? "text-[#16A34A] border-[#16A34A] bg-white"
+                    : "text-[#6B7280] hover:text-[#111827] border-transparent hover:border-[#D1D5DB]"
                 }`}
               >
                 <span className="flex items-center gap-2">
                   {tab.label}
                   {tab.count !== undefined && (
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${
-                        activeTab === tab.key
-                          ? "bg-[#F0FDF4] text-[#16A34A]"
-                          : "bg-[#F3F4F6] text-[#6B7280]"
-                      }`}
-                    >
+                    <span className="text-xs font-semibold text-[#6B7280] group-hover:text-[#111827]">
                       {tab.count}
                     </span>
                   )}
                 </span>
-                {activeTab === tab.key && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#16A34A]" />
-                )}
               </button>
             ))}
           </nav>
@@ -1154,7 +1376,7 @@ export default function TenderDetailPage() {
               {/* Description */}
               <Card className="border-[#E5E7EB] bg-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle className="text-lg">Description</CardTitle>
+                  <CardTitle className="text-lg">RFP Description</CardTitle>
                   <div className="flex items-center gap-1">
                     {!descriptionEdit.saved && (
                       <>
@@ -1166,7 +1388,7 @@ export default function TenderDetailPage() {
                             // In production, call AI API
                             setDescriptionEdit(prev => ({ 
                               ...prev, 
-                              text: "This tender seeks qualified suppliers for sustainable office supplies to support our organization's environmental commitments. We require eco-friendly products that meet strict sustainability criteria while maintaining quality and cost-effectiveness.",
+                              text: "This RFP seeks qualified suppliers for sustainable office supplies to support our organization's environmental commitments. We require eco-friendly products that meet strict sustainability criteria while maintaining quality and cost-effectiveness.",
                               saved: false 
                             }))
                           }}
@@ -1206,7 +1428,7 @@ export default function TenderDetailPage() {
                       value={descriptionEdit.text}
                       onChange={(e) => setDescriptionEdit(prev => ({ ...prev, text: e.target.value }))}
                       className="min-h-[100px] text-sm text-[#6B7280]"
-                      placeholder="Enter tender description..."
+                      placeholder="Enter RFP description..."
                     />
                   )}
                 </CardContent>
@@ -1215,7 +1437,7 @@ export default function TenderDetailPage() {
               {/* Requirements */}
               <Card className="border-[#E5E7EB] bg-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle className="text-lg">Requirements</CardTitle>
+                  <CardTitle className="text-lg">RFP Requirements</CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -1518,7 +1740,7 @@ export default function TenderDetailPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-[#111827]">Team Members</h3>
-                <p className="text-sm text-[#6B7280]">{teamMembers.length} people assigned to this tender</p>
+                <p className="text-sm text-[#6B7280]">{teamMembers.length} people assigned to this RFP</p>
               </div>
               <div className="flex items-center gap-2">
                 <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
@@ -1637,7 +1859,7 @@ export default function TenderDetailPage() {
               </div>
             </div>
 
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -1770,7 +1992,7 @@ export default function TenderDetailPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <p className="text-sm text-[#6B7280]">
-                {tenderData.submissions} submissions received from {tenderData.invitedSuppliers} invited suppliers
+                {tenderData.submissions} proposals received from {tenderData.invitedSuppliers} invited suppliers
               </p>
               <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
                 <Send className="size-4 mr-2" />
@@ -1778,36 +2000,35 @@ export default function TenderDetailPage() {
               </Button>
             </div>
 
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardContent className="p-0">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier Name</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Status</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Completeness</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Quality</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Capability</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Sustainability</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Risk</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Docs</th>
-                      <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Actions</th>
+                      <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted Score</th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
+                      <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Docs</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Contact</th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Open</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E5E7EB]">
                     {submissionsData.map(submission => (
-                      <tr key={submission.id} className="hover:bg-[#F3F4F6] transition-colors">
-                        <td className="px-3 py-3">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="size-7">
-                              <AvatarFallback className="bg-[#F0FDF4] text-[#16A34A] text-xs">
+                      <tr 
+                        key={submission.id} 
+                        className="hover:bg-[#F3F4F6] transition-colors"
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="size-8">
+                              <AvatarFallback className="bg-[#F0FDF4] text-[#16A34A] text-xs font-medium">
                                 {submission.supplierName.split(" ").map(n => n[0]).join("").slice(0, 2)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <span className="font-medium text-[#111827] text-sm">{submission.supplierName}</span>
+                              <span className="font-medium text-[#111827]">{submission.supplierName}</span>
                               <p className="text-xs text-[#9CA3AF]">{submission.submittedDate}</p>
                             </div>
                           </div>
@@ -1815,58 +2036,23 @@ export default function TenderDetailPage() {
                         <td className="px-3 py-3">
                           <SubmissionStatusBadge status={submission.status} />
                         </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.completeness}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.quality}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.capability}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.price}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.sustainability}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.risk}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
+                        <td className="px-3 py-3 text-center">
                           {submission.weightedScore ? (
                             <span className="font-semibold text-[#111827]">{submission.weightedScore}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
                           )}
                         </td>
-                        <td className="px-2 py-3 text-center">
+                        <td className="px-3 py-3 text-right">
+                          {submission.proposedValue ? (
+                            <span className="font-medium text-[#111827]">${submission.proposedValue.toLocaleString()}</span>
+                          ) : (
+                            <span className="text-[#D1D5DB]">-</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 text-center">
                           <Dialog>
-                            <DialogTrigger asChild>
+                            <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
                               <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-[#6B7280] hover:text-[#111827]">
                                 <FileText className="size-3 mr-1" />
                                 {submission.documents.length}
@@ -1895,12 +2081,18 @@ export default function TenderDetailPage() {
                             </DialogContent>
                           </Dialog>
                         </td>
+                        <td className="px-3 py-3">
+                          <div>
+                            <span className="text-sm text-[#111827]">{submission.keyContact}</span>
+                            <p className="text-xs text-[#6B7280]">{submission.keyContactEmail}</p>
+                          </div>
+                        </td>
                         <td className="px-3 py-3 text-right">
                           <Button 
                             variant="outline" 
                             size="sm" 
                             className="h-7 px-3 text-xs border-[#E5E7EB]"
-                            onClick={() => window.location.href = `/tenders/${tenderData.id}/submissions/${submission.id}`}
+                            onClick={() => router.push(`/tenders/${tenderData.id}/submissions/${submission.id}`)}
                           >
                             <ExternalLink className="size-3 mr-1" />
                             Open
@@ -2151,7 +2343,7 @@ export default function TenderDetailPage() {
         )}
 
         {/* Results Tab */}
-        {activeTab === "results" && !selectedAssessment && (
+        {activeTab === "results" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
@@ -2162,25 +2354,21 @@ export default function TenderDetailPage() {
               </div>
             </div>
 
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
                         <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier</th>
-                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Completeness</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Content</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Quality</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Capability</th>
-                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Sustainability</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Risk</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted</th>
-                        <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Value</th>
-                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Hours</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Completion</th>
-                        <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Contact</th>
-                        <th className="px-4 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Assessment</th>
+                        <th className="px-4 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E7EB]">
@@ -2198,7 +2386,7 @@ export default function TenderDetailPage() {
                           </td>
                           <td className="px-3 py-3 text-center">
                             {submission.scores ? (
-                              <span className="font-medium text-[#111827]">{submission.scores.completeness}</span>
+                              <span className="font-medium text-[#111827]">{submission.scores.content}</span>
                             ) : (
                               <span className="text-[#D1D5DB]">-</span>
                             )}
@@ -2219,13 +2407,6 @@ export default function TenderDetailPage() {
                           </td>
                           <td className="px-3 py-3 text-center">
                             {submission.scores ? (
-                              <span className="font-medium text-[#111827]">{submission.scores.price}</span>
-                            ) : (
-                              <span className="text-[#D1D5DB]">-</span>
-                            )}
-                          </td>
-                          <td className="px-3 py-3 text-center">
-                            {submission.scores ? (
                               <span className="font-medium text-[#111827]">{submission.scores.sustainability}</span>
                             ) : (
                               <span className="text-[#D1D5DB]">-</span>
@@ -2239,26 +2420,18 @@ export default function TenderDetailPage() {
                             )}
                           </td>
                           <td className="px-3 py-3 text-center">
+                            {submission.scores ? (
+                              <span className="font-medium text-[#111827]">{submission.scores.price}</span>
+                            ) : (
+                              <span className="text-[#D1D5DB]">-</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-center">
                             {submission.weightedScore ? (
                               <span className="font-semibold text-[#16A34A]">{submission.weightedScore}</span>
                             ) : (
                               <span className="text-[#D1D5DB]">-</span>
                             )}
-                          </td>
-                          <td className="px-3 py-3 text-right text-[#111827]">
-                            {formatBudget(submission.proposedValue)}
-                          </td>
-                          <td className="px-3 py-3 text-center text-[#6B7280]">
-                            {submission.totalHours}
-                          </td>
-                          <td className="px-3 py-3 text-[#6B7280]">
-                            {submission.completionDate}
-                          </td>
-                          <td className="px-3 py-3">
-                            <div>
-                              <p className="text-[#111827] text-xs">{submission.keyContact}</p>
-                              <p className="text-[#6B7280] text-xs truncate max-w-[120px]">{submission.keyContactEmail}</p>
-                            </div>
                           </td>
                           <td className="px-4 py-3 text-center">
                             {submission.weightedScore ? (
@@ -2266,9 +2439,10 @@ export default function TenderDetailPage() {
                                 variant="outline" 
                                 size="sm" 
                                 className="h-7 text-xs border-[#E5E7EB]"
-                                onClick={() => setSelectedAssessment(submission.id)}
+                                onClick={() => router.push(`/tenders/${params.id}/submissions/${submission.id}?tab=results`)}
                               >
-                                View
+                                <Pencil className="size-3 mr-1" />
+                                Edit
                               </Button>
                             ) : (
                               <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
@@ -2286,124 +2460,6 @@ export default function TenderDetailPage() {
           </div>
         )}
 
-        {/* Detailed Assessment View */}
-        {activeTab === "results" && selectedAssessment && (
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-[#6B7280]"
-                onClick={() => setSelectedAssessment(null)}
-              >
-                <ArrowLeft className="size-4 mr-1" />
-                Back to Results
-              </Button>
-              <div>
-                <h3 className="text-lg font-semibold text-[#111827]">
-                  Assessment: {submissionsData.find(s => s.id === selectedAssessment)?.supplierName}
-                </h3>
-                <p className="text-sm text-[#6B7280]">
-                  Detailed evaluation breakdown with AI and human scores
-                </p>
-              </div>
-            </div>
-
-            {assessmentScores[selectedAssessment]?.categories.map((category, categoryIndex) => (
-              <Card key={category.name} className="border-[#E5E7EB] bg-white">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <CardTitle className="text-base">{category.name}</CardTitle>
-                      <Badge variant="outline" className="text-xs bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]">
-                        {editableCriteria.find(c => c.name === category.name)?.weight}% weight
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#6B7280]">AI Score:</span>
-                        <span className="font-medium text-[#6B7280]">{category.aiScore}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[#6B7280]">Final Score:</span>
-                        <span className="font-semibold text-[#16A34A]">{category.actualScore}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <CardDescription className="mt-2">
-                    {editableCriteria.find(c => c.name === category.name)?.instructions}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {category.subcategories.map((sub, subIndex) => {
-                    const justificationKey = `${selectedAssessment}-${categoryIndex}-${subIndex}`
-                    return (
-                      <div key={sub.name} className="border border-[#E5E7EB] rounded-lg p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-[#111827]">{sub.name}</span>
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="text-[#6B7280]">AI:</span>
-                              <span className="font-medium text-[#6B7280]">{sub.aiScore}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-[#6B7280]">Score:</span>
-                              <Input
-                                type="number"
-                                value={sub.actualScore}
-                                onChange={(e) => updateAssessmentScore(selectedAssessment, categoryIndex, subIndex, parseInt(e.target.value) || 0)}
-                                className="w-16 h-8 text-center text-sm font-semibold text-[#16A34A]"
-                                min={0}
-                                max={100}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* AI Justification - Collapsible */}
-                        <Collapsible
-                          open={expandedAiJustification[justificationKey]}
-                          onOpenChange={() => toggleAiJustification(justificationKey)}
-                        >
-                          <CollapsibleTrigger className="flex items-center gap-2 text-xs text-[#6B7280] hover:text-[#111827]">
-                            <ChevronDown className={`size-3 transition-transform ${expandedAiJustification[justificationKey] ? 'rotate-180' : ''}`} />
-                            AI Justification
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <p className="mt-2 text-sm text-[#6B7280] bg-[#F3F4F6] rounded p-3 italic">
-                              {sub.aiJustification}
-                            </p>
-                          </CollapsibleContent>
-                        </Collapsible>
-
-                        {/* Human Justification - Editable */}
-                        <div className="space-y-2">
-                          <Label className="text-xs text-[#6B7280]">Final Justification</Label>
-                          <Textarea
-                            value={sub.humanJustification || sub.aiJustification}
-                            onChange={(e) => updateAssessmentJustification(selectedAssessment, categoryIndex, subIndex, e.target.value)}
-                            placeholder="Edit or add to the AI-generated justification..."
-                            className="min-h-[60px] text-sm"
-                          />
-                        </div>
-                      </div>
-                    )
-                  })}
-                </CardContent>
-              </Card>
-            ))}
-
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" className="border-[#E5E7EB]" onClick={() => setSelectedAssessment(null)}>
-                Cancel
-              </Button>
-              <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white" onClick={() => setSelectedAssessment(null)}>
-                Save Assessment
-              </Button>
-            </div>
-          </div>
-        )}
-
         {activeTab === "documents" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -2414,7 +2470,7 @@ export default function TenderDetailPage() {
               </Button>
             </div>
 
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardContent className="p-0">
                 <table className="w-full text-sm">
                   <thead>
@@ -2456,6 +2512,406 @@ export default function TenderDetailPage() {
                 </table>
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {/* Q&A Tab */}
+        {activeTab === "qa" && (
+          <div className="flex h-[calc(100vh-280px)] min-h-[500px] border border-[#E5E7EB] rounded-xl overflow-hidden bg-white">
+            {/* Left Thread List */}
+            <div className="w-[360px] border-r border-[#E5E7EB] flex flex-col shrink-0">
+              {/* List Header */}
+              <div className="px-3 py-2 border-b border-[#E5E7EB] bg-[#FAFAFA]">
+                <div className="flex items-center gap-2 mb-2">
+                  <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" className="bg-[#16A34A] hover:bg-[#15803D] text-white">
+                        <Plus className="size-4 mr-1" />
+                        New Message
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>New Message</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        {/* Subject */}
+                        <div className="space-y-2">
+                          <Label htmlFor="subject">Subject</Label>
+                          <Input
+                            id="subject"
+                            placeholder="Enter message subject..."
+                            value={composeSubject}
+                            onChange={(e) => setComposeSubject(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Visibility */}
+                        <div className="space-y-2">
+                          <Label>Visibility</Label>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant={composeVisibility === "all" ? "default" : "outline"}
+                              size="sm"
+                              className={composeVisibility === "all" ? "bg-[#16A34A] hover:bg-[#15803D]" : ""}
+                              onClick={() => {
+                                setComposeVisibility("all")
+                                setComposeRecipients(submissionsData.map(s => s.id))
+                              }}
+                            >
+                              <Globe className="size-4 mr-1" />
+                              All Suppliers
+                            </Button>
+                            <Button
+                              type="button"
+                              variant={composeVisibility === "private" ? "default" : "outline"}
+                              size="sm"
+                              className={composeVisibility === "private" ? "bg-[#16A34A] hover:bg-[#15803D]" : ""}
+                              onClick={() => setComposeVisibility("private")}
+                            >
+                              <Lock className="size-4 mr-1" />
+                              Private
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Recipients (only for private) */}
+                        {composeVisibility === "private" && (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <Label>Recipients</Label>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs text-[#16A34A] hover:text-[#15803D]"
+                                onClick={() => setShowGlobalSuppliers(!showGlobalSuppliers)}
+                              >
+                                <Globe className="size-3 mr-1" />
+                                {showGlobalSuppliers ? "Show registered" : "Add from global database"}
+                              </Button>
+                            </div>
+                            <div className="border border-[#E5E7EB] rounded-lg max-h-40 overflow-y-auto">
+                              {!showGlobalSuppliers ? (
+                                submissionsData.map(supplier => (
+                                  <label
+                                    key={supplier.id}
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-[#F9FAFB] cursor-pointer border-b border-[#E5E7EB] last:border-b-0"
+                                  >
+                                    <Checkbox
+                                      checked={composeRecipients.includes(supplier.id)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          setComposeRecipients(prev => [...prev, supplier.id])
+                                        } else {
+                                          setComposeRecipients(prev => prev.filter(id => id !== supplier.id))
+                                        }
+                                      }}
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-[#111827] truncate">{supplier.supplierName}</p>
+                                      <p className="text-xs text-[#6B7280] truncate">{supplier.keyContact}</p>
+                                    </div>
+                                  </label>
+                                ))
+                              ) : (
+                                globalSuppliersData.map(supplier => (
+                                  <label
+                                    key={supplier.id}
+                                    className="flex items-center gap-3 px-3 py-2 hover:bg-[#F9FAFB] cursor-pointer border-b border-[#E5E7EB] last:border-b-0"
+                                  >
+                                    <Checkbox
+                                      checked={composeRecipients.includes(supplier.id)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          setComposeRecipients(prev => [...prev, supplier.id])
+                                        } else {
+                                          setComposeRecipients(prev => prev.filter(id => id !== supplier.id))
+                                        }
+                                      }}
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-[#111827] truncate">{supplier.name}</p>
+                                      <p className="text-xs text-[#6B7280] truncate">{supplier.contact} &middot; {supplier.email}</p>
+                                    </div>
+                                    <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 shrink-0">
+                                      Global
+                                    </Badge>
+                                  </label>
+                                ))
+                              )}
+                            </div>
+                            {composeRecipients.length > 0 && (
+                              <p className="text-xs text-[#6B7280]">{composeRecipients.length} recipient{composeRecipients.length !== 1 ? "s" : ""} selected</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Message */}
+                        <div className="space-y-2">
+                          <Label htmlFor="message">Message</Label>
+                          <Textarea
+                            id="message"
+                            placeholder="Type your message..."
+                            value={composeMessage}
+                            onChange={(e) => setComposeMessage(e.target.value)}
+                            rows={5}
+                          />
+                        </div>
+
+                        {/* Attachments */}
+                        <div className="space-y-2">
+                          <Label>Attachments</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {composeAttachments.map((file, idx) => (
+                              <Badge key={idx} variant="outline" className="bg-[#F3F4F6] text-[#6B7280] pr-1">
+                                <Paperclip className="size-3 mr-1" />
+                                {file.name}
+                                <button
+                                  type="button"
+                                  className="ml-1 hover:text-red-600"
+                                  onClick={() => setComposeAttachments(prev => prev.filter((_, i) => i !== idx))}
+                                >
+                                  <X className="size-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-6 text-xs"
+                              onClick={() => {
+                                // Mock file upload
+                                setComposeAttachments(prev => [...prev, { name: `Document_${prev.length + 1}.pdf`, size: "256 KB" }])
+                              }}
+                            >
+                              <Paperclip className="size-3 mr-1" />
+                              Add file
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setComposeOpen(false)}>Cancel</Button>
+                        <Button
+                          className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                          onClick={handleSendMessage}
+                          disabled={!composeSubject.trim() || !composeMessage.trim() || (composeVisibility === "private" && composeRecipients.length === 0)}
+                        >
+                          <Send className="size-4 mr-1" />
+                          Send Message
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                {/* Search bar */}
+                <div className="relative mt-2">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#9CA3AF]" />
+                  <Input
+                    placeholder="Search messages..."
+                    value={qaSearch}
+                    onChange={(e) => setQaSearch(e.target.value)}
+                    className="pl-8 h-8 text-sm bg-[#F3F4F6] border-0 focus-visible:bg-white focus-visible:ring-1"
+                  />
+                </div>
+                {/* Visibility filter pills */}
+                <div className="flex items-center gap-1 mt-2 bg-[#F3F4F6] rounded-md p-0.5 w-fit">
+                  {[
+                    { key: null, label: "All" },
+                    { key: "public", label: "Public" },
+                    { key: "private", label: "Private" },
+                  ].map(opt => (
+                    <button
+                      key={String(opt.key)}
+                      onClick={() => setQaVisibilityFilter(opt.key as typeof qaVisibilityFilter)}
+                      className={`px-3 py-0.5 rounded text-xs font-medium transition-colors ${
+                        qaVisibilityFilter === opt.key
+                          ? "bg-white text-[#111827] shadow-sm"
+                          : "text-[#6B7280] hover:text-[#111827]"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Thread rows */}
+              <div className="flex-1 overflow-y-auto divide-y divide-[#E5E7EB]">
+                {filteredThreads.length === 0 ? (
+                  <div className="p-6 text-center text-[#6B7280]">
+                    <MessageCircle className="size-8 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No messages found</p>
+                  </div>
+                ) : filteredThreads.map(thread => {
+                  const lastMessage = thread.messages[thread.messages.length - 1]
+                  const isSelected = selectedThreadId === thread.id
+                  const hasUnread = thread.messages.some(m => m.senderType === "supplier")
+                  return (
+                    <button
+                      key={thread.id}
+                      className={`w-full text-left px-4 py-3 hover:bg-[#F9FAFB] transition-colors group ${isSelected ? "bg-[#F0FDF4] border-l-2 border-l-[#16A34A]" : ""}`}
+                      onClick={() => setSelectedThreadId(thread.id)}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        {hasUnread && !isSelected && (
+                          <span className="size-2 rounded-full bg-blue-500 shrink-0" />
+                        )}
+                        <p className={`text-sm flex-1 truncate ${hasUnread && !isSelected ? "font-semibold text-[#111827]" : "text-[#374151]"}`}>
+                          {thread.subject}
+                        </p>
+                        <span className="text-xs text-[#9CA3AF] shrink-0">{formatQaDate(thread.updatedAt)}</span>
+                      </div>
+                      <p className="text-xs text-[#6B7280] line-clamp-1 mb-1.5 pl-4">{lastMessage.content}</p>
+                      <div className="flex items-center gap-1.5 pl-4">
+                        <Badge
+                          variant="outline"
+                          className={`text-xs px-1.5 py-0 ${thread.visibility === "all" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-gray-50 text-gray-600 border-gray-200"}`}
+                        >
+                          {thread.visibility === "all" ? <><Globe className="size-3 mr-1" />Public</> : <><Lock className="size-3 mr-1" />Private</>}
+                        </Badge>
+                        {lastMessage.attachments.length > 0 && <Paperclip className="size-3 text-[#9CA3AF]" />}
+                        <span className="text-xs text-[#9CA3AF]">{thread.messages.length} msg{thread.messages.length !== 1 ? "s" : ""}</span>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Right - Thread Detail */}
+            <div className="flex-1 flex flex-col min-w-0">
+              {selectedThread ? (
+                <>
+                  {/* Detail header */}
+                  <div className="px-6 py-3 border-b border-[#E5E7EB] bg-[#FAFAFA]">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold text-[#111827] truncate">{selectedThread.subject}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge
+                            variant="outline"
+                            className={`text-xs px-1.5 ${selectedThread.visibility === "all" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-gray-50 text-gray-600 border-gray-200"}`}
+                          >
+                            {selectedThread.visibility === "all" ? <><Globe className="size-3 mr-1" />All Suppliers</> : <><Lock className="size-3 mr-1" />Private</>}
+                          </Badge>
+                          <span className="text-xs text-[#9CA3AF]">
+                            Started {new Date(selectedThread.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          </span>
+                        </div>
+                      </div>
+                      {selectedThread.visibility === "private" && (
+                        <Button variant="outline" size="sm" className="shrink-0 h-8" onClick={() => handleMakePublic(selectedThread.id)}>
+                          <Globe className="size-4 mr-1" />
+                          Make Public
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {selectedThread.messages.map(message => (
+                      <div
+                        key={message.id}
+                        className={`flex gap-3 ${message.senderType === "buyer" ? "flex-row-reverse" : ""}`}
+                      >
+                        <Avatar className="size-8 shrink-0">
+                          <AvatarFallback className={`text-xs ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#F3F4F6] text-[#6B7280]"}`}>
+                            {message.senderName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className={`flex-1 max-w-[75%] ${message.senderType === "buyer" ? "text-right" : ""}`}>
+                          <div className={`inline-block text-left rounded-lg px-4 py-2.5 ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#F3F4F6] text-[#111827]"}`}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`text-xs font-medium ${message.senderType === "buyer" ? "text-green-100" : "text-[#6B7280]"}`}>
+                                {message.senderName}
+                                {message.senderType === "supplier" && message.senderCompany && ` · ${message.senderCompany}`}
+                              </span>
+                            </div>
+                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                            {message.attachments.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                {message.attachments.map((att, idx) => (
+                                  <a
+                                    key={idx}
+                                    href={att.url}
+                                    className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${message.senderType === "buyer" ? "bg-green-600 hover:bg-green-700 text-white" : "bg-white border border-[#E5E7EB] hover:bg-[#F9FAFB] text-[#6B7280]"}`}
+                                  >
+                                    <Paperclip className="size-3" />
+                                    {att.name}
+                                  </a>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <p className={`text-xs text-[#9CA3AF] mt-1 ${message.senderType === "buyer" ? "text-right" : ""}`}>
+                            {new Date(message.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Reply Composer */}
+                  <div className="border-t border-[#E5E7EB] p-4">
+                    <div className="flex gap-2">
+                      <div className="flex-1 space-y-2">
+                        <Textarea
+                          placeholder="Type your reply..."
+                          value={replyMessage}
+                          onChange={(e) => setReplyMessage(e.target.value)}
+                          rows={2}
+                          className="resize-none"
+                        />
+                        {replyAttachments.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {replyAttachments.map((file, idx) => (
+                              <Badge key={idx} variant="outline" className="bg-[#F3F4F6] text-[#6B7280] pr-1">
+                                <Paperclip className="size-3 mr-1" />
+                                {file.name}
+                                <button
+                                  type="button"
+                                  className="ml-1 hover:text-red-600"
+                                  onClick={() => setReplyAttachments(prev => prev.filter((_, i) => i !== idx))}
+                                >
+                                  <X className="size-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-9 w-9"
+                          onClick={() => setReplyAttachments(prev => [...prev, { name: `Attachment_${prev.length + 1}.pdf`, size: "128 KB" }])}
+                        >
+                          <Paperclip className="size-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          className="h-9 w-9 bg-[#16A34A] hover:bg-[#15803D] text-white"
+                          onClick={handleSendReply}
+                          disabled={!replyMessage.trim()}
+                        >
+                          <Send className="size-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center text-[#6B7280] h-full">
+                  <div className="text-center">
+                    <MessageCircle className="size-12 mx-auto mb-3 opacity-30" />
+                    <p className="font-medium">Select a conversation</p>
+                    <p className="text-sm text-[#9CA3AF] mt-1">Choose a thread from the list to view messages</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -2565,29 +3021,70 @@ export default function TenderDetailPage() {
               </CardContent>
             </Card>
             
-            {/* Results count */}
+            {/* Results count + sort + download */}
             <div className="flex items-center justify-between text-sm text-[#6B7280]">
-              <span>
-                Showing {filteredActivities.length} of {activityData.length} activities
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs"
-                onClick={() => setActivitySortOrder(prev => prev === "desc" ? "asc" : "desc")}
-              >
-                <ArrowUpDown className="size-3 mr-1" />
-                {activitySortOrder === "desc" ? "Newest first" : "Oldest first"}
-              </Button>
+              <div className="flex items-center gap-3">
+                <span>
+                  Showing {filteredActivities.length} of {activityData.length} activities
+                </span>
+                {selectedActivityRows.size > 0 && (
+                  <span className="text-[#16A34A] font-medium">
+                    {selectedActivityRows.size} row{selectedActivityRows.size !== 1 ? "s" : ""} selected
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => setActivitySortOrder(prev => prev === "desc" ? "asc" : "desc")}
+                >
+                  <ArrowUpDown className="size-3 mr-1" />
+                  {activitySortOrder === "desc" ? "Newest first" : "Oldest first"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 border-[#E5E7EB]"
+                  disabled={selectedActivityRows.size === 0}
+                  onClick={() => {
+                    const selected = activityData.filter(a => selectedActivityRows.has(a.id))
+                    exportActivitiesToCSV(selected, "rfp_activity_selection.csv")
+                  }}
+                >
+                  <Download className="size-4 mr-2" />
+                  Download Selection
+                  {selectedActivityRows.size > 0 && (
+                    <Badge className="ml-2 bg-[#16A34A] text-white text-xs px-1.5">{selectedActivityRows.size}</Badge>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 border-[#E5E7EB]"
+                  onClick={() => exportActivitiesToCSV(activityData, "rfp_activity_all.csv")}
+                >
+                  <Download className="size-4 mr-2" />
+                  Download All
+                </Button>
+              </div>
             </div>
 
             {/* Activity Table */}
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                        <th className="px-4 py-3 w-10">
+                          <Checkbox
+                            checked={filteredActivities.length > 0 && filteredActivities.every(a => selectedActivityRows.has(a.id))}
+                            onCheckedChange={() => toggleAllActivityRows(filteredActivities)}
+                            aria-label="Select all activities"
+                          />
+                        </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-28">Type</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Action</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Details</th>
@@ -2598,43 +3095,56 @@ export default function TenderDetailPage() {
                     <tbody className="divide-y divide-[#E5E7EB]">
                       {filteredActivities.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-4 py-8 text-center text-[#6B7280]">
+                          <td colSpan={6} className="px-4 py-8 text-center text-[#6B7280]">
                             No activities match your filters
                           </td>
                         </tr>
                       ) : (
-                        filteredActivities.map(activity => (
-                          <tr key={activity.id} className="hover:bg-[#F9FAFB] transition-colors">
-                            <td className="px-4 py-3">
-                              <Badge className={`${getActivityTypeStyle(activity.type)} border-0 text-xs font-medium`}>
-                                <span className="mr-1">{getActivityIcon(activity.type)}</span>
-                                {activityTypes.find(t => t.key === activity.type)?.label}
-                              </Badge>
-                            </td>
-                            <td className="px-4 py-3 font-medium text-[#111827]">
-                              {activity.action}
-                            </td>
-                            <td className="px-4 py-3 text-[#6B7280]">
-                              {activity.detail}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <Avatar className="size-6">
-                                  <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280] text-xs">
-                                    {activity.person.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span className="text-[#111827] truncate">{activity.person}</span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-[#6B7280]">
-                              <div>
-                                <p>{formatActivityDate(activity.date)}</p>
-                                <p className="text-xs text-[#9CA3AF]">{activity.time}</p>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
+                        filteredActivities.map(activity => {
+                          const isSelected = selectedActivityRows.has(activity.id)
+                          return (
+                            <tr
+                              key={activity.id}
+                              className={`transition-colors ${isSelected ? "bg-[#F0FDF4]" : "hover:bg-[#F9FAFB]"}`}
+                            >
+                              <td className="px-4 py-3">
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={() => toggleActivityRow(activity.id)}
+                                  aria-label={`Select ${activity.action}`}
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <Badge className={`${getActivityTypeStyle(activity.type)} border-0 text-xs font-medium`}>
+                                  <span className="mr-1">{getActivityIcon(activity.type)}</span>
+                                  {activityTypes.find(t => t.key === activity.type)?.label}
+                                </Badge>
+                              </td>
+                              <td className="px-4 py-3 font-medium text-[#111827]">
+                                {activity.action}
+                              </td>
+                              <td className="px-4 py-3 text-[#6B7280]">
+                                {activity.detail}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="size-6">
+                                    <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280] text-xs">
+                                      {activity.person.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-[#111827] truncate">{activity.person}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-[#6B7280]">
+                                <div>
+                                  <p>{formatActivityDate(activity.date)}</p>
+                                  <p className="text-xs text-[#9CA3AF]">{activity.time}</p>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })
                       )}
                     </tbody>
                   </table>
