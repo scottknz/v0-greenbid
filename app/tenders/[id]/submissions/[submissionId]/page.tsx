@@ -270,12 +270,12 @@ const activityTypes = [
 ]
 
 const evaluationCriteria = [
-  { name: "Completeness", weight: 10 },
+  { name: "Content", weight: 10 },
   { name: "Quality", weight: 25 },
   { name: "Capability", weight: 15 },
-  { name: "Price", weight: 20 },
   { name: "Sustainability", weight: 25 },
   { name: "Risk", weight: 5 },
+  { name: "Price", weight: 20 },
 ]
 
 // Communication data

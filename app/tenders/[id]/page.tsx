@@ -82,7 +82,7 @@ const tenderData = {
   ],
   evaluationCriteria: [
     { 
-      name: "Completeness", 
+      name: "Content", 
       weight: 15,
       instructions: "Assess whether the supplier has provided all required documentation and addressed all sections of the tender. Look for completeness of responses and adherence to submission guidelines.",
       instructionsSaved: true,
@@ -116,18 +116,6 @@ const tenderData = {
       ]
     },
     { 
-      name: "Price", 
-      weight: 20,
-      instructions: "Analyze pricing competitiveness, value for money, payment terms offered, and total cost of ownership including any hidden costs or long-term implications.",
-      instructionsSaved: true,
-      subcategories: [
-        { name: "Base pricing", description: "Compare proposed pricing against market rates, budget constraints, and competitor offerings.", saved: true },
-        { name: "Value for money", description: "Assess the overall value proposition considering quality, service levels, and long-term benefits relative to cost.", saved: true },
-        { name: "Payment terms", description: "Evaluate flexibility of payment schedules, early payment discounts, and financing options offered.", saved: true },
-        { name: "Total cost of ownership", description: "Calculate all costs including implementation, maintenance, training, and disposal over the contract period.", saved: true }
-      ]
-    },
-    { 
       name: "Sustainability", 
       weight: 20,
       instructions: "Assess environmental impact, carbon footprint reduction measures, ethical sourcing practices, and social responsibility initiatives aligned with our ESG goals.",
@@ -149,6 +137,18 @@ const tenderData = {
         { name: "Supply chain reliability", description: "Evaluate supplier network diversity, delivery track record, and contingency arrangements.", saved: true },
         { name: "Business continuity", description: "Review documented BCP, disaster recovery plans, and crisis management procedures.", saved: true },
         { name: "Insurance coverage", description: "Verify adequate liability, professional indemnity, and product insurance coverage levels.", saved: true }
+      ]
+    },
+    { 
+      name: "Price", 
+      weight: 20,
+      instructions: "Analyze pricing competitiveness, value for money, payment terms offered, and total cost of ownership including any hidden costs or long-term implications.",
+      instructionsSaved: true,
+      subcategories: [
+        { name: "Base pricing", description: "Compare proposed pricing against market rates, budget constraints, and competitor offerings.", saved: true },
+        { name: "Value for money", description: "Assess the overall value proposition considering quality, service levels, and long-term benefits relative to cost.", saved: true },
+        { name: "Payment terms", description: "Evaluate flexibility of payment schedules, early payment discounts, and financing options offered.", saved: true },
+        { name: "Total cost of ownership", description: "Calculate all costs including implementation, maintenance, training, and disposal over the contract period.", saved: true }
       ]
     },
   ],
@@ -173,12 +173,12 @@ const submissionsData = [
     totalHours: 240,
     completionDate: "Jun 30, 2026",
     scores: {
-      completeness: 95,
+      content: 95,
       quality: 88,
       capability: 92,
-      price: 85,
       sustainability: 90,
       risk: 87,
+      price: 85,
     },
     weightedScore: 89,
     documents: [
@@ -200,12 +200,12 @@ const submissionsData = [
     totalHours: 220,
     completionDate: "Jul 15, 2026",
     scores: {
-      completeness: 100,
+      content: 100,
       quality: 85,
       capability: 88,
-      price: 92,
       sustainability: 86,
       risk: 91,
+      price: 92,
     },
     weightedScore: 90,
     documents: [
@@ -226,12 +226,12 @@ const submissionsData = [
     totalHours: 280,
     completionDate: "Aug 1, 2026",
     scores: {
-      completeness: 90,
+      content: 90,
       quality: 95,
       capability: 90,
-      price: 78,
       sustainability: 94,
       risk: 82,
+      price: 78,
     },
     weightedScore: 87,
     documents: [
@@ -300,7 +300,7 @@ const assessmentData: Record<string, {
   s1: {
     categories: [
       {
-        name: "Completeness",
+        name: "Content",
         aiScore: 95,
         actualScore: 95,
         subcategories: [
@@ -331,17 +331,6 @@ const assessmentData: Record<string, {
         ]
       },
       {
-        name: "Price",
-        aiScore: 85,
-        actualScore: 85,
-        subcategories: [
-          { name: "Base pricing", aiScore: 82, actualScore: 82, aiJustification: "Pricing is 5% above market average but includes premium sustainable materials.", humanJustification: "" },
-          { name: "Value for money", aiScore: 88, actualScore: 88, aiJustification: "Total cost of ownership analysis shows 12% savings over 3-year period due to durability.", humanJustification: "" },
-          { name: "Payment terms", aiScore: 84, actualScore: 84, aiJustification: "Offers Net 45 payment terms with 2% early payment discount.", humanJustification: "" },
-          { name: "Total cost of ownership", aiScore: 86, actualScore: 86, aiJustification: "Comprehensive TCO breakdown provided including maintenance, replacement, and disposal costs.", humanJustification: "" },
-        ]
-      },
-      {
         name: "Sustainability",
         aiScore: 90,
         actualScore: 90,
@@ -363,12 +352,23 @@ const assessmentData: Record<string, {
           { name: "Insurance coverage", aiScore: 87, actualScore: 87, aiJustification: "Adequate liability coverage of $5M. Product liability and professional indemnity in place.", humanJustification: "" },
         ]
       },
+      {
+        name: "Price",
+        aiScore: 85,
+        actualScore: 85,
+        subcategories: [
+          { name: "Base pricing", aiScore: 82, actualScore: 82, aiJustification: "Pricing is 5% above market average but includes premium sustainable materials.", humanJustification: "" },
+          { name: "Value for money", aiScore: 88, actualScore: 88, aiJustification: "Total cost of ownership analysis shows 12% savings over 3-year period due to durability.", humanJustification: "" },
+          { name: "Payment terms", aiScore: 84, actualScore: 84, aiJustification: "Offers Net 45 payment terms with 2% early payment discount.", humanJustification: "" },
+          { name: "Total cost of ownership", aiScore: 86, actualScore: 86, aiJustification: "Comprehensive TCO breakdown provided including maintenance, replacement, and disposal costs.", humanJustification: "" },
+        ]
+      },
     ]
   },
   s2: {
     categories: [
       {
-        name: "Completeness",
+        name: "Content",
         aiScore: 100,
         actualScore: 100,
         subcategories: [
@@ -399,17 +399,6 @@ const assessmentData: Record<string, {
         ]
       },
       {
-        name: "Price",
-        aiScore: 92,
-        actualScore: 92,
-        subcategories: [
-          { name: "Base pricing", aiScore: 94, actualScore: 94, aiJustification: "Most competitive pricing among evaluated submissions. 8% below market average.", humanJustification: "" },
-          { name: "Value for money", aiScore: 91, actualScore: 91, aiJustification: "Excellent price-to-quality ratio. Bulk discount structure favorable.", humanJustification: "" },
-          { name: "Payment terms", aiScore: 90, actualScore: 90, aiJustification: "Flexible Net 60 terms available. Volume-based pricing tiers.", humanJustification: "" },
-          { name: "Total cost of ownership", aiScore: 93, actualScore: 93, aiJustification: "Lowest overall TCO projection over contract period.", humanJustification: "" },
-        ]
-      },
-      {
         name: "Sustainability",
         aiScore: 86,
         actualScore: 86,
@@ -431,12 +420,23 @@ const assessmentData: Record<string, {
           { name: "Insurance coverage", aiScore: 92, actualScore: 92, aiJustification: "Comprehensive insurance package exceeding requirements.", humanJustification: "" },
         ]
       },
+      {
+        name: "Price",
+        aiScore: 92,
+        actualScore: 92,
+        subcategories: [
+          { name: "Base pricing", aiScore: 94, actualScore: 94, aiJustification: "Most competitive pricing among evaluated submissions. 8% below market average.", humanJustification: "" },
+          { name: "Value for money", aiScore: 91, actualScore: 91, aiJustification: "Excellent price-to-quality ratio. Bulk discount structure favorable.", humanJustification: "" },
+          { name: "Payment terms", aiScore: 90, actualScore: 90, aiJustification: "Flexible Net 60 terms available. Volume-based pricing tiers.", humanJustification: "" },
+          { name: "Total cost of ownership", aiScore: 93, actualScore: 93, aiJustification: "Lowest overall TCO projection over contract period.", humanJustification: "" },
+        ]
+      },
     ]
   },
   s3: {
     categories: [
       {
-        name: "Completeness",
+        name: "Content",
         aiScore: 90,
         actualScore: 90,
         subcategories: [
@@ -467,17 +467,6 @@ const assessmentData: Record<string, {
         ]
       },
       {
-        name: "Price",
-        aiScore: 78,
-        actualScore: 78,
-        subcategories: [
-          { name: "Base pricing", aiScore: 75, actualScore: 75, aiJustification: "Premium pricing - 15% above market average. Reflects quality positioning.", humanJustification: "" },
-          { name: "Value for money", aiScore: 82, actualScore: 82, aiJustification: "Higher upfront cost offset by superior durability and lower replacement frequency.", humanJustification: "" },
-          { name: "Payment terms", aiScore: 78, actualScore: 78, aiJustification: "Standard Net 30 terms. Limited flexibility on pricing.", humanJustification: "" },
-          { name: "Total cost of ownership", aiScore: 77, actualScore: 77, aiJustification: "Highest TCO among evaluated suppliers despite quality benefits.", humanJustification: "" },
-        ]
-      },
-      {
         name: "Sustainability",
         aiScore: 94,
         actualScore: 94,
@@ -497,6 +486,17 @@ const assessmentData: Record<string, {
           { name: "Supply chain reliability", aiScore: 83, actualScore: 83, aiJustification: "Strong supplier relationships but some single-source dependencies.", humanJustification: "" },
           { name: "Business continuity", aiScore: 82, actualScore: 82, aiJustification: "BCP in place but not recently tested.", humanJustification: "" },
           { name: "Insurance coverage", aiScore: 83, actualScore: 83, aiJustification: "Adequate coverage meeting minimum requirements.", humanJustification: "" },
+        ]
+      },
+      {
+        name: "Price",
+        aiScore: 78,
+        actualScore: 78,
+        subcategories: [
+          { name: "Base pricing", aiScore: 75, actualScore: 75, aiJustification: "Premium pricing - 15% above market average. Reflects quality positioning.", humanJustification: "" },
+          { name: "Value for money", aiScore: 82, actualScore: 82, aiJustification: "Higher upfront cost offset by superior durability and lower replacement frequency.", humanJustification: "" },
+          { name: "Payment terms", aiScore: 78, actualScore: 78, aiJustification: "Standard Net 30 terms. Limited flexibility on pricing.", humanJustification: "" },
+          { name: "Total cost of ownership", aiScore: 77, actualScore: 77, aiJustification: "Highest TCO among evaluated suppliers despite quality benefits.", humanJustification: "" },
         ]
       },
     ]
@@ -835,7 +835,7 @@ export default function TenderDetailPage() {
     // Generate criteria based on RFP content (simulated AI response)
     const generatedCriteria = [
       { 
-        name: "Completeness", 
+        name: "Content", 
         weight: 10,
         instructions: "Assess whether the supplier has provided all required documentation as specified in Section 3 of the RFP. Verify adherence to submission format, deadline compliance, and completeness of all mandatory sections.",
         instructionsSaved: false,
@@ -868,17 +868,6 @@ export default function TenderDetailPage() {
         ]
       },
       { 
-        name: "Commercial", 
-        weight: 20,
-        instructions: "Analyze pricing competitiveness, total cost of ownership, and commercial terms against budget parameters in RFP Section 6.",
-        instructionsSaved: false,
-        subcategories: [
-          { name: "Pricing competitiveness", description: "Compare unit pricing and volume discounts against market benchmarks and budget allocation in RFP Section 6.1.", saved: false },
-          { name: "Total cost of ownership", description: "Calculate all costs including delivery, installation, maintenance, and disposal as per TCO model in RFP Appendix C.", saved: false },
-          { name: "Payment and contract terms", description: "Evaluate payment schedules, warranty terms, and contract flexibility per RFP Section 6.3 requirements.", saved: false }
-        ]
-      },
-      { 
         name: "Sustainability & ESG", 
         weight: 25,
         instructions: "Assess environmental credentials, carbon footprint, ethical sourcing, and social responsibility against ESG requirements in RFP Section 7.",
@@ -899,6 +888,17 @@ export default function TenderDetailPage() {
           { name: "Financial stability", description: "Assess credit rating, financial statements, and profitability trends as per RFP Section 8.1 requirements.", saved: false },
           { name: "Supply chain resilience", description: "Evaluate supplier diversification, geographic risk, and contingency plans per RFP Section 8.2.", saved: false },
           { name: "Business continuity", description: "Review BCP documentation, insurance coverage, and disaster recovery capabilities per RFP Section 8.3.", saved: false }
+        ]
+      },
+      { 
+        name: "Commercial", 
+        weight: 20,
+        instructions: "Analyze pricing competitiveness, total cost of ownership, and commercial terms against budget parameters in RFP Section 6.",
+        instructionsSaved: false,
+        subcategories: [
+          { name: "Pricing competitiveness", description: "Compare unit pricing and volume discounts against market benchmarks and budget allocation in RFP Section 6.1.", saved: false },
+          { name: "Total cost of ownership", description: "Calculate all costs including delivery, installation, maintenance, and disposal as per TCO model in RFP Appendix C.", saved: false },
+          { name: "Payment and contract terms", description: "Evaluate payment schedules, warranty terms, and contract flexibility per RFP Section 6.3 requirements.", saved: false }
         ]
       },
     ]
@@ -1776,12 +1776,12 @@ export default function TenderDetailPage() {
                     <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
                       <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Status</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Completeness</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Content</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Quality</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Capability</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Sustainability</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Risk</th>
+                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted</th>
                       <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Docs</th>
                       <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Actions</th>
@@ -1812,7 +1812,7 @@ export default function TenderDetailPage() {
                         </td>
                         <td className="px-2 py-3 text-center">
                           {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.completeness}</span>
+                            <span className="font-medium text-[#111827]">{submission.scores.content}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
                           )}
@@ -1833,13 +1833,6 @@ export default function TenderDetailPage() {
                         </td>
                         <td className="px-2 py-3 text-center">
                           {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.price}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
                             <span className="font-medium text-[#111827]">{submission.scores.sustainability}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
@@ -1848,6 +1841,13 @@ export default function TenderDetailPage() {
                         <td className="px-2 py-3 text-center">
                           {submission.scores ? (
                             <span className="font-medium text-[#111827]">{submission.scores.risk}</span>
+                          ) : (
+                            <span className="text-[#D1D5DB]">-</span>
+                          )}
+                        </td>
+                        <td className="px-2 py-3 text-center">
+                          {submission.scores ? (
+                            <span className="font-medium text-[#111827]">{submission.scores.price}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
                           )}
@@ -2164,12 +2164,12 @@ export default function TenderDetailPage() {
                     <thead>
                       <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
                         <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier</th>
-                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Completeness</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Content</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Quality</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Capability</th>
-                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Sustainability</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Risk</th>
+                        <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted</th>
                         <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Value</th>
                         <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Hours</th>
@@ -2193,7 +2193,7 @@ export default function TenderDetailPage() {
                           </td>
                           <td className="px-3 py-3 text-center">
                             {submission.scores ? (
-                              <span className="font-medium text-[#111827]">{submission.scores.completeness}</span>
+                              <span className="font-medium text-[#111827]">{submission.scores.content}</span>
                             ) : (
                               <span className="text-[#D1D5DB]">-</span>
                             )}
@@ -2214,13 +2214,6 @@ export default function TenderDetailPage() {
                           </td>
                           <td className="px-3 py-3 text-center">
                             {submission.scores ? (
-                              <span className="font-medium text-[#111827]">{submission.scores.price}</span>
-                            ) : (
-                              <span className="text-[#D1D5DB]">-</span>
-                            )}
-                          </td>
-                          <td className="px-3 py-3 text-center">
-                            {submission.scores ? (
                               <span className="font-medium text-[#111827]">{submission.scores.sustainability}</span>
                             ) : (
                               <span className="text-[#D1D5DB]">-</span>
@@ -2229,6 +2222,13 @@ export default function TenderDetailPage() {
                           <td className="px-3 py-3 text-center">
                             {submission.scores ? (
                               <span className="font-medium text-[#111827]">{submission.scores.risk}</span>
+                            ) : (
+                              <span className="text-[#D1D5DB]">-</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            {submission.scores ? (
+                              <span className="font-medium text-[#111827]">{submission.scores.price}</span>
                             ) : (
                               <span className="text-[#D1D5DB]">-</span>
                             )}
