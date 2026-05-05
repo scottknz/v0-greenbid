@@ -1774,35 +1774,30 @@ export default function TenderDetailPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
-                      <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Supplier Name</th>
                       <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Status</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Content</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Quality</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Capability</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Sustainability</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Risk</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted</th>
-                      <th className="px-2 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Docs</th>
-                      <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Actions</th>
+                      <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Weighted Score</th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Price</th>
+                      <th className="px-3 py-3 text-center text-xs font-medium text-[#6B7280] uppercase tracking-wide">Docs</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Contact</th>
+                      <th className="px-3 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">Open</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E5E7EB]">
                     {submissionsData.map(submission => (
                       <tr 
                         key={submission.id} 
-                        className="hover:bg-[#F3F4F6] transition-colors cursor-pointer"
-                        onClick={() => router.push(`/tenders/${params.id}/submissions/${submission.id}`)}
+                        className="hover:bg-[#F3F4F6] transition-colors"
                       >
-                        <td className="px-3 py-3">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="size-7">
-                              <AvatarFallback className="bg-[#F0FDF4] text-[#16A34A] text-xs">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="size-8">
+                              <AvatarFallback className="bg-[#F0FDF4] text-[#16A34A] text-xs font-medium">
                                 {submission.supplierName.split(" ").map(n => n[0]).join("").slice(0, 2)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <span className="font-medium text-[#111827] text-sm">{submission.supplierName}</span>
+                              <span className="font-medium text-[#111827]">{submission.supplierName}</span>
                               <p className="text-xs text-[#9CA3AF]">{submission.submittedDate}</p>
                             </div>
                           </div>
@@ -1810,58 +1805,23 @@ export default function TenderDetailPage() {
                         <td className="px-3 py-3">
                           <SubmissionStatusBadge status={submission.status} />
                         </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.content}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.quality}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.capability}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.sustainability}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.risk}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
-                          {submission.scores ? (
-                            <span className="font-medium text-[#111827]">{submission.scores.price}</span>
-                          ) : (
-                            <span className="text-[#D1D5DB]">-</span>
-                          )}
-                        </td>
-                        <td className="px-2 py-3 text-center">
+                        <td className="px-3 py-3 text-center">
                           {submission.weightedScore ? (
                             <span className="font-semibold text-[#111827]">{submission.weightedScore}</span>
                           ) : (
                             <span className="text-[#D1D5DB]">-</span>
                           )}
                         </td>
-                        <td className="px-2 py-3 text-center">
+                        <td className="px-3 py-3 text-right">
+                          {submission.proposedValue ? (
+                            <span className="font-medium text-[#111827]">${submission.proposedValue.toLocaleString()}</span>
+                          ) : (
+                            <span className="text-[#D1D5DB]">-</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 text-center">
                           <Dialog>
-                            <DialogTrigger asChild>
+                            <DialogTrigger asChild onClick={(e) => e.stopPropagation()}>
                               <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-[#6B7280] hover:text-[#111827]">
                                 <FileText className="size-3 mr-1" />
                                 {submission.documents.length}
@@ -1890,12 +1850,18 @@ export default function TenderDetailPage() {
                             </DialogContent>
                           </Dialog>
                         </td>
+                        <td className="px-3 py-3">
+                          <div>
+                            <span className="text-sm text-[#111827]">{submission.keyContact}</span>
+                            <p className="text-xs text-[#6B7280]">{submission.keyContactEmail}</p>
+                          </div>
+                        </td>
                         <td className="px-3 py-3 text-right">
                           <Button 
                             variant="outline" 
                             size="sm" 
                             className="h-7 px-3 text-xs border-[#E5E7EB]"
-                            onClick={() => window.location.href = `/tenders/${tenderData.id}/submissions/${submission.id}`}
+                            onClick={() => router.push(`/tenders/${tenderData.id}/submissions/${submission.id}`)}
                           >
                             <ExternalLink className="size-3 mr-1" />
                             Open
