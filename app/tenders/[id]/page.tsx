@@ -1145,7 +1145,7 @@ export default function TenderDetailPage() {
               {/* Description */}
               <Card className="border-[#E5E7EB] bg-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle className="text-lg">Description</CardTitle>
+                  <CardTitle className="text-lg">Tender Description</CardTitle>
                   <div className="flex items-center gap-1">
                     {!descriptionEdit.saved && (
                       <>
@@ -1206,7 +1206,7 @@ export default function TenderDetailPage() {
               {/* Requirements */}
               <Card className="border-[#E5E7EB] bg-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <CardTitle className="text-lg">Requirements</CardTitle>
+                  <CardTitle className="text-lg">Tender Requirements</CardTitle>
                   <Button
                     variant="ghost"
                     size="sm"
