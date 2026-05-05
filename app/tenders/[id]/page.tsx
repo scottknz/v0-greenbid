@@ -18,6 +18,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -596,7 +597,42 @@ export default function TenderDetailPage() {
   const [activityDateFrom, setActivityDateFrom] = useState("")
   const [activityDateTo, setActivityDateTo] = useState("")
   const [activitySortOrder, setActivitySortOrder] = useState<"asc" | "desc">("desc")
-  
+  const [selectedActivityRows, setSelectedActivityRows] = useState<Set<string>>(new Set())
+
+  const toggleActivityRow = (id: string) => {
+    setSelectedActivityRows(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleAllActivityRows = (rows: typeof activityData) => {
+    if (rows.every(a => selectedActivityRows.has(a.id))) {
+      setSelectedActivityRows(new Set())
+    } else {
+      setSelectedActivityRows(new Set(rows.map(a => a.id)))
+    }
+  }
+
+  const exportActivitiesToCSV = (activities: typeof activityData, filename: string) => {
+    const headers = ["Type", "Action", "Details", "Person", "Date", "Time"]
+    const rows = activities.map(a => {
+      const typeLabel = activityTypes.find(t => t.key === a.type)?.label ?? a.type
+      return [typeLabel, a.action, a.detail, a.person, formatActivityDate(a.date), a.time]
+    })
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n")
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   // Get unique people from activity data
   const activityPeople = [...new Set(activityData.map(a => a.person))]
   
@@ -2344,20 +2380,54 @@ export default function TenderDetailPage() {
               </CardContent>
             </Card>
             
-            {/* Results count */}
+            {/* Results count + sort + download */}
             <div className="flex items-center justify-between text-sm text-[#6B7280]">
-              <span>
-                Showing {filteredActivities.length} of {activityData.length} activities
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs"
-                onClick={() => setActivitySortOrder(prev => prev === "desc" ? "asc" : "desc")}
-              >
-                <ArrowUpDown className="size-3 mr-1" />
-                {activitySortOrder === "desc" ? "Newest first" : "Oldest first"}
-              </Button>
+              <div className="flex items-center gap-3">
+                <span>
+                  Showing {filteredActivities.length} of {activityData.length} activities
+                </span>
+                {selectedActivityRows.size > 0 && (
+                  <span className="text-[#16A34A] font-medium">
+                    {selectedActivityRows.size} row{selectedActivityRows.size !== 1 ? "s" : ""} selected
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => setActivitySortOrder(prev => prev === "desc" ? "asc" : "desc")}
+                >
+                  <ArrowUpDown className="size-3 mr-1" />
+                  {activitySortOrder === "desc" ? "Newest first" : "Oldest first"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 border-[#E5E7EB]"
+                  disabled={selectedActivityRows.size === 0}
+                  onClick={() => {
+                    const selected = activityData.filter(a => selectedActivityRows.has(a.id))
+                    exportActivitiesToCSV(selected, "rfp_activity_selection.csv")
+                  }}
+                >
+                  <Download className="size-4 mr-2" />
+                  Download Selection
+                  {selectedActivityRows.size > 0 && (
+                    <Badge className="ml-2 bg-[#16A34A] text-white text-xs px-1.5">{selectedActivityRows.size}</Badge>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 border-[#E5E7EB]"
+                  onClick={() => exportActivitiesToCSV(activityData, "rfp_activity_all.csv")}
+                >
+                  <Download className="size-4 mr-2" />
+                  Download All
+                </Button>
+              </div>
             </div>
 
             {/* Activity Table */}
@@ -2367,6 +2437,13 @@ export default function TenderDetailPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                        <th className="px-4 py-3 w-10">
+                          <Checkbox
+                            checked={filteredActivities.length > 0 && filteredActivities.every(a => selectedActivityRows.has(a.id))}
+                            onCheckedChange={() => toggleAllActivityRows(filteredActivities)}
+                            aria-label="Select all activities"
+                          />
+                        </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-28">Type</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Action</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Details</th>
@@ -2377,43 +2454,56 @@ export default function TenderDetailPage() {
                     <tbody className="divide-y divide-[#E5E7EB]">
                       {filteredActivities.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-4 py-8 text-center text-[#6B7280]">
+                          <td colSpan={6} className="px-4 py-8 text-center text-[#6B7280]">
                             No activities match your filters
                           </td>
                         </tr>
                       ) : (
-                        filteredActivities.map(activity => (
-                          <tr key={activity.id} className="hover:bg-[#F9FAFB] transition-colors">
-                            <td className="px-4 py-3">
-                              <Badge className={`${getActivityTypeStyle(activity.type)} border-0 text-xs font-medium`}>
-                                <span className="mr-1">{getActivityIcon(activity.type)}</span>
-                                {activityTypes.find(t => t.key === activity.type)?.label}
-                              </Badge>
-                            </td>
-                            <td className="px-4 py-3 font-medium text-[#111827]">
-                              {activity.action}
-                            </td>
-                            <td className="px-4 py-3 text-[#6B7280]">
-                              {activity.detail}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <Avatar className="size-6">
-                                  <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280] text-xs">
-                                    {activity.person.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span className="text-[#111827] truncate">{activity.person}</span>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-[#6B7280]">
-                              <div>
-                                <p>{formatActivityDate(activity.date)}</p>
-                                <p className="text-xs text-[#9CA3AF]">{activity.time}</p>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
+                        filteredActivities.map(activity => {
+                          const isSelected = selectedActivityRows.has(activity.id)
+                          return (
+                            <tr
+                              key={activity.id}
+                              className={`transition-colors ${isSelected ? "bg-[#F0FDF4]" : "hover:bg-[#F9FAFB]"}`}
+                            >
+                              <td className="px-4 py-3">
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={() => toggleActivityRow(activity.id)}
+                                  aria-label={`Select ${activity.action}`}
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <Badge className={`${getActivityTypeStyle(activity.type)} border-0 text-xs font-medium`}>
+                                  <span className="mr-1">{getActivityIcon(activity.type)}</span>
+                                  {activityTypes.find(t => t.key === activity.type)?.label}
+                                </Badge>
+                              </td>
+                              <td className="px-4 py-3 font-medium text-[#111827]">
+                                {activity.action}
+                              </td>
+                              <td className="px-4 py-3 text-[#6B7280]">
+                                {activity.detail}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="size-6">
+                                    <AvatarFallback className="bg-[#F3F4F6] text-[#6B7280] text-xs">
+                                      {activity.person.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-[#111827] truncate">{activity.person}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-[#6B7280]">
+                                <div>
+                                  <p>{formatActivityDate(activity.date)}</p>
+                                  <p className="text-xs text-[#9CA3AF]">{activity.time}</p>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })
                       )}
                     </tbody>
                   </table>
