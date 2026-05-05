@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,10 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar, DollarSign, Users, Clock, Plus, Trash2, ArrowLeft, Lock } from 'lucide-react';
+import { Calendar, DollarSign, Clock, Plus, Trash2, ArrowLeft, FileText, Eye, EyeOff } from 'lucide-react';
 import { rfpCategories } from '@/lib/mock-rfp';
-import { generateReferenceId, getCompanyName } from '@/lib/rfp-utils';
-import type { RFPDocument, RFPMilestone } from '@/types/rfp';
+import { TeamCard } from '@/components/rfp/TeamCard';
+import type { RFPDocument, RFPMilestone, RFPTeamMember } from '@/types/rfp';
 
 interface ProjectSetupFormProps {
   projectInfo: Partial<RFPDocument['projectInfo']>;
@@ -25,26 +25,21 @@ interface ProjectSetupFormProps {
   onNext: () => void;
 }
 
-export function ProjectSetupForm({ 
-  projectInfo, 
-  onUpdateProjectInfo, 
-  onBack, 
-  onNext 
+const CONTRACT_TYPES = ['Fixed Price', 'Time & Materials', 'Framework Agreement', 'Retainer'];
+const CONFIDENTIALITY = ['Public', 'Restricted', 'Confidential'];
+const CURRENCIES = ['USD', 'EUR', 'GBP', 'AUD', 'NZD', 'CAD', 'SGD', 'JPY'];
+const LANGUAGES = ['English', 'French', 'Spanish', 'German', 'Mandarin', 'Other'];
+
+export function ProjectSetupForm({
+  projectInfo,
+  onUpdateProjectInfo,
+  onBack,
+  onNext,
 }: ProjectSetupFormProps) {
   const [milestones, setMilestones] = useState<RFPMilestone[]>(
     projectInfo.milestones || []
   );
-  const [generatedRefId, setGeneratedRefId] = useState<string>('');
-
-  // Generate reference ID when component mounts
-  useEffect(() => {
-    const refId = generateReferenceId(getCompanyName(), 1);
-    setGeneratedRefId(refId);
-    // Auto-update projectInfo with generated reference ID
-    if (!projectInfo.referenceId) {
-      onUpdateProjectInfo({ ...projectInfo, referenceId: refId });
-    }
-  }, []);
+  const [team, setTeam] = useState<RFPTeamMember[]>(projectInfo.team || []);
 
   const handleAddMilestone = () => {
     const newMilestone: RFPMilestone = {
@@ -65,9 +60,7 @@ export function ProjectSetupForm({
   };
 
   const handleMilestoneChange = (id: string, field: keyof RFPMilestone, value: string) => {
-    const updated = milestones.map((m) =>
-      m.id === id ? { ...m, [field]: value } : m
-    );
+    const updated = milestones.map((m) => (m.id === id ? { ...m, [field]: value } : m));
     setMilestones(updated);
     onUpdateProjectInfo({ ...projectInfo, milestones: updated });
   };
@@ -76,14 +69,26 @@ export function ProjectSetupForm({
     onUpdateProjectInfo({ ...projectInfo, [field]: value });
   };
 
+  const handleTeamChange = (updatedTeam: RFPTeamMember[]) => {
+    setTeam(updatedTeam);
+    const lead = updatedTeam.find((m) => m.isLead);
+    onUpdateProjectInfo({
+      ...projectInfo,
+      team: updatedTeam,
+      // Keep legacy fields in sync with lead
+      primaryContact: lead?.name ?? projectInfo.primaryContact ?? '',
+      primaryContactEmail: lead?.email ?? projectInfo.primaryContactEmail ?? '',
+    });
+  };
+
   const isValid = projectInfo.projectName && projectInfo.category && projectInfo.submissionDeadline;
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
+      <div className="space-y-1">
         <h2 className="text-xl font-semibold text-text-primary">Project Details</h2>
         <p className="text-sm text-text-secondary">
-          Provide the key information about your procurement project.
+          Provide the key information about your procurement project. Fields marked with * are required.
         </p>
       </div>
 
@@ -91,15 +96,17 @@ export function ProjectSetupForm({
       <Card className="border-border">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-medium text-text-primary flex items-center gap-2">
-            <Users className="h-4 w-4 text-brand-green" />
+            <FileText className="h-4 w-4 text-brand-green" />
             Basic Information
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+
+          {/* Project Name & Category */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="projectName" className="text-text-primary">
-                Project Name <span className="text-red-500">*</span>
+              <Label htmlFor="projectName" className="text-text-primary text-sm">
+                Project Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="projectName"
@@ -110,135 +117,130 @@ export function ProjectSetupForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="category" className="text-text-primary">
-                Category <span className="text-red-500">*</span>
+              <Label htmlFor="category" className="text-text-primary text-sm">
+                Category <span className="text-destructive">*</span>
               </Label>
               <Select
                 value={projectInfo.category || ''}
-                onValueChange={(value) => handleChange('category', value)}
+                onValueChange={(v) => handleChange('category', v)}
               >
                 <SelectTrigger className="border-border">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
                   {rfpCategories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
+
+          {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-text-primary">
-              Description
+            <Label htmlFor="description" className="text-text-primary text-sm">
+              Project Description
             </Label>
             <Textarea
               id="description"
-              placeholder="Brief description of the procurement need..."
+              placeholder="Briefly describe the procurement need, context, and intended outcome..."
               value={projectInfo.description || ''}
               onChange={(e) => handleChange('description', e.target.value)}
-              className="border-border min-h-[100px]"
+              className="border-border min-h-[90px] resize-none"
             />
           </div>
+
+          {/* Department & Reference ID */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="department" className="text-text-primary">
-                Department
+              <Label htmlFor="department" className="text-text-primary text-sm">
+                Issuing Department
               </Label>
               <Input
                 id="department"
-                placeholder="e.g., Procurement"
+                placeholder="e.g., Sustainability"
                 value={projectInfo.department || ''}
                 onChange={(e) => handleChange('department', e.target.value)}
                 className="border-border"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="referenceId" className="text-text-primary flex items-center gap-2">
-                Reference ID <Lock className="h-3 w-3 text-text-muted" />
+              <Label htmlFor="referenceId" className="text-text-primary text-sm">
+                Internal Reference ID
               </Label>
-              <div className="relative">
-                <Input
-                  id="referenceId"
-                  value={generatedRefId || projectInfo.referenceId || ''}
-                  disabled
-                  className="border-border bg-surface-hover text-text-secondary cursor-not-allowed"
-                />
-                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-text-muted">
-                  Auto-generated
-                </span>
-              </div>
+              <Input
+                id="referenceId"
+                placeholder="e.g., TND-2026-009"
+                value={projectInfo.referenceId || ''}
+                onChange={(e) => handleChange('referenceId', e.target.value)}
+                className="border-border"
+              />
             </div>
           </div>
 
-          {/* Classification Section */}
-          <div className="border-t border-border pt-4 mt-4">
-            <h3 className="text-sm font-medium text-text-primary mb-3">Classification</h3>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="space-y-2">
-                <Label htmlFor="contractType" className="text-text-primary">
-                  Contract Type
-                </Label>
-                <Select
-                  value={projectInfo.contractType || ''}
-                  onValueChange={(value) => handleChange('contractType', value)}
-                >
-                  <SelectTrigger className="border-border">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Fixed Price">Fixed Price</SelectItem>
-                    <SelectItem value="Time & Materials">Time & Materials</SelectItem>
-                    <SelectItem value="Framework Agreement">Framework Agreement</SelectItem>
-                    <SelectItem value="Retainer">Retainer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confidentiality" className="text-text-primary">
-                  Confidentiality Level
-                </Label>
-                <Select
-                  value={projectInfo.confidentiality || ''}
-                  onValueChange={(value) => handleChange('confidentiality', value)}
-                >
-                  <SelectTrigger className="border-border">
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Public">Public</SelectItem>
-                    <SelectItem value="Restricted">Restricted</SelectItem>
-                    <SelectItem value="Confidential">Confidential</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="submissionLanguage" className="text-text-primary">
-                  Submission Language
-                </Label>
-                <Select
-                  value={projectInfo.submissionLanguage || ''}
-                  onValueChange={(value) => handleChange('submissionLanguage', value)}
-                >
-                  <SelectTrigger className="border-border">
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="English">English</SelectItem>
-                    <SelectItem value="French">French</SelectItem>
-                    <SelectItem value="Spanish">Spanish</SelectItem>
-                    <SelectItem value="German">German</SelectItem>
-                    <SelectItem value="Mandarin">Mandarin</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Contract Type / Confidentiality / Language */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="contractType" className="text-text-primary text-sm">
+                Contract Type
+              </Label>
+              <Select
+                value={projectInfo.contractType || ''}
+                onValueChange={(v) => handleChange('contractType', v)}
+              >
+                <SelectTrigger className="border-border">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONTRACT_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confidentiality" className="text-text-primary text-sm">
+                Confidentiality Level
+              </Label>
+              <Select
+                value={projectInfo.confidentiality || ''}
+                onValueChange={(v) => handleChange('confidentiality', v)}
+              >
+                <SelectTrigger className="border-border">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONFIDENTIALITY.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="submissionLanguage" className="text-text-primary text-sm">
+                Submission Language
+              </Label>
+              <Select
+                value={projectInfo.submissionLanguage || 'English'}
+                onValueChange={(v) => handleChange('submissionLanguage', v)}
+              >
+                <SelectTrigger className="border-border">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LANGUAGES.map((l) => (
+                    <SelectItem key={l} value={l}>{l}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
+
         </CardContent>
       </Card>
+
+      {/* Team Card */}
+      <TeamCard team={team} onChange={handleTeamChange} />
 
       {/* Budget */}
       <Card className="border-border">
@@ -251,48 +253,46 @@ export function ProjectSetupForm({
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="expectedBudget" className="text-text-primary">
+              <Label htmlFor="expectedBudget" className="text-text-primary text-sm">
                 Expected Budget
               </Label>
               <Input
                 id="expectedBudget"
                 type="number"
-                placeholder="e.g., 125000"
+                placeholder="e.g., 450000"
                 value={projectInfo.expectedBudget || ''}
                 onChange={(e) => handleChange('expectedBudget', Number(e.target.value))}
                 className="border-border"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="budgetCurrency" className="text-text-primary">
+              <Label htmlFor="budgetCurrency" className="text-text-primary text-sm">
                 Currency
               </Label>
               <Select
                 value={projectInfo.budgetCurrency || 'USD'}
-                onValueChange={(value) => handleChange('budgetCurrency', value)}
+                onValueChange={(v) => handleChange('budgetCurrency', v)}
               >
                 <SelectTrigger className="border-border">
-                  <SelectValue placeholder="Select currency" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
-                  <SelectItem value="NZD">NZD</SelectItem>
-                  <SelectItem value="AUD">AUD</SelectItem>
+                  {CURRENCIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="budgetFlexibility" className="text-text-primary">
-                Flexibility
+              <Label htmlFor="budgetFlexibility" className="text-text-primary text-sm">
+                Budget Flexibility
               </Label>
               <Select
                 value={projectInfo.budgetFlexibility || 'flexible'}
-                onValueChange={(value) => handleChange('budgetFlexibility', value)}
+                onValueChange={(v) => handleChange('budgetFlexibility', v)}
               >
                 <SelectTrigger className="border-border">
-                  <SelectValue placeholder="Select flexibility" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="fixed">Fixed</SelectItem>
@@ -301,6 +301,35 @@ export function ProjectSetupForm({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Budget Confidentiality Toggle */}
+          <div className="border-t border-border pt-4">
+            <button
+              onClick={() => handleChange('budgetConfidential', !projectInfo.budgetConfidential)}
+              className="flex items-center gap-3 p-3 rounded-md bg-surface-hover hover:bg-surface-hover/80 transition-colors w-full"
+            >
+              {projectInfo.budgetConfidential ? (
+                <EyeOff className="h-4 w-4 text-text-secondary" />
+              ) : (
+                <Eye className="h-4 w-4 text-text-secondary" />
+              )}
+              <div className="flex-1 text-left">
+                <div className="text-sm font-medium text-text-primary">
+                  {projectInfo.budgetConfidential ? 'Budget Confidential' : 'Budget Visible'}
+                </div>
+                <div className="text-xs text-text-muted">
+                  {projectInfo.budgetConfidential
+                    ? 'Budget is hidden from AI and suppliers'
+                    : 'Budget is visible in RFP documentation'}
+                </div>
+              </div>
+              <div
+                className={`w-10 h-6 rounded-full transition-colors ${
+                  projectInfo.budgetConfidential ? 'bg-brand-green' : 'bg-border'
+                }`}
+              />
+            </button>
           </div>
         </CardContent>
       </Card>
@@ -316,20 +345,8 @@ export function ProjectSetupForm({
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="submissionDeadline" className="text-text-primary">
-                Submission Deadline <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="submissionDeadline"
-                type="date"
-                value={projectInfo.submissionDeadline || ''}
-                onChange={(e) => handleChange('submissionDeadline', e.target.value)}
-                className="border-border"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="qaStartDate" className="text-text-primary">
-                Q&A Period Start
+              <Label htmlFor="qaStartDate" className="text-text-primary text-sm">
+                Q&amp;A Period Start
               </Label>
               <Input
                 id="qaStartDate"
@@ -340,8 +357,8 @@ export function ProjectSetupForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="qaEndDate" className="text-text-primary">
-                Q&A Period End
+              <Label htmlFor="qaEndDate" className="text-text-primary text-sm">
+                Q&amp;A Period End
               </Label>
               <Input
                 id="qaEndDate"
@@ -352,7 +369,19 @@ export function ProjectSetupForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="expectedStartDate" className="text-text-primary">
+              <Label htmlFor="submissionDeadline" className="text-text-primary text-sm">
+                Submission Deadline <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="submissionDeadline"
+                type="date"
+                value={projectInfo.submissionDeadline || ''}
+                onChange={(e) => handleChange('submissionDeadline', e.target.value)}
+                className="border-border"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="expectedStartDate" className="text-text-primary text-sm">
                 Expected Project Start
               </Label>
               <Input
@@ -380,52 +409,46 @@ export function ProjectSetupForm({
               variant="outline"
               size="sm"
               onClick={handleAddMilestone}
-              className="border-border"
+              className="border-border text-text-secondary h-8 text-xs"
             >
-              <Plus className="h-4 w-4 mr-1" />
+              <Plus className="h-3.5 w-3.5 mr-1" />
               Add Milestone
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {milestones.length === 0 ? (
-            <p className="text-sm text-text-muted text-center py-4">
+            <p className="text-sm text-text-muted text-center py-6 border border-dashed border-border rounded-lg">
               No milestones added yet. Click &quot;Add Milestone&quot; to create one.
             </p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {milestones.map((milestone, index) => (
                 <div
                   key={milestone.id}
                   className="flex gap-3 items-start p-3 rounded-lg border border-border bg-surface"
                 >
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-green-light text-brand-green text-xs font-medium">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-green-light text-brand-green text-xs font-semibold">
                     {index + 1}
                   </div>
-                  <div className="flex-1 grid gap-3 sm:grid-cols-3">
+                  <div className="flex-1 grid gap-2 sm:grid-cols-3">
                     <Input
                       placeholder="Milestone name"
                       value={milestone.name}
-                      onChange={(e) =>
-                        handleMilestoneChange(milestone.id, 'name', e.target.value)
-                      }
-                      className="border-border"
+                      onChange={(e) => handleMilestoneChange(milestone.id, 'name', e.target.value)}
+                      className="border-border text-sm"
                     />
                     <Input
                       type="date"
                       value={milestone.dueDate}
-                      onChange={(e) =>
-                        handleMilestoneChange(milestone.id, 'dueDate', e.target.value)
-                      }
-                      className="border-border"
+                      onChange={(e) => handleMilestoneChange(milestone.id, 'dueDate', e.target.value)}
+                      className="border-border text-sm"
                     />
                     <Input
                       placeholder="Description"
                       value={milestone.description}
-                      onChange={(e) =>
-                        handleMilestoneChange(milestone.id, 'description', e.target.value)
-                      }
-                      className="border-border"
+                      onChange={(e) => handleMilestoneChange(milestone.id, 'description', e.target.value)}
+                      className="border-border text-sm"
                     />
                   </div>
                   <Button
@@ -433,7 +456,7 @@ export function ProjectSetupForm({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleRemoveMilestone(milestone.id)}
-                    className="text-text-muted hover:text-red-500"
+                    className="h-8 w-8 p-0 text-text-muted hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -445,7 +468,7 @@ export function ProjectSetupForm({
       </Card>
 
       {/* Actions */}
-      <div className="flex justify-between pt-4">
+      <div className="flex justify-between pt-2">
         <Button variant="outline" onClick={onBack} className="border-border">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
