@@ -38,6 +38,7 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     uploadedBy: 'Mike Chen',
     tags: ['compliance', 'requirements', 'certification', 'iso'],
     usedInRFPs: ['rfp-002', 'rfp-003'],
+    version: '1.2',
   },
   {
     id: 'doc-004',

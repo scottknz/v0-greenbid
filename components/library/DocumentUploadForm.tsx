@@ -63,14 +63,19 @@ export function DocumentUploadForm({ onSubmit, onCancel }: DocumentUploadFormPro
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">Upload Document</h2>
+    <div className="bg-background p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-foreground">Upload Document</h2>
+        <Button variant="ghost" size="sm" onClick={onCancel} className="h-8 w-8 p-0">
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* File Upload */}
         <div
           className={`border-2 border-dashed rounded-lg p-8 transition-colors ${
-            dragActive ? 'border-green-500 bg-green-50' : 'border-gray-300'
+            dragActive ? 'border-brand-green bg-brand-green-light' : 'border-border'
           }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -78,11 +83,11 @@ export function DocumentUploadForm({ onSubmit, onCancel }: DocumentUploadFormPro
           onDrop={handleDrop}
         >
           <label htmlFor="file-input" className="flex flex-col items-center justify-center cursor-pointer">
-            <Upload className="w-8 h-8 text-gray-400 mb-2" />
-            <span className="text-sm font-medium text-gray-900">
+            <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+            <span className="text-sm font-medium text-foreground">
               {preview || 'Click to upload or drag and drop'}
             </span>
-            <span className="text-xs text-gray-500 mt-1">PDF, DOCX, XLSX or other formats</span>
+            <span className="text-xs text-muted-foreground mt-1">PDF, DOCX, XLSX or other formats</span>
           </label>
           <input
             id="file-input"
@@ -94,7 +99,7 @@ export function DocumentUploadForm({ onSubmit, onCancel }: DocumentUploadFormPro
 
         {/* Document Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-2">Document Name</label>
+          <label className="block text-sm font-medium text-foreground mb-2">Document Name</label>
           <Input
             type="text"
             name="name"
@@ -107,26 +112,26 @@ export function DocumentUploadForm({ onSubmit, onCancel }: DocumentUploadFormPro
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-2">Description</label>
+          <label className="block text-sm font-medium text-foreground mb-2">Description</label>
           <textarea
             name="description"
             placeholder="Describe what this document is for and why it's important"
             value={formData.description}
             onChange={handleInputChange}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-brand-green"
             required
           />
         </div>
 
         {/* Category */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-2">Category</label>
+          <label className="block text-sm font-medium text-foreground mb-2">Category</label>
           <select
             name="category"
             value={formData.category}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-brand-green"
           >
             {DOCUMENT_CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
@@ -138,7 +143,7 @@ export function DocumentUploadForm({ onSubmit, onCancel }: DocumentUploadFormPro
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium text-gray-900 mb-2">Tags (comma-separated)</label>
+          <label className="block text-sm font-medium text-foreground mb-2">Tags (comma-separated)</label>
           <Input
             type="text"
             name="tags"
@@ -146,12 +151,12 @@ export function DocumentUploadForm({ onSubmit, onCancel }: DocumentUploadFormPro
             value={formData.tags}
             onChange={handleInputChange}
           />
-          <p className="text-xs text-gray-500 mt-1">Add tags to help organize and search documents</p>
+          <p className="text-xs text-muted-foreground mt-1">Add tags to help organize and search documents</p>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-4">
-          <Button type="submit" disabled={!formData.file || !formData.name}>
+        <div className="flex gap-3 pt-4 border-t border-border">
+          <Button type="submit" disabled={!formData.file || !formData.name} className="bg-brand-green hover:bg-brand-green-mid">
             Upload Document
           </Button>
           <Button type="button" variant="outline" onClick={onCancel}>
