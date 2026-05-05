@@ -332,7 +332,7 @@ export default function TendersPage() {
         </div>
 
         {/* Table */}
-        <Card className="border-[#E5E7EB] bg-white">
+        <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

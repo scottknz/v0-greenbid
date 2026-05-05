@@ -1145,7 +1145,7 @@ export default function SubmissionDetailPage() {
             {/* Main Content - Evaluation Results first */}
             <div className="lg:col-span-2 space-y-6">
               {/* Evaluation Results */}
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <div>
                   <CardTitle className="text-lg">Evaluation Results</CardTitle>
@@ -1354,7 +1354,7 @@ export default function SubmissionDetailPage() {
 
         {/* Documents Tab */}
         {activeTab === "documents" && (
-          <Card className="border-[#E5E7EB] bg-white">
+          <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <div>
                 <CardTitle className="text-lg">Submission Documents</CardTitle>
@@ -1412,7 +1412,7 @@ export default function SubmissionDetailPage() {
         {activeTab === "communication" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Messages List */}
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <div>
                   <CardTitle className="text-lg">Messages</CardTitle>
@@ -1549,7 +1549,7 @@ export default function SubmissionDetailPage() {
 
         {/* Activity Log Tab */}
         {activeTab === "activity" && (
-          <Card className="border-[#E5E7EB] bg-white">
+          <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <div>
                 <CardTitle className="text-lg">Activity Log</CardTitle>

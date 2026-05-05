@@ -222,7 +222,7 @@ export default function BuyerDashboard() {
           </div>
 
           {/* Right Column: Recent RFPs Table */}
-          <Card className="border-[#E5E7EB] bg-white lg:col-span-3">
+          <Card className="border-[#E5E7EB] bg-white lg:col-span-3 overflow-hidden pt-0">
             <CardHeader className="bg-white border-b border-[#E5E7EB]">
               <CardTitle className="text-lg font-semibold text-[#111827]">
                 Recent RFPs

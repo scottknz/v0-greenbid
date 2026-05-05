@@ -1859,7 +1859,7 @@ export default function TenderDetailPage() {
               </div>
             </div>
 
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -2000,7 +2000,7 @@ export default function TenderDetailPage() {
               </Button>
             </div>
 
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardContent className="p-0">
                 <table className="w-full text-sm">
                   <thead>
@@ -2354,7 +2354,7 @@ export default function TenderDetailPage() {
               </div>
             </div>
 
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
@@ -2470,7 +2470,7 @@ export default function TenderDetailPage() {
               </Button>
             </div>
 
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardContent className="p-0">
                 <table className="w-full text-sm">
                   <thead>
@@ -3091,7 +3091,7 @@ export default function TenderDetailPage() {
             </div>
 
             {/* Activity Table */}
-            <Card className="border-[#E5E7EB] bg-white">
+            <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
