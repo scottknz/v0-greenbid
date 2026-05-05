@@ -278,6 +278,178 @@ const evaluationCriteria = [
   { name: "Risk", weight: 5 },
 ]
 
+// Communication data
+const communicationsData: Record<string, Array<{
+  id: string
+  subject: string
+  from: { name: string; email: string }
+  to: { name: string; email: string }
+  cc?: Array<{ name: string; email: string }>
+  date: string
+  preview: string
+  body: string
+  type: "incoming" | "outgoing"
+  attachments?: Array<{ name: string; size: string }>
+}>> = {
+  s1: [
+    {
+      id: "c1",
+      subject: "RE: Clarification on Sustainability Requirements",
+      from: { name: "Sarah Chen", email: "sarah.chen@greenbid.com" },
+      to: { name: "John Smith", email: "john.smith@ecosupply.com" },
+      date: "2026-03-13T09:00:00",
+      preview: "Thank you for your question. The sustainability requirements outlined in Section 7...",
+      body: `Dear John,
+
+Thank you for your question regarding the sustainability requirements.
+
+The sustainability requirements outlined in Section 7 of the RFP specify that all products must meet at least one of the following certifications:
+- ISO 14001 Environmental Management
+- EU Ecolabel
+- Forest Stewardship Council (FSC) for paper products
+
+Additionally, we require suppliers to provide:
+1. Carbon footprint data for the proposed products
+2. End-of-life recycling or disposal programs
+3. Documentation of supply chain sustainability practices
+
+Please let me know if you need any further clarification.
+
+Best regards,
+Sarah Chen
+Procurement Lead`,
+      type: "outgoing",
+    },
+    {
+      id: "c2",
+      subject: "Question: Sustainability Requirements Clarification",
+      from: { name: "John Smith", email: "john.smith@ecosupply.com" },
+      to: { name: "Sarah Chen", email: "sarah.chen@greenbid.com" },
+      cc: [{ name: "Mike Chen", email: "m.chen@ecosupply.com" }],
+      date: "2026-03-12T11:00:00",
+      preview: "Hi Sarah, I wanted to ask for clarification regarding the sustainability requirements...",
+      body: `Hi Sarah,
+
+I hope this message finds you well.
+
+I wanted to ask for clarification regarding the sustainability requirements outlined in the RFP. Specifically:
+
+1. What certifications are acceptable for demonstrating environmental compliance?
+2. Is there a specific format required for carbon footprint reporting?
+3. Are there minimum thresholds for recycled content in products?
+
+We want to ensure our proposal fully addresses your sustainability criteria.
+
+Thank you for your time.
+
+Best regards,
+John Smith
+Account Manager, EcoSupply Co.`,
+      type: "incoming",
+      attachments: [{ name: "Current_Certifications.pdf", size: "245 KB" }],
+    },
+    {
+      id: "c3",
+      subject: "Welcome to the Sustainable Office Supplies Tender",
+      from: { name: "GreenBid Platform", email: "notifications@greenbid.com" },
+      to: { name: "John Smith", email: "john.smith@ecosupply.com" },
+      date: "2026-03-05T10:00:00",
+      preview: "You have been invited to participate in the Sustainable Office Supplies tender...",
+      body: `Dear John Smith,
+
+You have been invited to participate in the Sustainable Office Supplies tender by GreenBid Corp.
+
+Tender Details:
+- Title: Sustainable Office Supplies
+- Submission Deadline: April 15, 2026
+- Estimated Value: $120,000
+
+To access the tender documents and submit your proposal, please log in to your supplier portal.
+
+If you have any questions, please contact the procurement team.
+
+Best regards,
+GreenBid Platform`,
+      type: "outgoing",
+    },
+  ],
+  s2: [
+    {
+      id: "c1",
+      subject: "Submission Confirmation",
+      from: { name: "GreenBid Platform", email: "notifications@greenbid.com" },
+      to: { name: "Emma Davis", email: "emma.davis@greenoffice.com" },
+      date: "2026-03-18T16:05:00",
+      preview: "Your submission has been received successfully...",
+      body: `Dear Emma Davis,
+
+Your submission for the Sustainable Office Supplies tender has been received successfully.
+
+Submission Details:
+- Submission ID: S2-GO-2026
+- Submitted: March 18, 2026 at 4:00 PM
+- Documents: 4 files uploaded
+
+Our team will review your proposal and you will be notified of the evaluation outcome.
+
+Best regards,
+GreenBid Platform`,
+      type: "outgoing",
+    },
+  ],
+  s3: [
+    {
+      id: "c1",
+      subject: "RE: Timeline Flexibility",
+      from: { name: "James Wilson", email: "james.wilson@greenbid.com" },
+      to: { name: "Michael Brown", email: "m.brown@sustainablesolutions.com" },
+      date: "2026-03-20T09:00:00",
+      preview: "Thank you for your question. The project timeline has some flexibility...",
+      body: `Dear Michael,
+
+Thank you for your question about timeline flexibility.
+
+The preferred completion date is June 30, 2026. However, we understand that quality delivery is paramount, and there is some flexibility for proposals that demonstrate exceptional value.
+
+If your proposed timeline extends beyond this date, please provide:
+1. Detailed justification for the extended timeline
+2. Key milestones and delivery schedule
+3. Risk mitigation strategies for any delays
+
+We will consider all proposals holistically based on overall value.
+
+Best regards,
+James Wilson
+Budget Reviewer`,
+      type: "outgoing",
+    },
+    {
+      id: "c2",
+      subject: "Question: Timeline Flexibility",
+      from: { name: "Michael Brown", email: "m.brown@sustainablesolutions.com" },
+      to: { name: "Tender Team", email: "procurement@greenbid.com" },
+      date: "2026-03-19T14:00:00",
+      preview: "Hello, I would like to inquire about the project timeline flexibility...",
+      body: `Hello,
+
+I would like to inquire about the project timeline mentioned in the RFP.
+
+Given the comprehensive nature of our proposed solution and our commitment to quality, we anticipate needing approximately 4 months for full implementation rather than the 3 months suggested.
+
+Would there be flexibility in the completion timeline for proposals that offer enhanced quality and sustainability features?
+
+Thank you for your consideration.
+
+Best regards,
+Michael Brown
+CEO, Sustainable Solutions Inc`,
+      type: "incoming",
+    },
+  ],
+  s4: [],
+  s5: [],
+}
+
 export default function SubmissionDetailPage() {
   const router = useRouter()
   const params = useParams()
@@ -285,6 +457,16 @@ export default function SubmissionDetailPage() {
   const submissionId = params.submissionId as string
 
   const submission = submissionsData[submissionId]
+  const communications = communicationsData[submissionId] || []
+
+  // Tabs
+  const [activeTab, setActiveTab] = useState("summary")
+  const tabs = [
+    { key: "summary", label: "Summary" },
+    { key: "documents", label: "Documents", count: submission?.documents.length },
+    { key: "communication", label: "Communication", count: communications.length },
+    { key: "activity", label: "Activity Log", count: submission?.activities.length },
+  ]
 
   // Activity filters
   const [activitySearch, setActivitySearch] = useState("")
@@ -297,6 +479,9 @@ export default function SubmissionDetailPage() {
   // Results editing
   const [resultsEditing, setResultsEditing] = useState(false)
   const [editableScores, setEditableScores] = useState(submission?.scores || {})
+  
+  // Communication
+  const [selectedMessage, setSelectedMessage] = useState<string | null>(null)
   const [justifications, setJustifications] = useState<Record<string, string>>({
     completeness: "All required documents submitted with thorough responses.",
     quality: "High-quality proposal with detailed technical specifications.",
@@ -485,192 +670,68 @@ export default function SubmissionDetailPage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content - Activity Log & Documents */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Activity Log */}
-            <Card className="border-[#E5E7EB] bg-white">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                <div>
-                  <CardTitle className="text-lg">Activity Log</CardTitle>
-                  <CardDescription>All actions taken by this supplier</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" className="border-[#E5E7EB]">
-                  <Download className="size-4 mr-2" />
-                  Export
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Filters */}
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="relative flex-1 min-w-[200px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#9CA3AF]" />
-                    <Input
-                      placeholder="Search activities..."
-                      value={activitySearch}
-                      onChange={(e) => setActivitySearch(e.target.value)}
-                      className="pl-9 h-9 text-sm"
-                    />
-                  </div>
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-9 border-[#E5E7EB]">
-                        <Filter className="size-4 mr-2" />
-                        Type
-                        {activityTypeFilter.length > 0 && (
-                          <Badge className="ml-2 bg-[#16A34A] text-white text-xs px-1.5">{activityTypeFilter.length}</Badge>
-                        )}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-48">
-                      {activityTypes.map(type => (
-                        <DropdownMenuItem
-                          key={type.key}
-                          onClick={() => setActivityTypeFilter(prev => 
-                            prev.includes(type.key) ? prev.filter(t => t !== type.key) : [...prev, type.key]
-                          )}
-                          className="flex items-center justify-between"
-                        >
-                          <span>{type.label}</span>
-                          {activityTypeFilter.includes(type.key) && <CheckCircle className="size-4 text-[#16A34A]" />}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-9 text-xs"
-                    onClick={() => setActivitySortOrder(prev => prev === "desc" ? "asc" : "desc")}
-                  >
-                    <ArrowUpDown className="size-3 mr-1" />
-                    {activitySortOrder === "desc" ? "Newest" : "Oldest"}
-                  </Button>
-
-                  {hasActiveFilters && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-9 text-[#6B7280] hover:text-red-600"
-                      onClick={clearActivityFilters}
-                    >
-                      <X className="size-4 mr-1" />
-                      Clear
-                    </Button>
+        {/* Tabs */}
+        <div className="border-b border-[#E5E7EB] bg-[#FAFAFA]">
+          <nav className="flex gap-1" aria-label="Tabs">
+            {tabs.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setActiveTab(tab.key)
+                  if (tab.key !== "communication") setSelectedMessage(null)
+                }}
+                className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+                  activeTab === tab.key
+                    ? "text-[#16A34A] border-[#16A34A] bg-white"
+                    : "text-[#6B7280] hover:text-[#111827] border-transparent hover:border-[#D1D5DB]"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  {tab.label}
+                  {tab.count !== undefined && (
+                    <span className="text-xs font-semibold text-[#6B7280]">
+                      {tab.count}
+                    </span>
                   )}
-                </div>
+                </span>
+              </button>
+            ))}
+          </nav>
+        </div>
 
-                {/* Activity Table */}
-                <div className="overflow-x-auto border border-[#E5E7EB] rounded-lg">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
-                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-32">Type</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Action</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Details</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-36">Date/Time</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E5E7EB]">
-                      {filteredActivities.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center text-[#6B7280]">
-                            No activities match your filters
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredActivities.map(activity => {
-                          const { date, time } = formatTimestamp(activity.timestamp)
-                          return (
-                            <tr key={activity.id} className="hover:bg-[#F9FAFB] transition-colors">
-                              <td className="px-4 py-3">
-                                <Badge className={`${getActivityTypeStyle(activity.type)} border-0 text-xs font-medium`}>
-                                  <span className="mr-1">{getActivityIcon(activity.type)}</span>
-                                  {activityTypes.find(t => t.key === activity.type)?.label}
-                                </Badge>
-                              </td>
-                              <td className="px-4 py-3 font-medium text-[#111827]">
-                                {activity.action}
-                              </td>
-                              <td className="px-4 py-3 text-[#6B7280]">
-                                {activity.detail}
-                              </td>
-                              <td className="px-4 py-3 text-[#6B7280]">
-                                <div>
-                                  <p>{date}</p>
-                                  <p className="text-xs text-[#9CA3AF]">{time}</p>
-                                </div>
-                              </td>
-                            </tr>
-                          )
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="text-xs text-[#6B7280]">
-                  Showing {filteredActivities.length} of {submission.activities.length} activities
-                </p>
-              </CardContent>
-            </Card>
+        {/* Summary Tab */}
+        {activeTab === "summary" && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content - Results */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Submission Summary Card */}
+              <Card className="border-[#E5E7EB] bg-white">
+                <CardHeader>
+                  <CardTitle className="text-lg">Submission Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="p-4 bg-[#F9FAFB] rounded-lg">
+                      <p className="text-sm text-[#6B7280]">Total Documents</p>
+                      <p className="text-2xl font-bold text-[#111827]">{submission.documents.length}</p>
+                    </div>
+                    <div className="p-4 bg-[#F9FAFB] rounded-lg">
+                      <p className="text-sm text-[#6B7280]">Team Members</p>
+                      <p className="text-2xl font-bold text-[#111827]">{submission.team.length}</p>
+                    </div>
+                    <div className="p-4 bg-[#F9FAFB] rounded-lg">
+                      <p className="text-sm text-[#6B7280]">Proposed Hours</p>
+                      <p className="text-2xl font-bold text-[#111827]">{submission.totalHours}</p>
+                    </div>
+                    <div className="p-4 bg-[#F9FAFB] rounded-lg">
+                      <p className="text-sm text-[#6B7280]">Completion</p>
+                      <p className="text-2xl font-bold text-[#111827]">{submission.completionDate}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Documents */}
-            <Card className="border-[#E5E7EB] bg-white">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                <div>
-                  <CardTitle className="text-lg">Submission Documents</CardTitle>
-                  <CardDescription>{submission.documents.length} documents uploaded</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" className="border-[#E5E7EB]">
-                  <Download className="size-4 mr-2" />
-                  Download All
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto border border-[#E5E7EB] rounded-lg">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
-                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-24">Type</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-24">Size</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-32">Uploaded</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide w-24">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E5E7EB]">
-                      {submission.documents.map((doc, index) => (
-                        <tr key={index} className="hover:bg-[#F9FAFB] transition-colors">
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <FileText className="size-4 text-[#6B7280]" />
-                              <span className="font-medium text-[#111827]">{doc.name}</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-[#6B7280]">{doc.type}</td>
-                          <td className="px-4 py-3 text-[#6B7280]">{doc.size}</td>
-                          <td className="px-4 py-3 text-[#6B7280]">{doc.uploadedDate}</td>
-                          <td className="px-4 py-3 text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-[#6B7280]">
-                                <Eye className="size-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-[#6B7280]">
-                                <Download className="size-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Evaluation Results */}
+              {/* Evaluation Results */}
             <Card className="border-[#E5E7EB] bg-white">
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <div>
@@ -846,36 +907,334 @@ export default function SubmissionDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Quick Stats */}
+            </div>
+        </div>
+        )}
+
+        {/* Documents Tab */}
+        {activeTab === "documents" && (
+          <Card className="border-[#E5E7EB] bg-white">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle className="text-lg">Submission Documents</CardTitle>
+                <CardDescription>{submission.documents.length} documents uploaded</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+                <Download className="size-4 mr-2" />
+                Download All
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto border border-[#E5E7EB] rounded-lg">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-24">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-24">Size</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-32">Uploaded</th>
+                      <th className="px-4 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide w-24">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E5E7EB]">
+                    {submission.documents.map((doc, index) => (
+                      <tr key={index} className="hover:bg-[#F9FAFB] transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <FileText className="size-4 text-[#6B7280]" />
+                            <span className="font-medium text-[#111827]">{doc.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-[#6B7280]">{doc.type}</td>
+                        <td className="px-4 py-3 text-[#6B7280]">{doc.size}</td>
+                        <td className="px-4 py-3 text-[#6B7280]">{doc.uploadedDate}</td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-[#6B7280]">
+                              <Eye className="size-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-[#6B7280]">
+                              <Download className="size-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Communication Tab */}
+        {activeTab === "communication" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Messages List */}
             <Card className="border-[#E5E7EB] bg-white">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-[#6B7280]">Submission Summary</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div>
+                  <CardTitle className="text-lg">Messages</CardTitle>
+                  <CardDescription>{communications.length} communications</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+                  <Download className="size-4 mr-2" />
+                  Export
+                </Button>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#6B7280]">Total Documents</span>
-                  <span className="font-medium text-[#111827]">{submission.documents.length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#6B7280]">Total Activities</span>
-                  <span className="font-medium text-[#111827]">{submission.activities.length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#6B7280]">Team Members</span>
-                  <span className="font-medium text-[#111827]">{submission.team.length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#6B7280]">Proposed Hours</span>
-                  <span className="font-medium text-[#111827]">{submission.totalHours}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-[#6B7280]">Completion Date</span>
-                  <span className="font-medium text-[#111827]">{submission.completionDate}</span>
-                </div>
+              <CardContent>
+                {communications.length === 0 ? (
+                  <div className="text-center py-8">
+                    <MessageSquare className="size-12 mx-auto text-[#D1D5DB] mb-3" />
+                    <p className="text-[#6B7280]">No communications yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {communications.map(message => {
+                      const { date, time } = formatTimestamp(message.date)
+                      return (
+                        <div
+                          key={message.id}
+                          onClick={() => setSelectedMessage(message.id)}
+                          className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                            selectedMessage === message.id
+                              ? "border-[#16A34A] bg-[#F0FDF4]"
+                              : "border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <div className={`size-2 rounded-full ${message.type === "incoming" ? "bg-blue-500" : "bg-green-500"}`} />
+                              <span className="font-medium text-sm text-[#111827] truncate">
+                                {message.from.name}
+                              </span>
+                            </div>
+                            <span className="text-xs text-[#9CA3AF] whitespace-nowrap">{date}</span>
+                          </div>
+                          <p className="font-medium text-[#111827] mt-1 truncate">{message.subject}</p>
+                          <p className="text-sm text-[#6B7280] mt-1 line-clamp-2">{message.preview}</p>
+                          {message.attachments && message.attachments.length > 0 && (
+                            <div className="flex items-center gap-1 mt-2 text-xs text-[#6B7280]">
+                              <FileText className="size-3" />
+                              <span>{message.attachments.length} attachment(s)</span>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Message Detail */}
+            <Card className="border-[#E5E7EB] bg-white">
+              <CardContent className="p-0">
+                {selectedMessage ? (
+                  (() => {
+                    const message = communications.find(m => m.id === selectedMessage)
+                    if (!message) return null
+                    const { date, time } = formatTimestamp(message.date)
+                    return (
+                      <div className="p-6">
+                        <div className="border-b border-[#E5E7EB] pb-4 mb-4">
+                          <h2 className="text-lg font-semibold text-[#111827]">{message.subject}</h2>
+                          <div className="mt-3 space-y-2">
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-[#6B7280] w-12">From:</span>
+                              <span className="text-[#111827]">{message.from.name}</span>
+                              <span className="text-[#6B7280]">&lt;{message.from.email}&gt;</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-[#6B7280] w-12">To:</span>
+                              <span className="text-[#111827]">{message.to.name}</span>
+                              <span className="text-[#6B7280]">&lt;{message.to.email}&gt;</span>
+                            </div>
+                            {message.cc && message.cc.length > 0 && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="text-[#6B7280] w-12">Cc:</span>
+                                {message.cc.map((cc, i) => (
+                                  <span key={i} className="text-[#6B7280]">
+                                    {cc.name} &lt;{cc.email}&gt;{i < message.cc!.length - 1 ? ", " : ""}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-[#6B7280] w-12">Date:</span>
+                              <span className="text-[#111827]">{date} at {time}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="prose prose-sm max-w-none">
+                          <pre className="whitespace-pre-wrap font-sans text-sm text-[#374151] leading-relaxed">
+                            {message.body}
+                          </pre>
+                        </div>
+                        {message.attachments && message.attachments.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+                            <p className="text-sm font-medium text-[#6B7280] mb-2">Attachments</p>
+                            <div className="space-y-2">
+                              {message.attachments.map((att, i) => (
+                                <div key={i} className="flex items-center justify-between p-2 bg-[#F9FAFB] rounded-lg">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="size-4 text-[#6B7280]" />
+                                    <span className="text-sm text-[#111827]">{att.name}</span>
+                                    <span className="text-xs text-[#9CA3AF]">{att.size}</span>
+                                  </div>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-[#6B7280]">
+                                    <Download className="size-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()
+                ) : (
+                  <div className="flex items-center justify-center h-96 text-center">
+                    <div>
+                      <Mail className="size-12 mx-auto text-[#D1D5DB] mb-3" />
+                      <p className="text-[#6B7280]">Select a message to view</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
-        </div>
+        )}
+
+        {/* Activity Log Tab */}
+        {activeTab === "activity" && (
+          <Card className="border-[#E5E7EB] bg-white">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle className="text-lg">Activity Log</CardTitle>
+                <CardDescription>All actions taken by this supplier</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+                <Download className="size-4 mr-2" />
+                Export
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Filters */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative flex-1 min-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#9CA3AF]" />
+                  <Input
+                    placeholder="Search activities..."
+                    value={activitySearch}
+                    onChange={(e) => setActivitySearch(e.target.value)}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-9 border-[#E5E7EB]">
+                      <Filter className="size-4 mr-2" />
+                      Type
+                      {activityTypeFilter.length > 0 && (
+                        <Badge className="ml-2 bg-[#16A34A] text-white text-xs px-1.5">{activityTypeFilter.length}</Badge>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    {activityTypes.map(type => (
+                      <DropdownMenuItem
+                        key={type.key}
+                        onClick={() => setActivityTypeFilter(prev => 
+                          prev.includes(type.key) ? prev.filter(t => t !== type.key) : [...prev, type.key]
+                        )}
+                        className="flex items-center justify-between"
+                      >
+                        <span>{type.label}</span>
+                        {activityTypeFilter.includes(type.key) && <CheckCircle className="size-4 text-[#16A34A]" />}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 text-xs"
+                  onClick={() => setActivitySortOrder(prev => prev === "desc" ? "asc" : "desc")}
+                >
+                  <ArrowUpDown className="size-3 mr-1" />
+                  {activitySortOrder === "desc" ? "Newest" : "Oldest"}
+                </Button>
+
+                {hasActiveFilters && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-9 text-[#6B7280] hover:text-red-600"
+                    onClick={clearActivityFilters}
+                  >
+                    <X className="size-4 mr-1" />
+                    Clear
+                  </Button>
+                )}
+              </div>
+
+              {/* Activity Table */}
+              <div className="overflow-x-auto border border-[#E5E7EB] rounded-lg">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-32">Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Action</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">Details</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide w-36">Date/Time</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E5E7EB]">
+                    {filteredActivities.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-[#6B7280]">
+                          No activities match your filters
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredActivities.map(activity => {
+                        const { date, time } = formatTimestamp(activity.timestamp)
+                        return (
+                          <tr key={activity.id} className="hover:bg-[#F9FAFB] transition-colors">
+                            <td className="px-4 py-3">
+                              <Badge className={`${getActivityTypeStyle(activity.type)} border-0 text-xs font-medium`}>
+                                <span className="mr-1">{getActivityIcon(activity.type)}</span>
+                                {activityTypes.find(t => t.key === activity.type)?.label}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3 font-medium text-[#111827]">
+                              {activity.action}
+                            </td>
+                            <td className="px-4 py-3 text-[#6B7280]">
+                              {activity.detail}
+                            </td>
+                            <td className="px-4 py-3 text-[#6B7280]">
+                              <div>
+                                <p>{date}</p>
+                                <p className="text-xs text-[#9CA3AF]">{time}</p>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-[#6B7280]">
+                Showing {filteredActivities.length} of {submission.activities.length} activities
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )
