@@ -7,7 +7,7 @@ import { ProjectSetupForm } from '@/components/rfp/ProjectSetupForm';
 import { RFPInterview } from '@/components/rfp/RFPInterview';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, Settings, MessageSquare, Edit3 } from 'lucide-react';
-import { rfpTemplates, createRFPFromTemplate, saveRFP, updateRFP } from '@/lib/mock-rfp';
+import { rfpTemplates, createRFPFromTemplate, saveRFP } from '@/lib/mock-rfp';
 import type { RFPTemplate, RFPDocument } from '@/types/rfp';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -33,7 +33,6 @@ export default function CreateRFPPage() {
     milestones: [],
   });
   const [interviewData, setInterviewData] = useState<Record<string, string>>({});
-  const [draftRfpId, setDraftRfpId] = useState<string | null>(null);
 
   const handleSelectTemplate = (template: RFPTemplate) => {
     setSelectedTemplate(template);
@@ -50,11 +49,7 @@ export default function CreateRFPPage() {
   };
 
   const handleNextFromSetup = () => {
-    if (projectInfo.projectName && selectedTemplate) {
-      // Create and save draft RFP immediately so it persists
-      const rfpDocument = createRFPFromTemplate(selectedTemplate, projectInfo);
-      saveRFP(rfpDocument);
-      setDraftRfpId(rfpDocument.id);
+    if (projectInfo.projectName) {
       setCurrentStep('interview');
     }
   };
@@ -74,30 +69,23 @@ export default function CreateRFPPage() {
 
   const createAndNavigateToEditor = (interviewAnswers: Record<string, string>) => {
     if (selectedTemplate && projectInfo.projectName) {
-      let rfpDocument;
+      // Create the RFP document with interview data
+      const rfpDocument = createRFPFromTemplate(selectedTemplate, projectInfo);
       
-      if (draftRfpId) {
-        // Update the existing draft with interview data
-        rfpDocument = updateRFP(draftRfpId, {
-          aiSummary: Object.keys(interviewAnswers).length > 0 ? JSON.stringify(interviewAnswers) : undefined,
-        });
-      } else {
-        // Create a new RFP document
-        rfpDocument = createRFPFromTemplate(selectedTemplate, projectInfo);
-        if (Object.keys(interviewAnswers).length > 0) {
-          rfpDocument.aiSummary = JSON.stringify(interviewAnswers);
-        }
-        saveRFP(rfpDocument);
+      // Store interview answers in the document's AI summary for context
+      if (Object.keys(interviewAnswers).length > 0) {
+        rfpDocument.aiSummary = JSON.stringify(interviewAnswers);
       }
 
-      if (rfpDocument) {
-        // Store in sessionStorage for immediate access
-        sessionStorage.setItem('draft-rfp', JSON.stringify(rfpDocument));
-        sessionStorage.setItem('interview-data', JSON.stringify(interviewAnswers));
-        
-        // Navigate to the editor
-        router.push(`/rfp/${rfpDocument.id}/edit`);
-      }
+      // Save to the in-memory store
+      saveRFP(rfpDocument);
+      
+      // Also store in sessionStorage for immediate access
+      sessionStorage.setItem('draft-rfp', JSON.stringify(rfpDocument));
+      sessionStorage.setItem('interview-data', JSON.stringify(interviewAnswers));
+      
+      // Navigate to the editor
+      router.push(`/rfp/${rfpDocument.id}/edit`);
     }
   };
 

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   Search,
+  Plus,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -27,8 +28,6 @@ import {
   Filter,
   Download,
 } from "lucide-react"
-import Link from "next/link"
-import { getAllRFPs, rfpToTenderData } from "@/lib/mock-rfp"
 
 type TenderStatus = "draft" | "open" | "active" | "evaluation" | "closed"
 type SortField = "name" | "status" | "category" | "submissions" | "deadline" | "budget" | null
@@ -44,7 +43,6 @@ type TenderData = {
   deadline: string
   budget: number
   owner: string
-  isFromStore?: boolean
 }
 
 const allTendersData: TenderData[] = [
@@ -160,14 +158,13 @@ const allTendersData: TenderData[] = [
   },
 ]
 
-// Status tabs - counts will be calculated dynamically
-const getStatusTabs = (tenders: TenderData[]) => [
-  { key: "all", label: "All", count: tenders.length },
-  { key: "draft", label: "Draft", count: tenders.filter(t => t.status === "draft").length },
-  { key: "open", label: "Open", count: tenders.filter(t => t.status === "open").length },
-  { key: "active", label: "Active", count: tenders.filter(t => t.status === "active").length },
-  { key: "evaluation", label: "Evaluation", count: tenders.filter(t => t.status === "evaluation").length },
-  { key: "closed", label: "Closed", count: tenders.filter(t => t.status === "closed").length },
+const statusTabs = [
+  { key: "all", label: "All", count: allTendersData.length },
+  { key: "draft", label: "Draft", count: allTendersData.filter(t => t.status === "draft").length },
+  { key: "open", label: "Open", count: allTendersData.filter(t => t.status === "open").length },
+  { key: "active", label: "Active", count: allTendersData.filter(t => t.status === "active").length },
+  { key: "evaluation", label: "Evaluation", count: allTendersData.filter(t => t.status === "evaluation").length },
+  { key: "closed", label: "Closed", count: allTendersData.filter(t => t.status === "closed").length },
 ]
 
 export default function TendersPage() {
@@ -176,19 +173,6 @@ export default function TendersPage() {
   const [sortField, setSortField] = useState<SortField>(null)
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
   const [selectedTenders, setSelectedTenders] = useState<string[]>([])
-
-  // Combine mock data with RFPs from the store
-  const combinedTenders = useMemo(() => {
-    const storedRFPs = getAllRFPs();
-    const storedTenders = storedRFPs.map(rfp => rfpToTenderData(rfp));
-    
-    // Filter out any mock tenders that have the same ID as stored ones
-    const storedIds = new Set(storedTenders.map(t => t.id));
-    const uniqueMockTenders = allTendersData.filter(t => !storedIds.has(t.id));
-    
-    // Stored RFPs first (most recent), then mock data
-    return [...storedTenders, ...uniqueMockTenders];
-  }, [])
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -213,11 +197,8 @@ export default function TendersPage() {
     )
   }
 
-  // Calculate status tabs with current data
-  const statusTabs = useMemo(() => getStatusTabs(combinedTenders), [combinedTenders])
-
   const filteredTenders = useMemo(() => {
-    let result = combinedTenders
+    let result = allTendersData
 
     // Filter by tab
     if (activeTab !== "all") {
@@ -268,7 +249,7 @@ export default function TendersPage() {
     }
 
     return result
-  }, [combinedTenders, activeTab, searchQuery, sortField, sortDirection])
+  }, [activeTab, searchQuery, sortField, sortDirection])
 
   return (
     <DashboardShell>
@@ -283,11 +264,10 @@ export default function TendersPage() {
               Manage and track all your procurement RFPs
             </p>
           </div>
-          <Link href="/rfp/create">
-            <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
-              Create RFP
-            </Button>
-          </Link>
+          <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
+            <Plus className="size-4 mr-2" />
+            Create RFP
+          </Button>
         </div>
 
         {/* Tabs */}
@@ -440,7 +420,7 @@ export default function TendersPage() {
         {/* Pagination */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-[#6B7280]">
-            Showing {filteredTenders.length} of {combinedTenders.length} RFPs
+            Showing {filteredTenders.length} of {allTendersData.length} RFPs
           </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="border-[#E5E7EB]" disabled>
@@ -514,12 +494,7 @@ function TenderRow({
     if ((e.target as HTMLElement).closest('input, button, [role="menuitem"]')) {
       return
     }
-    // If it's a draft from the store, go to editor to continue working
-    if (tender.isFromStore && tender.status === 'draft') {
-      router.push(`/rfp/${tender.id}/edit`)
-    } else {
-      router.push(`/tenders/${tender.id}`)
-    }
+    router.push(`/tenders/${tender.id}`)
   }
 
   const statusConfig: Record<TenderStatus, { label: string; className: string }> = {
@@ -584,7 +559,7 @@ function TenderRow({
               <Eye className="size-4 mr-2" />
               Open
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/rfp/${tender.id}/edit`)}>
+            <DropdownMenuItem>
               <Pencil className="size-4 mr-2" />
               Edit
             </DropdownMenuItem>
