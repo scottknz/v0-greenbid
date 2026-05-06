@@ -487,7 +487,7 @@ function TenderRow({
     if ((e.target as HTMLElement).closest('input, button, [role="menuitem"]')) {
       return
     }
-    router.push(`/rfp/${tender.id}/edit`)
+    router.push(`/tenders/${tender.id}`)
   }
 
   const statusConfig: Record<TenderStatus, { label: string; className: string }> = {
@@ -548,7 +548,7 @@ function TenderRow({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem onClick={() => router.push(`/rfp/${tender.id}/edit`)}>
+            <DropdownMenuItem onClick={() => router.push(`/tenders/${tender.id}`)}>
               <Eye className="size-4 mr-2" />
               Open
             </DropdownMenuItem>
