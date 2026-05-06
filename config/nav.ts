@@ -22,11 +22,12 @@ export const buyerNav: NavItem[] = [
 ];
 
 export const supplierNav: NavItem[] = [
-  { label: 'Dashboard', href: '/', icon: 'LayoutDashboard', section: 'main' },
-  { label: 'Open RFPs', href: '/tenders', icon: 'FolderOpen', section: 'main' },
-  { label: 'My Proposals', href: '/submissions', icon: 'Upload', section: 'main' },
-  { label: 'Saved RFPs', href: '/saved', icon: 'Star', section: 'main' },
-  { label: 'AI Copilot', href: '#', icon: 'MessageSquare', section: 'secondary', isChatTrigger: true },
-  { label: 'Notifications', href: '/notifications', icon: 'Bell', section: 'secondary' },
+  { label: 'Dashboard', href: '/supplier', icon: 'LayoutDashboard', section: 'main' },
+  { label: 'Team', href: '/supplier/team', icon: 'UsersRound', section: 'main' },
+  { label: 'RFPs', href: '/supplier/rfps', icon: 'FileText', section: 'main' },
+  { label: 'Library', href: '/supplier/library', icon: 'BookOpen', section: 'main' },
+  { label: 'Activity Log', href: '/supplier/activity', icon: 'ClipboardList', section: 'main' },
+  { label: 'Messages', href: '/supplier/messages', icon: 'Mail', section: 'main' },
+  { label: 'Marketplace', href: '/marketplace', icon: 'Library', section: 'secondary' },
   { label: 'Settings', href: '/settings', icon: 'Settings', section: 'secondary' },
 ];
