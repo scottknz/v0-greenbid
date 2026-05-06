@@ -122,7 +122,7 @@ export function Sidebar({ variant }: SidebarProps) {
         <div className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-3">
             <img 
-              src="/thistle-logo.svg" 
+              src="/thistle-logo.png" 
               alt="Thistle Company" 
               className="h-8 w-8 shrink-0"
             />
