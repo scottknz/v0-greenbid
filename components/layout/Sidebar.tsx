@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, FileText, ClipboardList, Users, Library,
+  LayoutDashboard, FileText, ClipboardList, Users, Library, BookOpen,
   MessageSquare, Bell, Shield, Settings, Mail, Upload,
   FolderOpen, Star, PanelLeftClose, PanelLeftOpen, MoreHorizontal,
 } from 'lucide-react';
@@ -13,7 +13,7 @@ import { useShell } from './ShellContext';
 import { cn } from '@/lib/utils';
 
 const iconMap: Record<string, React.ElementType> = {
-  LayoutDashboard, FileText, ClipboardList, Users, Library,
+  LayoutDashboard, FileText, ClipboardList, Users, Library, BookOpen,
   MessageSquare, Bell, Shield, Settings, Mail, Upload,
   FolderOpen, Star,
 };
@@ -95,7 +95,7 @@ export function Sidebar({ variant }: SidebarProps) {
           <div className="flex items-center gap-2 overflow-hidden">
             <div className="h-6 w-6 rounded bg-text-primary shrink-0" aria-hidden="true" />
             <span className="truncate font-semibold tracking-tight text-text-primary">
-              ProcureESG
+              greenbid
             </span>
           </div>
         )}

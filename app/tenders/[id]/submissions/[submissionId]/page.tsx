@@ -565,17 +565,17 @@ Account Manager, EcoSupply Co.`,
     },
     {
       id: "c3",
-      subject: "Welcome to the Sustainable Office Supplies RFP",
+      subject: "Welcome to the Comprehensive Scope 3 Value Chain Emissions Analysis RFP",
       from: { name: "GreenBid Platform", email: "notifications@greenbid.com" },
       to: { name: "John Smith", email: "john.smith@ecosupply.com" },
       date: "2026-03-05T10:00:00",
-      preview: "You have been invited to participate in the Sustainable Office Supplies RFP...",
+      preview: "You have been invited to participate in the Comprehensive Scope 3 Value Chain Emissions Analysis RFP...",
       body: `Dear John Smith,
 
-You have been invited to submit a proposal for the Sustainable Office Supplies RFP by GreenBid Corp.
+You have been invited to submit a proposal for the Comprehensive Scope 3 Value Chain Emissions Analysis RFP by GreenBid Corp.
 
 RFP Details:
-- Title: Sustainable Office Supplies
+- Title: Comprehensive Scope 3 Value Chain Emissions Analysis
 - Submission Deadline: April 15, 2026
 - Estimated Value: $120,000
 
@@ -598,7 +598,7 @@ GreenBid Platform`,
       preview: "Your proposal has been received successfully...",
       body: `Dear Emma Davis,
 
-Your proposal for the Sustainable Office Supplies RFP has been received successfully.
+Your proposal for the Comprehensive Scope 3 Value Chain Emissions Analysis RFP has been received successfully.
 
 Submission Details:
 - Submission ID: S2-GO-2026

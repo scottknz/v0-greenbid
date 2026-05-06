@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { ActivityFeed, ActivityItem } from '@/components/dashboard/ActivityFeed';
 import { DataTable } from '@/components/dashboard/DataTable';
@@ -23,17 +24,17 @@ interface TenderRow {
 }
 
 const mockTenders: TenderRow[] = [
-  { id: '1', name: 'Cloud Infrastructure Upgrade 2026', status: 'under_review', deadline: '2026-03-20', suppliers: 5, score: 'Pending' },
-  { id: '2', name: 'Scope 3 Emissions Audit', status: 'open_for_proposals', deadline: '2026-03-25', suppliers: 12, score: null, isNearingDeadline: true },
-  { id: '3', name: 'Office Supplies (Sustainable)', status: 'draft', deadline: '2026-04-15', suppliers: 0, score: null },
-  { id: '4', name: 'Fleet Electrification Program', status: 'awarded', deadline: '2026-02-10', suppliers: 8, score: '85/100' },
+  { id: '1', name: 'Comprehensive Scope 3 Value Chain Emissions Analysis', status: 'under_review', deadline: '2026-05-15', suppliers: 5, score: 'Pending' },
+  { id: '2', name: 'SBTi Target Setting & Validation Support', status: 'open_for_proposals', deadline: '2026-04-28', suppliers: 12, score: null, isNearingDeadline: true },
+  { id: '3', name: 'Embodied Carbon Life Cycle Assessment (LCA)', status: 'draft', deadline: '2026-06-01', suppliers: 0, score: null },
+  { id: '4', name: 'ISSB (IFRS S1 & S2) Integration & Reporting', status: 'awarded', deadline: '2026-03-31', suppliers: 8, score: '92/100' },
 ];
 
 const mockActivities: ActivityItem[] = [
-  { id: '1', icon: CheckCircle2, action: 'Score confirmed for', target: 'Cloud Infrastructure Upgrade 2026', timestamp: '2 hours ago', isUnread: true },
-  { id: '2', icon: Mail, action: 'Submission received from GreenTech Ltd', timestamp: '5 hours ago', isUnread: true },
-  { id: '3', icon: FileText, action: 'RFP published:', target: 'Scope 3 Emissions Audit', timestamp: '1 day ago' },
-  { id: '4', icon: Award, action: 'Contract awarded for', target: 'Fleet Electrification Program', timestamp: '2 days ago' },
+  { id: '1', icon: CheckCircle2, action: 'Score confirmed for', target: 'SBTi Target Setting & Validation Support', timestamp: '2 hours ago', isUnread: true },
+  { id: '2', icon: Mail, action: 'Submission received from EcoMetrics Advisory', timestamp: '5 hours ago', isUnread: true },
+  { id: '3', icon: FileText, action: 'RFP published:', target: 'Comprehensive Scope 3 Value Chain Emissions Analysis', timestamp: '1 day ago' },
+  { id: '4', icon: Award, action: 'Contract awarded for', target: 'ISSB (IFRS S1 & S2) Integration & Reporting', timestamp: '2 days ago' },
 ];
 
 const tenderColumns = [
@@ -87,9 +88,11 @@ export default function BuyerDashboardPage() {
     <div className="flex flex-col min-h-full">
       <div className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-6">
         <h1 className="text-lg font-semibold text-text-primary">Dashboard</h1>
-        <Button className="bg-brand-green hover:bg-brand-green-mid text-white h-9 px-4 rounded-md">
-          + Create RFP
-        </Button>
+        <Link href="/rfp/create">
+          <Button className="bg-brand-green hover:bg-brand-green-mid text-white h-9 px-4 rounded-md">
+            + Create RFP
+          </Button>
+        </Link>
       </div>
 
       <div className="flex-1 p-6 space-y-6">
