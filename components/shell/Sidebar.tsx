@@ -97,12 +97,12 @@ export function Sidebar({ variant }: SidebarProps) {
     >
       <div className="flex h-14 items-center justify-between border-b border-border px-4">
         {!isSidebarCollapsed && (
-          <div className="flex items-center gap-2 overflow-hidden">
+          <Link href="/" className="flex items-center gap-2 overflow-hidden hover:opacity-80 transition-opacity">
             <div className="h-6 w-6 rounded bg-text-primary shrink-0" aria-hidden="true" />
             <span className="truncate font-semibold tracking-tight text-text-primary">
               greenbid
             </span>
-          </div>
+          </Link>
         )}
         <button
           onClick={toggleSidebar}
