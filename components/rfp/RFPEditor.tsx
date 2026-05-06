@@ -1,19 +1,27 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { SectionNavigator } from './SectionNavigator';
 import { SectionEditor } from './SectionEditor';
 import { RFPCopilot } from './RFPCopilot';
+import { RFPPreview } from './RFPPreview';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import {
   MessageSquare,
   X,
   Save,
   Eye,
-  Download,
+  FileText,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import type { RFPDocument, RFPSectionContent } from '@/types/rfp';
 
@@ -30,6 +38,9 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
   const [unsavedSections, setUnsavedSections] = useState<Set<string>>(new Set());
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   const activeSection = rfp.sections.find((s) => s.id === activeSectionId) || null;
 
@@ -38,7 +49,6 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
   }, []);
 
   const handleReorderSections = useCallback((newSections: RFPSectionContent[]) => {
-    // Update section numbers after reorder
     const updatedSections = newSections.map((section, index) => ({
       ...section,
       number: String(index + 1),
@@ -48,9 +58,7 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
 
   const handleUpdateSectionTitle = useCallback((sectionId: string, newTitle: string) => {
     const updatedSections = rfp.sections.map((section) =>
-      section.id === sectionId
-        ? { ...section, title: newTitle }
-        : section
+      section.id === sectionId ? { ...section, title: newTitle } : section
     );
     onUpdate({ sections: updatedSections });
   }, [rfp.sections, onUpdate]);
@@ -77,10 +85,7 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
 
     const updatedSections = rfp.sections.map((section) =>
       section.id === activeSectionId
-        ? { 
-            ...section, 
-            aiTextStatus: 'accepted' as const,
-          }
+        ? { ...section, aiTextStatus: 'accepted' as const }
         : section
     );
     onUpdate({ sections: updatedSections });
@@ -95,7 +100,7 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
   const handleAddSection = useCallback((type: 'text' | 'image') => {
     const newSection: RFPSectionContent = {
       id: `section-${Date.now()}`,
-      type: 'appendices', // Default type for custom sections
+      type: 'appendices',
       title: type === 'image' ? 'Image Block' : 'New Section',
       number: String(rfp.sections.length + 1),
       content: type === 'image' 
@@ -114,7 +119,20 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
 
   const handleCopilotMessage = useCallback((message: string) => {
     // Handle copilot messages - in production, this would interact with AI
-    console.log('[v0] Copilot message:', message);
+  }, []);
+
+  // Generate PDF via browser print (simulating Puppeteer behavior)
+  const handleGeneratePDF = useCallback(async () => {
+    setIsGeneratingPDF(true);
+    
+    // Open preview dialog first
+    setIsPreviewOpen(true);
+    
+    // Wait for preview to render, then trigger print
+    setTimeout(() => {
+      window.print();
+      setIsGeneratingPDF(false);
+    }, 500);
   }, []);
 
   return (
@@ -122,7 +140,7 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
       {/* Section Navigator - Left Sidebar */}
       <div
         className={cn(
-          'border-r border-border bg-white transition-all duration-200 flex flex-col',
+          'border-r border-border bg-white transition-all duration-200 flex flex-col print:hidden',
           isNavCollapsed ? 'w-12' : 'w-64'
         )}
       >
@@ -161,34 +179,41 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
         )}
       </div>
 
-      {/* Main Editor Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Main Editor Area - Distraction-free centered layout */}
+      <div className="flex-1 flex flex-col min-w-0 print:hidden">
         {/* Top Toolbar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-white">
-          <div>
+        <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-white">
+          <div className="min-w-0">
             <h1 className="text-lg font-semibold text-text-primary truncate">
               {rfp.title}
             </h1>
             <p className="text-xs text-text-muted">
-              Reference: {rfp.referenceId}
+              Reference: {rfp.referenceId} | Version {rfp.currentVersion}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setIsPreviewOpen(true)}
               className="gap-2 text-text-secondary"
             >
               <Eye className="w-4 h-4" />
-              Preview
+              Preview as HTML
             </Button>
             <Button
               variant="outline"
               size="sm"
+              onClick={handleGeneratePDF}
+              disabled={isGeneratingPDF}
               className="gap-2 text-text-secondary"
             >
-              <Download className="w-4 h-4" />
-              Export PDF
+              {isGeneratingPDF ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileText className="w-4 h-4" />
+              )}
+              Generate PDF
             </Button>
             <Button
               onClick={onSave}
@@ -200,18 +225,27 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
           </div>
         </div>
 
-        {/* Section Editor */}
-        <div className="flex-1 overflow-hidden">
+        {/* Section Editor - Centered, distraction-free */}
+        <div className="flex-1 overflow-hidden bg-surface">
           {activeSection ? (
-            <SectionEditor
-              section={activeSection}
-              onUpdateContent={handleUpdateSectionContent}
-              onSaveSection={handleSaveSection}
-              isUnsaved={unsavedSections.has(activeSectionId || '')}
-            />
+            <div className="h-full overflow-y-auto">
+              {/* Centered document container - like a word processor */}
+              <div className="max-w-3xl mx-auto bg-white min-h-full shadow-sm">
+                <SectionEditor
+                  section={activeSection}
+                  onUpdateContent={handleUpdateSectionContent}
+                  onSaveSection={handleSaveSection}
+                  isUnsaved={unsavedSections.has(activeSectionId || '')}
+                />
+              </div>
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full text-text-muted">
-              <p>Select a section to begin editing</p>
+              <div className="text-center">
+                <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium">Select a section to begin editing</p>
+                <p className="text-sm mt-1">Choose a section from the left sidebar</p>
+              </div>
             </div>
           )}
         </div>
@@ -221,7 +255,7 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
       {!isCopilotOpen && (
         <Button
           onClick={() => setIsCopilotOpen(true)}
-          className="fixed right-4 bottom-4 h-12 w-12 rounded-full bg-brand-green hover:bg-brand-green/90 text-white shadow-lg"
+          className="fixed right-4 bottom-4 h-12 w-12 rounded-full bg-brand-green hover:bg-brand-green/90 text-white shadow-lg print:hidden"
         >
           <MessageSquare className="w-5 h-5" />
         </Button>
@@ -229,7 +263,7 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
 
       {/* Copilot Panel */}
       {isCopilotOpen && (
-        <div className="w-80 border-l border-border bg-white flex flex-col">
+        <div className="w-80 border-l border-border bg-white flex flex-col print:hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-brand-green" />
@@ -254,6 +288,36 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
           </div>
         </div>
       )}
+
+      {/* Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-5xl h-[90vh] p-0 overflow-hidden">
+          <DialogHeader className="px-6 py-4 border-b border-border bg-white">
+            <DialogTitle className="flex items-center justify-between">
+              <span>RFP Preview</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGeneratePDF}
+                  disabled={isGeneratingPDF}
+                  className="gap-2"
+                >
+                  {isGeneratingPDF ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <FileText className="w-4 h-4" />
+                  )}
+                  Generate PDF
+                </Button>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto bg-surface">
+            <RFPPreview ref={previewRef} rfp={rfp} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
