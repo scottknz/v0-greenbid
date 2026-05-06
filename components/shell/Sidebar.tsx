@@ -124,7 +124,7 @@ export function Sidebar({ variant }: SidebarProps) {
             <div className="h-8 w-8 rounded bg-brand-green shrink-0" aria-hidden="true" />
             <div className="min-w-0">
               <p className="text-xs font-semibold text-text-primary truncate">
-                Greenbid Corp
+                Thistle Company
               </p>
               <p className="text-xs text-text-muted truncate">
                 Sustainability
