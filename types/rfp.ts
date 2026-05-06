@@ -1,5 +1,8 @@
 // RFP Document Types and Interfaces
 
+// Import supplier types (RFPInterest is defined in supplier.ts)
+export type { RFPInterest } from './supplier'
+
 export type RFPStatus = 'draft' | 'in_review' | 'approved' | 'published' | 'closed';
 
 export type RFPSectionType = 
@@ -57,6 +60,9 @@ export interface RFPDocument {
   
   // Team members assigned to this RFP (at least one Lead required)
   assignedTeamMemberIds: string[];
+  
+  // Supplier registrations (registered interest in responding to this RFP)
+  registeredSuppliers: RFPInterest[];
   
   // AI context/summary for continuity
   aiSummary: string;
