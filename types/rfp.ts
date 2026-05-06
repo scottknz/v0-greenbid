@@ -55,6 +55,9 @@ export interface RFPDocument {
   // Document sections
   sections: RFPSectionContent[];
   
+  // Team members assigned to this RFP (at least one Lead required)
+  assignedTeamMemberIds: string[];
+  
   // AI context/summary for continuity
   aiSummary: string;
   
