@@ -153,7 +153,7 @@ export function Sidebar({ variant }: SidebarProps) {
           aria-label="Create RFP"
         >
           <Plus className="h-4 w-4 shrink-0" />
-          {!isSidebarCollapsed && <span>+ New Tender</span>}
+          {!isSidebarCollapsed && <span>+ New RFP</span>}
         </Link>
       </div>
 
