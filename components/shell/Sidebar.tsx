@@ -142,20 +142,23 @@ export function Sidebar({ variant }: SidebarProps) {
         {renderNavItems(mainItems)}
       </nav>
 
-      <div className="px-2 py-3 border-t border-border">
-        <Link
-          href="/rfp/create"
-          className={cn(
-            'group flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors',
-            'bg-brand-green text-white hover:bg-brand-green/90',
-            isSidebarCollapsed ? 'justify-center' : 'justify-start'
-          )}
-          aria-label="Create RFP"
-        >
-          <Plus className="h-4 w-4 shrink-0" />
-          {!isSidebarCollapsed && <span>+ New RFP</span>}
-        </Link>
-      </div>
+      {/* Only show "+ New RFP" button for buyers */}
+      {variant === 'buyer' && (
+        <div className="px-2 py-3 border-t border-border">
+          <Link
+            href="/rfp/create"
+            className={cn(
+              'group flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors',
+              'bg-brand-green text-white hover:bg-brand-green/90',
+              isSidebarCollapsed ? 'justify-center' : 'justify-start'
+            )}
+            aria-label="Create RFP"
+          >
+            <Plus className="h-4 w-4 shrink-0" />
+            {!isSidebarCollapsed && <span>+ New RFP</span>}
+          </Link>
+        </div>
+      )}
 
       <div className="px-2 py-4 border-t border-border">
         <nav className="space-y-1">
