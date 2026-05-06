@@ -9,13 +9,13 @@ export interface NavItem {
 }
 
 export const buyerNav: NavItem[] = [
-  { label: 'Dashboard', href: '/', icon: 'LayoutDashboard', section: 'main' },
+  { label: 'Dashboard', href: '/buyer', icon: 'LayoutDashboard', section: 'main' },
   { label: 'Team', href: '/buyer/team', icon: 'UsersRound', section: 'main' },
-  { label: 'RFPs', href: '/tenders', icon: 'FileText', section: 'main' },
-  { label: 'Templates', href: '/evaluations', icon: 'ClipboardList', section: 'main' },
+  { label: 'RFPs', href: '/buyer/tenders', icon: 'FileText', section: 'main' },
+  { label: 'Templates', href: '/buyer/templates', icon: 'ClipboardList', section: 'main' },
   { label: 'Library', href: '/buyer/library', icon: 'BookOpen', section: 'main' },
   { label: 'Suppliers', href: '/buyer/suppliers', icon: 'Users', section: 'main' },
-  { label: 'Messages', href: '/messages', icon: 'Mail', section: 'main', badgeCount: 2 },
+  { label: 'Messages', href: '/buyer/messages', icon: 'Mail', section: 'main', badgeCount: 2 },
   { label: 'AI Copilot', href: '#', icon: 'MessageSquare', section: 'secondary', isChatTrigger: true },
   { label: 'Marketplace', href: '/marketplace', icon: 'Library', section: 'secondary' },
   { label: 'Settings', href: '/settings', icon: 'Settings', section: 'secondary' },

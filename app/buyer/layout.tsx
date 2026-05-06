@@ -1,5 +1,10 @@
-import React from 'react';
+import { DashboardShell } from '@/components/shell/DashboardShell'
 
 export default function BuyerLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <DashboardShell variant="buyer">
+      {children}
+    </DashboardShell>
+  )
 }
+
