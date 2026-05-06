@@ -7,12 +7,6 @@ import { RFPCopilot } from './RFPCopilot';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   MessageSquare,
   X,
   Save,
@@ -20,7 +14,6 @@ import {
   Download,
   ChevronLeft,
   ChevronRight,
-  FileText,
 } from 'lucide-react';
 import type { RFPDocument, RFPSectionContent } from '@/types/rfp';
 
@@ -37,7 +30,6 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
   const [unsavedSections, setUnsavedSections] = useState<Set<string>>(new Set());
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const activeSection = rfp.sections.find((s) => s.id === activeSectionId) || null;
 
@@ -125,81 +117,6 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
     console.log('[v0] Copilot message:', message);
   }, []);
 
-  const handleExportPDF = useCallback(() => {
-    // Generate PDF content
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${rfp.title}</title>
-          <style>
-            body { 
-              font-family: 'Times New Roman', serif; 
-              max-width: 800px; 
-              margin: 0 auto; 
-              padding: 40px;
-              line-height: 1.6;
-            }
-            h1 { 
-              font-size: 24px; 
-              border-bottom: 2px solid #333; 
-              padding-bottom: 10px;
-              margin-bottom: 20px;
-            }
-            h2 { 
-              font-size: 18px; 
-              margin-top: 30px;
-              color: #222;
-            }
-            h3 { 
-              font-size: 14px; 
-              margin-top: 20px;
-              color: #333;
-            }
-            p { margin: 10px 0; }
-            ul, ol { margin: 10px 0; padding-left: 30px; }
-            img { max-width: 100%; height: auto; margin: 15px 0; }
-            .section { margin-bottom: 30px; page-break-inside: avoid; }
-            .metadata { 
-              color: #666; 
-              font-size: 12px; 
-              margin-bottom: 30px;
-            }
-            @media print {
-              body { padding: 20px; }
-              .section { page-break-inside: avoid; }
-            }
-          </style>
-        </head>
-        <body>
-          <h1>${rfp.title}</h1>
-          <div class="metadata">
-            <p>Reference: ${rfp.referenceId || 'N/A'}</p>
-            <p>Category: ${rfp.category || 'N/A'}</p>
-            <p>Date: ${new Date().toLocaleDateString()}</p>
-          </div>
-          ${rfp.sections.map(section => `
-            <div class="section">
-              <h2>${section.number}. ${section.title}</h2>
-              ${section.content || '<p><em>No content</em></p>'}
-            </div>
-          `).join('')}
-        </body>
-      </html>
-    `;
-
-    // Open print dialog
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => {
-        printWindow.print();
-      }, 250);
-    }
-  }, [rfp]);
-
   return (
     <div className="flex h-full bg-background">
       {/* Section Navigator - Left Sidebar */}
@@ -222,11 +139,7 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between p-3 border-b border-border">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-brand-green" />
-                <span className="text-sm font-medium text-text-primary">Sections</span>
-              </div>
+            <div className="flex items-center justify-end p-2 border-b border-border">
               <Button
                 variant="ghost"
                 size="sm"
@@ -265,7 +178,6 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
               variant="outline"
               size="sm"
               className="gap-2 text-text-secondary"
-              onClick={() => setIsPreviewOpen(true)}
             >
               <Eye className="w-4 h-4" />
               Preview
@@ -274,7 +186,6 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
               variant="outline"
               size="sm"
               className="gap-2 text-text-secondary"
-              onClick={handleExportPDF}
             >
               <Download className="w-4 h-4" />
               Export PDF
@@ -310,7 +221,7 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
       {!isCopilotOpen && (
         <Button
           onClick={() => setIsCopilotOpen(true)}
-          className="fixed right-4 bottom-4 h-12 w-12 rounded-full bg-brand-green hover:bg-brand-green/90 text-white shadow-lg z-50"
+          className="fixed right-4 bottom-4 h-12 w-12 rounded-full bg-brand-green hover:bg-brand-green/90 text-white shadow-lg"
         >
           <MessageSquare className="w-5 h-5" />
         </Button>
@@ -343,38 +254,6 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
           </div>
         </div>
       )}
-
-      {/* Preview Dialog */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle>RFP Preview</DialogTitle>
-          </DialogHeader>
-          <div className="flex-1 overflow-y-auto bg-white p-8 border rounded-lg">
-            <div className="max-w-3xl mx-auto">
-              <h1 className="text-2xl font-bold text-text-primary border-b-2 border-text-primary pb-3 mb-4">
-                {rfp.title}
-              </h1>
-              <div className="text-sm text-text-muted mb-8">
-                <p>Reference: {rfp.referenceId || 'N/A'}</p>
-                <p>Category: {rfp.category || 'N/A'}</p>
-                <p>Date: {new Date().toLocaleDateString()}</p>
-              </div>
-              {rfp.sections.map((section) => (
-                <div key={section.id} className="mb-8">
-                  <h2 className="text-lg font-semibold text-text-primary mb-3">
-                    {section.number}. {section.title}
-                  </h2>
-                  <div 
-                    className="prose prose-sm max-w-none text-text-secondary"
-                    dangerouslySetInnerHTML={{ __html: section.content || '<em>No content</em>' }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

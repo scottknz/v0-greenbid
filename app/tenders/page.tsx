@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import { DashboardShell } from "@/components/shell/DashboardShell"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -28,45 +27,152 @@ import {
   Archive,
   Filter,
   Download,
-  FileText,
 } from "lucide-react"
-import { getAllRFPs, deleteRFP } from "@/lib/mock-rfp"
-import type { RFPDocument } from "@/types/rfp"
 
 type TenderStatus = "draft" | "open" | "active" | "evaluation" | "closed"
-type SortField = "name" | "status" | "category" | "deadline" | "budget" | null
+type SortField = "name" | "status" | "category" | "submissions" | "deadline" | "budget" | null
 type SortDirection = "asc" | "desc"
 
+type TenderData = {
+  id: string
+  name: string
+  referenceId: string
+  status: TenderStatus
+  category: string
+  submissions: number
+  deadline: string
+  budget: number
+  owner: string
+}
+
+const allTendersData: TenderData[] = [
+  {
+    id: "1",
+    name: "Comprehensive Scope 3 Value Chain Emissions Analysis",
+    referenceId: "TND-2026-001",
+    status: "active",
+    category: "Scope 3 / Value Chain",
+    submissions: 8,
+    deadline: "May 15, 2026",
+    budget: 450000,
+    owner: "Emma Thompson",
+  },
+  {
+    id: "2",
+    name: "SBTi Target Setting & Validation Support",
+    referenceId: "TND-2026-002",
+    status: "evaluation",
+    category: "Target Setting (SBTi)",
+    submissions: 12,
+    deadline: "Apr 28, 2026",
+    budget: 320000,
+    owner: "James Wilson",
+  },
+  {
+    id: "3",
+    name: "Embodied Carbon Life Cycle Assessment (LCA)",
+    referenceId: "TND-2026-003",
+    status: "draft",
+    category: "Life Cycle Assessment (LCA)",
+    submissions: 0,
+    deadline: "June 1, 2026",
+    budget: 280000,
+    owner: "Maria Garcia",
+  },
+  {
+    id: "4",
+    name: "ISSB (IFRS S1 & S2) Integration & Reporting",
+    referenceId: "TND-2026-004",
+    status: "closed",
+    category: "Regulatory Reporting (ISSB/CSRD)",
+    submissions: 15,
+    deadline: "Mar 31, 2026",
+    budget: 420000,
+    owner: "Emma Thompson",
+  },
+  {
+    id: "5",
+    name: "Renewable Energy Procurement & VPPA Structuring",
+    referenceId: "TND-2026-005",
+    status: "active",
+    category: "Renewable Energy (PPA/VPPA)",
+    submissions: 6,
+    deadline: "May 22, 2026",
+    budget: 95000,
+    owner: "James Wilson",
+  },
+  {
+    id: "6",
+    name: "Sustainable Catering Services",
+    referenceId: "TND-2026-006",
+    status: "open",
+    category: "Services",
+    submissions: 3,
+    deadline: "May 15, 2026",
+    budget: 180000,
+    owner: "Maria Garcia",
+  },
+  {
+    id: "7",
+    name: "Electric Vehicle Fleet",
+    referenceId: "TND-2026-007",
+    status: "open",
+    category: "Transportation",
+    submissions: 5,
+    deadline: "May 20, 2026",
+    budget: 850000,
+    owner: "Sarah Chen",
+  },
+  {
+    id: "8",
+    name: "Solar Panel Installation",
+    referenceId: "TND-2026-008",
+    status: "evaluation",
+    category: "Energy",
+    submissions: 9,
+    deadline: "Apr 5, 2026",
+    budget: 520000,
+    owner: "James Wilson",
+  },
+  {
+    id: "9",
+    name: "Recycled Paper Products",
+    referenceId: "TND-2026-009",
+    status: "closed",
+    category: "Office Supplies",
+    submissions: 11,
+    deadline: "Feb 28, 2026",
+    budget: 75000,
+    owner: "Maria Garcia",
+  },
+  {
+    id: "10",
+    name: "Green Building Materials",
+    referenceId: "TND-2026-010",
+    status: "draft",
+    category: "Construction",
+    submissions: 0,
+    deadline: "Jun 1, 2026",
+    budget: 2100000,
+    owner: "Sarah Chen",
+  },
+]
+
+const statusTabs = [
+  { key: "all", label: "All", count: allTendersData.length },
+  { key: "draft", label: "Draft", count: allTendersData.filter(t => t.status === "draft").length },
+  { key: "open", label: "Open", count: allTendersData.filter(t => t.status === "open").length },
+  { key: "active", label: "Active", count: allTendersData.filter(t => t.status === "active").length },
+  { key: "evaluation", label: "Evaluation", count: allTendersData.filter(t => t.status === "evaluation").length },
+  { key: "closed", label: "Closed", count: allTendersData.filter(t => t.status === "closed").length },
+]
+
 export default function TendersPage() {
-  const router = useRouter()
-  const [rfps, setRfps] = useState<RFPDocument[]>([])
   const [activeTab, setActiveTab] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [sortField, setSortField] = useState<SortField>(null)
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc")
   const [selectedTenders, setSelectedTenders] = useState<string[]>([])
-
-  // Load RFPs from the store
-  useEffect(() => {
-    const loadRFPs = () => {
-      const allRfps = getAllRFPs()
-      setRfps(allRfps)
-    }
-    loadRFPs()
-    
-    // Refresh every 2 seconds to catch new RFPs
-    const interval = setInterval(loadRFPs, 2000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const statusTabs = useMemo(() => [
-    { key: "all", label: "All", count: rfps.length },
-    { key: "draft", label: "Draft", count: rfps.filter(t => t.status === "draft").length },
-    { key: "open", label: "Open", count: rfps.filter(t => t.status === "open").length },
-    { key: "active", label: "Active", count: rfps.filter(t => t.status === "active").length },
-    { key: "evaluation", label: "Evaluation", count: rfps.filter(t => t.status === "evaluation").length },
-    { key: "closed", label: "Closed", count: rfps.filter(t => t.status === "closed").length },
-  ], [rfps])
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -91,13 +197,8 @@ export default function TendersPage() {
     )
   }
 
-  const handleArchive = (id: string) => {
-    deleteRFP(id)
-    setRfps(getAllRFPs())
-  }
-
   const filteredTenders = useMemo(() => {
-    let result = rfps
+    let result = allTendersData
 
     // Filter by tab
     if (activeTab !== "all") {
@@ -109,10 +210,10 @@ export default function TendersPage() {
       const query = searchQuery.toLowerCase()
       result = result.filter(
         t =>
-          t.title.toLowerCase().includes(query) ||
-          t.id.toLowerCase().includes(query) ||
-          t.projectInfo?.category?.toLowerCase().includes(query) ||
-          t.projectInfo?.primaryContact?.toLowerCase().includes(query)
+          t.name.toLowerCase().includes(query) ||
+          t.referenceId.toLowerCase().includes(query) ||
+          t.category.toLowerCase().includes(query) ||
+          t.owner.toLowerCase().includes(query)
       )
     }
 
@@ -123,22 +224,23 @@ export default function TendersPage() {
 
         switch (sortField) {
           case "name":
-            comparison = a.title.localeCompare(b.title)
+            comparison = a.name.localeCompare(b.name)
             break
           case "status":
             const statusOrder = { draft: 0, open: 1, active: 2, evaluation: 3, closed: 4 }
-            comparison = (statusOrder[a.status as TenderStatus] || 0) - (statusOrder[b.status as TenderStatus] || 0)
+            comparison = statusOrder[a.status] - statusOrder[b.status]
             break
           case "category":
-            comparison = (a.projectInfo?.category || '').localeCompare(b.projectInfo?.category || '')
+            comparison = a.category.localeCompare(b.category)
+            break
+          case "submissions":
+            comparison = a.submissions - b.submissions
             break
           case "deadline":
-            const dateA = a.projectInfo?.submissionDeadline ? new Date(a.projectInfo.submissionDeadline).getTime() : 0
-            const dateB = b.projectInfo?.submissionDeadline ? new Date(b.projectInfo.submissionDeadline).getTime() : 0
-            comparison = dateA - dateB
+            comparison = new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
             break
           case "budget":
-            comparison = (a.projectInfo?.expectedBudget || 0) - (b.projectInfo?.expectedBudget || 0)
+            comparison = a.budget - b.budget
             break
         }
 
@@ -147,36 +249,7 @@ export default function TendersPage() {
     }
 
     return result
-  }, [rfps, activeTab, searchQuery, sortField, sortDirection])
-
-  const formatBudget = (value: number | undefined) => {
-    if (!value) return '-'
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`
-    }
-    return `$${(value / 1000).toFixed(0)}K`
-  }
-
-  const formatDate = (dateStr: string | undefined) => {
-    if (!dateStr) return '-'
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      })
-    } catch {
-      return dateStr
-    }
-  }
-
-  const statusConfig: Record<string, { label: string; className: string }> = {
-    draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
-    open: { label: "Open", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
-    active: { label: "Active", className: "bg-blue-50 text-blue-700 border-blue-200" },
-    evaluation: { label: "Evaluation", className: "bg-amber-50 text-amber-700 border-amber-200" },
-    closed: { label: "Closed", className: "bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]" },
-  }
+  }, [activeTab, searchQuery, sortField, sortDirection])
 
   return (
     <DashboardShell>
@@ -191,12 +264,10 @@ export default function TendersPage() {
               Manage and track all your procurement RFPs
             </p>
           </div>
-          <Link href="/rfp/create">
-            <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
-              <Plus className="size-4 mr-2" />
-              Create RFP
-            </Button>
-          </Link>
+          <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
+            <Plus className="size-4 mr-2" />
+            Create RFP
+          </Button>
         </div>
 
         {/* Tabs */}
@@ -260,199 +331,112 @@ export default function TendersPage() {
           </div>
         </div>
 
-        {/* Table or Empty State */}
-        {rfps.length === 0 ? (
-          <Card className="border-[#E5E7EB] bg-white">
-            <CardContent className="py-16 text-center">
-              <FileText className="size-12 mx-auto text-[#9CA3AF] mb-4" />
-              <h3 className="text-lg font-medium text-[#111827] mb-2">No RFPs yet</h3>
-              <p className="text-[#6B7280] mb-6 max-w-sm mx-auto">
-                Get started by creating your first RFP. You can save it as a draft and continue working on it later.
-              </p>
-              <Link href="/rfp/create">
-                <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
-                  <Plus className="size-4 mr-2" />
-                  Create Your First RFP
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
-                      <th className="px-4 py-3 text-left">
-                        <input
-                          type="checkbox"
-                          checked={selectedTenders.length === filteredTenders.length && filteredTenders.length > 0}
-                          onChange={handleSelectAll}
-                          className="size-4 rounded border-[#D1D5DB] text-[#16A34A] focus:ring-[#16A34A]"
-                        />
-                      </th>
-                      <SortableHeader
-                        label="RFP Name"
-                        field="name"
-                        currentField={sortField}
-                        direction={sortDirection}
-                        onSort={handleSort}
+        {/* Table */}
+        <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                    <th className="px-4 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedTenders.length === filteredTenders.length && filteredTenders.length > 0}
+                        onChange={handleSelectAll}
+                        className="size-4 rounded border-[#D1D5DB] text-[#16A34A] focus:ring-[#16A34A]"
                       />
-                      <SortableHeader
-                        label="Status"
-                        field="status"
-                        currentField={sortField}
-                        direction={sortDirection}
-                        onSort={handleSort}
-                      />
-                      <SortableHeader
-                        label="Category"
-                        field="category"
-                        currentField={sortField}
-                        direction={sortDirection}
-                        onSort={handleSort}
-                      />
-                      <SortableHeader
-                        label="Deadline"
-                        field="deadline"
-                        currentField={sortField}
-                        direction={sortDirection}
-                        onSort={handleSort}
-                      />
-                      <SortableHeader
-                        label="Budget"
-                        field="budget"
-                        currentField={sortField}
-                        direction={sortDirection}
-                        onSort={handleSort}
-                      />
-                      <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                        Owner
-                      </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E5E7EB]">
-                    {filteredTenders.map(rfp => {
-                      const isSelected = selectedTenders.includes(rfp.id)
-                      const { label, className } = statusConfig[rfp.status] || statusConfig.draft
+                    </th>
+                    <SortableHeader
+                      label="RFP Name"
+                      field="name"
+                      currentField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                    />
+                    <SortableHeader
+                      label="Status"
+                      field="status"
+                      currentField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                    />
+                    <SortableHeader
+                      label="Category"
+                      field="category"
+                      currentField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                    />
+                    <SortableHeader
+                      label="Submissions"
+                      field="submissions"
+                      currentField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                    />
+                    <SortableHeader
+                      label="Deadline"
+                      field="deadline"
+                      currentField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                    />
+                    <SortableHeader
+                      label="Budget"
+                      field="budget"
+                      currentField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                    />
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+                      Owner
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E5E7EB]">
+                  {filteredTenders.map(tender => (
+                    <TenderRow
+                      key={tender.id}
+                      tender={tender}
+                      isSelected={selectedTenders.includes(tender.id)}
+                      onSelect={handleSelectTender}
+                    />
+                  ))}
+                </tbody>
+              </table>
 
-                      return (
-                        <tr 
-                          key={rfp.id}
-                          className={`hover:bg-[#F3F4F6] transition-colors cursor-pointer ${isSelected ? "bg-[#F0FDF4]" : ""}`}
-                          onClick={(e) => {
-                            if ((e.target as HTMLElement).closest('input, button, [role="menuitem"]')) return
-                            // For drafts, go to editor. For others, go to view page
-                            if (rfp.status === 'draft') {
-                              router.push(`/rfp/${rfp.id}/edit`)
-                            } else {
-                              router.push(`/tenders/${rfp.id}`)
-                            }
-                          }}
-                        >
-                          <td className="px-4 py-3">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => handleSelectTender(rfp.id)}
-                              className="size-4 rounded border-[#D1D5DB] text-[#16A34A] focus:ring-[#16A34A]"
-                            />
-                          </td>
-                          <td className="px-4 py-3">
-                            <div>
-                              <p className="font-medium text-[#111827]">{rfp.title || rfp.projectInfo?.projectName || 'Untitled RFP'}</p>
-                              <p className="text-xs text-[#6B7280]">{rfp.projectInfo?.referenceId || rfp.id}</p>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <Badge
-                              variant="outline"
-                              className={`rounded-full text-xs font-medium whitespace-nowrap ${className}`}
-                            >
-                              {label}
-                            </Badge>
-                          </td>
-                          <td className="px-4 py-3 text-[#6B7280]">{rfp.projectInfo?.category || '-'}</td>
-                          <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">
-                            {formatDate(rfp.projectInfo?.submissionDeadline)}
-                          </td>
-                          <td className="px-4 py-3 text-[#6B7280] tabular-nums whitespace-nowrap">
-                            {rfp.projectInfo?.budgetConfidential ? 'Confidential' : formatBudget(rfp.projectInfo?.expectedBudget)}
-                          </td>
-                          <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">
-                            {rfp.projectInfo?.primaryContact || '-'}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="size-8 p-0">
-                                  <MoreHorizontal className="size-4" />
-                                  <span className="sr-only">Open menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-40">
-                                <DropdownMenuItem onClick={() => router.push(`/tenders/${rfp.id}`)}>
-                                  <Eye className="size-4 mr-2" />
-                                  View
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => router.push(`/rfp/${rfp.id}/edit`)}>
-                                  <Pencil className="size-4 mr-2" />
-                                  {rfp.status === 'draft' ? 'Continue Editing' : 'Edit'}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Copy className="size-4 mr-2" />
-                                  Duplicate
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem 
-                                  className="text-red-600"
-                                  onClick={() => handleArchive(rfp.id)}
-                                >
-                                  <Archive className="size-4 mr-2" />
-                                  Archive
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-
-                {filteredTenders.length === 0 && rfps.length > 0 && (
-                  <div className="py-12 text-center">
-                    <p className="text-[#6B7280]">No RFPs found matching your criteria.</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              {filteredTenders.length === 0 && (
+                <div className="py-12 text-center">
+                  <p className="text-[#6B7280]">No RFPs found matching your criteria.</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Pagination */}
-        {filteredTenders.length > 0 && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-[#6B7280]">
-              Showing {filteredTenders.length} of {rfps.length} RFPs
-            </p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="border-[#E5E7EB]" disabled>
-                Previous
-              </Button>
-              <Button variant="outline" size="sm" className="border-[#E5E7EB] bg-[#16A34A] text-white hover:bg-[#15803D]">
-                1
-              </Button>
-              <Button variant="outline" size="sm" className="border-[#E5E7EB]">
-                Next
-              </Button>
-            </div>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-[#6B7280]">
+            Showing {filteredTenders.length} of {allTendersData.length} RFPs
+          </p>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="border-[#E5E7EB]" disabled>
+              Previous
+            </Button>
+            <Button variant="outline" size="sm" className="border-[#E5E7EB] bg-[#16A34A] text-white hover:bg-[#15803D]">
+              1
+            </Button>
+            <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+              2
+            </Button>
+            <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+              Next
+            </Button>
           </div>
-        )}
+        </div>
       </div>
     </DashboardShell>
   )
@@ -491,5 +475,106 @@ function SortableHeader({
         )}
       </div>
     </th>
+  )
+}
+
+function TenderRow({
+  tender,
+  isSelected,
+  onSelect,
+}: {
+  tender: TenderData
+  isSelected: boolean
+  onSelect: (id: string) => void
+}) {
+  const router = useRouter()
+
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on checkbox or actions
+    if ((e.target as HTMLElement).closest('input, button, [role="menuitem"]')) {
+      return
+    }
+    router.push(`/tenders/${tender.id}`)
+  }
+
+  const statusConfig: Record<TenderStatus, { label: string; className: string }> = {
+    draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
+    open: { label: "Open", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
+    active: { label: "Active", className: "bg-blue-50 text-blue-700 border-blue-200" },
+    evaluation: { label: "Evaluation", className: "bg-amber-50 text-amber-700 border-amber-200" },
+    closed: { label: "Closed", className: "bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]" },
+  }
+
+  const { label, className } = statusConfig[tender.status]
+
+  const formatBudget = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`
+    }
+    return `$${(value / 1000).toFixed(0)}K`
+  }
+
+  return (
+    <tr 
+      className={`hover:bg-[#F3F4F6] transition-colors cursor-pointer ${isSelected ? "bg-[#F0FDF4]" : ""}`}
+      onClick={handleRowClick}
+    >
+      <td className="px-4 py-3">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onSelect(tender.id)}
+          className="size-4 rounded border-[#D1D5DB] text-[#16A34A] focus:ring-[#16A34A]"
+        />
+      </td>
+      <td className="px-4 py-3">
+        <div>
+          <p className="font-medium text-[#111827]">{tender.name}</p>
+          <p className="text-xs text-[#6B7280]">{tender.referenceId}</p>
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        <Badge
+          variant="outline"
+          className={`rounded-full text-xs font-medium whitespace-nowrap ${className}`}
+        >
+          {label}
+        </Badge>
+      </td>
+      <td className="px-4 py-3 text-[#6B7280]">{tender.category}</td>
+      <td className="px-4 py-3 text-[#6B7280] tabular-nums text-center">{tender.submissions}</td>
+      <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">{tender.deadline}</td>
+      <td className="px-4 py-3 text-[#6B7280] tabular-nums whitespace-nowrap">{formatBudget(tender.budget)}</td>
+      <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">{tender.owner}</td>
+      <td className="px-4 py-3 text-right">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="size-8 p-0">
+              <MoreHorizontal className="size-4" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem onClick={() => router.push(`/tenders/${tender.id}`)}>
+              <Eye className="size-4 mr-2" />
+              Open
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Pencil className="size-4 mr-2" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Copy className="size-4 mr-2" />
+              Duplicate
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-red-600">
+              <Archive className="size-4 mr-2" />
+              Archive
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </td>
+    </tr>
   )
 }
