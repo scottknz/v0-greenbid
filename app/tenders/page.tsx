@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { DashboardShell } from "@/components/shell/DashboardShell"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -251,8 +250,7 @@ export default function TendersPage() {
   }, [activeTab, searchQuery, sortField, sortDirection])
 
   return (
-    <DashboardShell>
-      <div className="space-y-6 p-5">
+    <div className="space-y-6 p-5">
         {/* Page Header */}
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-[#111827]">
@@ -430,8 +428,7 @@ export default function TendersPage() {
             </Button>
           </div>
         </div>
-      </div>
-    </DashboardShell>
+    </div>
   )
 }
 

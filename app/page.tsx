@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { DashboardShell } from "@/components/shell/DashboardShell"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { FileText, CheckCircle, AlertCircle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
@@ -106,8 +105,7 @@ export default function BuyerDashboard() {
     })
   }, [sortField, sortDirection])
   return (
-    <DashboardShell>
-      <div className="space-y-6 p-5">
+    <div className="space-y-6 p-5">
         {/* Page Header */}
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-[#111827]">
@@ -286,8 +284,7 @@ export default function BuyerDashboard() {
             </CardContent>
           </Card>
         </div>
-      </div>
-    </DashboardShell>
+    </div>
   )
 }
 

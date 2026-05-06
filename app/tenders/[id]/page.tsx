@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { DashboardShell } from "@/components/shell/DashboardShell"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -1219,8 +1218,7 @@ export default function TenderDetailPage() {
   }
 
   return (
-    <DashboardShell>
-      <div className="space-y-6 p-5">
+    <div className="space-y-6 p-5">
         {/* Back Navigation */}
         <div className="flex items-center gap-2">
           <Button
@@ -3153,8 +3151,7 @@ export default function TenderDetailPage() {
             </Card>
           </div>
         )}
-      </div>
-    </DashboardShell>
+    </div>
   )
 }
 

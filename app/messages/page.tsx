@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { DashboardShell } from "@/components/shell/DashboardShell"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -519,8 +518,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <DashboardShell>
-      <div className="flex flex-col h-[calc(100vh-64px)]">
+    <div className="flex flex-col h-[calc(100vh-64px)]">
         {/* Top Bar - Search + Filters + Compose */}
         <div className="px-4 py-3 border-b border-[#E5E7EB] bg-white space-y-2">
           <div className="flex items-center gap-4">
@@ -1135,7 +1133,6 @@ export default function MessagesPage() {
             )}
           </div>
         </div>
-      </div>
-    </DashboardShell>
+    </div>
   )
 }
