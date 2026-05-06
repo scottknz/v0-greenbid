@@ -523,7 +523,114 @@ export const rfpCategories = [
 // In-memory store for RFPs (mock database)
 const rfpStore: Map<string, RFPDocument> = new Map();
 
-// Initialize with sample RFP
+// Initialize with sample RFPs representing different statuses
+const sampleRFPs: Partial<RFPDocument>[] = [
+  {
+    id: 'rfp-sample-001',
+    title: 'Comprehensive Scope 3 Value Chain Emissions Analysis',
+    status: 'active',
+    projectInfo: {
+      projectName: 'Comprehensive Scope 3 Value Chain Emissions Analysis',
+      category: 'Scope 3 / Value Chain',
+      description: 'Full value chain emissions assessment',
+      department: 'Sustainability',
+      referenceId: 'GREE2026001',
+      confidentiality: 'Restricted',
+      contractType: 'Fixed Price',
+      submissionLanguage: 'English',
+      expectedBudget: 450000,
+      budgetCurrency: 'USD',
+      budgetFlexibility: 'flexible',
+      budgetConfidential: false,
+      qaStartDate: '2026-04-01',
+      qaEndDate: '2026-04-10',
+      submissionDeadline: '2026-05-15',
+      expectedStartDate: '2026-06-01',
+      expectedCompletionDate: '2026-12-31',
+      milestones: [],
+      team: [],
+      primaryContact: 'Emma Thompson',
+      primaryContactEmail: 'emma.thompson@company.com',
+    },
+    createdAt: '2026-03-01T10:00:00Z',
+    updatedAt: '2026-04-20T14:30:00Z',
+  },
+  {
+    id: 'rfp-sample-002',
+    title: 'SBTi Target Setting & Validation Support',
+    status: 'evaluation',
+    projectInfo: {
+      projectName: 'SBTi Target Setting & Validation Support',
+      category: 'Target Setting (SBTi)',
+      description: 'Science-based target setting and validation',
+      department: 'Sustainability',
+      referenceId: 'GREE2026002',
+      confidentiality: 'Confidential',
+      contractType: 'Time & Materials',
+      submissionLanguage: 'English',
+      expectedBudget: 320000,
+      budgetCurrency: 'USD',
+      budgetFlexibility: 'negotiable',
+      budgetConfidential: true,
+      qaStartDate: '2026-03-15',
+      qaEndDate: '2026-03-25',
+      submissionDeadline: '2026-04-28',
+      expectedStartDate: '2026-05-15',
+      expectedCompletionDate: '2026-11-30',
+      milestones: [],
+      team: [],
+      primaryContact: 'James Wilson',
+      primaryContactEmail: 'james.wilson@company.com',
+    },
+    createdAt: '2026-02-15T09:00:00Z',
+    updatedAt: '2026-04-28T16:00:00Z',
+  },
+  {
+    id: 'rfp-sample-003',
+    title: 'Embodied Carbon Life Cycle Assessment (LCA)',
+    status: 'draft',
+    projectInfo: {
+      projectName: 'Embodied Carbon Life Cycle Assessment (LCA)',
+      category: 'Life Cycle Assessment (LCA)',
+      description: 'Comprehensive LCA for product portfolio',
+      department: 'Product Development',
+      referenceId: 'GREE2026003',
+      confidentiality: 'Restricted',
+      contractType: 'Fixed Price',
+      submissionLanguage: 'English',
+      expectedBudget: 280000,
+      budgetCurrency: 'USD',
+      budgetFlexibility: 'flexible',
+      budgetConfidential: false,
+      qaStartDate: '',
+      qaEndDate: '',
+      submissionDeadline: '2026-06-01',
+      expectedStartDate: '2026-07-01',
+      expectedCompletionDate: '2027-01-31',
+      milestones: [],
+      team: [],
+      primaryContact: 'Maria Garcia',
+      primaryContactEmail: 'maria.garcia@company.com',
+    },
+    createdAt: '2026-04-10T11:00:00Z',
+    updatedAt: '2026-04-25T10:00:00Z',
+  },
+];
+
+// Initialize store with sample RFPs
+sampleRFPs.forEach(rfp => {
+  const fullRfp: RFPDocument = {
+    ...sampleDraftRFP,
+    ...rfp,
+    id: rfp.id!,
+    title: rfp.title!,
+    status: rfp.status as RFPDocument['status'],
+    projectInfo: rfp.projectInfo as RFPDocument['projectInfo'],
+  };
+  rfpStore.set(fullRfp.id, fullRfp);
+});
+
+// Also add the original sample draft
 rfpStore.set(sampleDraftRFP.id, sampleDraftRFP);
 
 /**
@@ -607,4 +714,18 @@ export function createRFPVersion(id: string, rfpOrSummary: RFPDocument | string)
 export function saveRFP(rfp: RFPDocument): RFPDocument {
   rfpStore.set(rfp.id, rfp);
   return rfp;
+}
+
+/**
+ * Get all RFPs from the store
+ */
+export function getAllRFPs(): RFPDocument[] {
+  return Array.from(rfpStore.values());
+}
+
+/**
+ * Delete an RFP from the store
+ */
+export function deleteRFP(id: string): boolean {
+  return rfpStore.delete(id);
 }
