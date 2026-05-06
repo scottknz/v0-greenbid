@@ -253,16 +253,18 @@ export function SectionEditor({
         </Button>
       </div>
 
-      {/* Editor Content */}
+      {/* Editor Content — A4 page margins: 25mm ≈ 96px horizontal, 20mm ≈ 76px vertical */}
       <div 
         className={cn(
           'flex-1 overflow-y-auto bg-white transition-colors duration-300',
-          isUnsaved ? '[&_.ProseMirror]:text-text-secondary' : '[&_.ProseMirror]:text-text-primary'
+          isUnsaved
+            ? '[&_.ProseMirror]:text-text-secondary'
+            : '[&_.ProseMirror]:text-text-primary'
         )}
       >
         <EditorContent 
           editor={editor} 
-          className="min-h-full"
+          className="min-h-full [&_.ProseMirror]:px-[96px] [&_.ProseMirror]:py-[76px] [&_.ProseMirror]:min-h-[500px]"
         />
       </div>
 

@@ -225,12 +225,12 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
           </div>
         </div>
 
-        {/* Section Editor - Centered, distraction-free */}
-        <div className="flex-1 overflow-hidden bg-surface">
+        {/* Section Editor - A4 scale, full width */}
+        <div className="flex-1 overflow-hidden bg-[#f0f0f0]">
           {activeSection ? (
             <div className="h-full overflow-y-auto">
-              {/* Centered document container - like a word processor */}
-              <div className="max-w-3xl mx-auto bg-white min-h-full shadow-sm">
+              {/* A4 page: 794px at 96dpi, full height, white page background */}
+              <div className="w-[794px] min-h-full bg-white shadow-sm">
                 <SectionEditor
                   section={activeSection}
                   onUpdateContent={handleUpdateSectionContent}

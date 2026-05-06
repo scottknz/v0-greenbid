@@ -208,7 +208,7 @@ export function WYSIWYGEditor({
       {/* Editor Content */}
       <EditorContent
         editor={editor}
-        className="prose prose-slate max-w-none prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-base prose-p:leading-7 prose-li:text-base"
+        className="prose prose-slate w-full max-w-none prose-headings:font-semibold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:text-base prose-p:leading-7 prose-li:text-base"
       />
 
       {/* Bottom Toolbar */}
