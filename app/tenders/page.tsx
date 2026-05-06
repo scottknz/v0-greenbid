@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   Search,
-  Plus,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
@@ -255,19 +254,13 @@ export default function TendersPage() {
     <DashboardShell>
       <div className="space-y-6 p-5">
         {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-[#111827]">
-              RFPs
-            </h1>
-            <p className="text-sm text-[#6B7280]">
-              Manage and track all your procurement RFPs
-            </p>
-          </div>
-          <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
-            <Plus className="size-4 mr-2" />
-            Create RFP
-          </Button>
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#111827]">
+            RFPs
+          </h1>
+          <p className="text-sm text-[#6B7280]">
+            Manage and track all your procurement RFPs
+          </p>
         </div>
 
         {/* Tabs */}
