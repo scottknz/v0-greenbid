@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, FileText, ClipboardList, Users, Library,
+  LayoutDashboard, FileText, ClipboardList, Users, UsersRound, Library, BookOpen,
   MessageSquare, Bell, Shield, Settings, Mail, Upload,
   FolderOpen, Star, PanelLeftClose, PanelLeftOpen, MoreHorizontal, Plus,
 } from 'lucide-react';
@@ -13,7 +13,7 @@ import { useShell } from './ShellContext';
 import { cn } from '@/lib/utils';
 
 const iconMap: Record<string, React.ElementType> = {
-  LayoutDashboard, FileText, ClipboardList, Users, Library,
+  LayoutDashboard, FileText, ClipboardList, Users, UsersRound, Library, BookOpen,
   MessageSquare, Bell, Shield, Settings, Mail, Upload,
   FolderOpen, Star,
 };
