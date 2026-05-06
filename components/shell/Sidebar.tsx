@@ -121,7 +121,11 @@ export function Sidebar({ variant }: SidebarProps) {
       {!isSidebarCollapsed && (
         <div className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded bg-brand-green shrink-0" aria-hidden="true" />
+            <img 
+              src="/thistle-logo.svg" 
+              alt="Thistle Company" 
+              className="h-8 w-8 shrink-0"
+            />
             <div className="min-w-0">
               <p className="text-xs font-semibold text-text-primary truncate">
                 Thistle Company
