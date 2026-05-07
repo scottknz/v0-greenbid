@@ -45,12 +45,12 @@ export function Sidebar({ variant }: SidebarProps) {
             </span>
           )}
           {item.badgeCount && item.badgeCount > 0 && !isSidebarCollapsed && (
-            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-green px-1.5 text-xs font-medium text-white" aria-hidden="true">
+            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#16A34A] px-1.5 text-xs font-medium text-white" aria-hidden="true">
               {item.badgeCount}
             </span>
           )}
           {item.badge && !item.badgeCount && !isSidebarCollapsed && (
-            <span className="ml-auto flex h-2 w-2 rounded-full bg-brand-green" aria-hidden="true" />
+            <span className="ml-auto flex h-2 w-2 rounded-full bg-[#16A34A]" aria-hidden="true" />
           )}
         </>
       );
@@ -59,7 +59,7 @@ export function Sidebar({ variant }: SidebarProps) {
         'group flex items-center px-3 py-2 text-sm font-medium transition-colors',
         isSidebarCollapsed ? 'justify-center' : 'justify-start rounded-md',
         isActive
-          ? 'bg-brand-green-light text-brand-green border-l-[3px] border-brand-green -ml-[3px] rounded-l-none'
+          ? 'bg-[#F0FDF4] text-[#16A34A] border-l-[3px] border-[#16A34A] -ml-[3px] rounded-l-none'
           : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
       );
 
@@ -150,7 +150,7 @@ export function Sidebar({ variant }: SidebarProps) {
             href="/buyer/rfp/create"
             className={cn(
               'group flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors',
-              'bg-brand-green text-white hover:bg-brand-green/90',
+              'bg-[#16A34A] text-white hover:bg-[#15803D]',
               isSidebarCollapsed ? 'justify-center' : 'justify-start'
             )}
             aria-label="Create RFP"
