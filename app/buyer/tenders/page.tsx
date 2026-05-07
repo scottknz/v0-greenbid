@@ -484,7 +484,7 @@ function TenderRow({
     if ((e.target as HTMLElement).closest('input, button, [role="menuitem"]')) {
       return
     }
-    router.push(`/tenders/${tender.id}`)
+    router.push(`/buyer/tenders/${tender.id}`)
   }
 
   const statusConfig: Record<TenderStatus, { label: string; className: string }> = {
@@ -537,33 +537,46 @@ function TenderRow({
       <td className="px-4 py-3 text-[#6B7280] tabular-nums whitespace-nowrap">{formatBudget(tender.budget)}</td>
       <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">{tender.owner}</td>
       <td className="px-4 py-3 text-right">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="size-8 p-0">
-              <MoreHorizontal className="size-4" />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem onClick={() => router.push(`/tenders/${tender.id}`)}>
-              <Eye className="size-4 mr-2" />
-              Open
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Pencil className="size-4 mr-2" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Copy className="size-4 mr-2" />
-              Duplicate
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">
-              <Archive className="size-4 mr-2" />
-              Archive
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center justify-end gap-1">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-text-secondary hover:text-text-primary"
+            onClick={(e) => {
+              e.stopPropagation()
+              router.push(`/buyer/tenders/${tender.id}`)
+            }}
+          >
+            Open
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="size-8 p-0">
+                <MoreHorizontal className="size-4" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={() => router.push(`/buyer/tenders/${tender.id}`)}>
+                <Eye className="size-4 mr-2" />
+                Open
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push(`/buyer/rfp/${tender.id}/edit`)}>
+                <Pencil className="size-4 mr-2" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Copy className="size-4 mr-2" />
+                Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-red-600">
+                <Archive className="size-4 mr-2" />
+                Archive
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </td>
     </tr>
   )
