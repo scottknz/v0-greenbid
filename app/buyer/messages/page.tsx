@@ -610,31 +610,44 @@ export default function MessagesPage() {
                 {/* Visibility */}
                 <div className="space-y-2">
                   <Label>Visibility</Label>
-                  <div className="flex gap-2">
-                    <Button
+                  <div className="flex items-center gap-1 p-1 rounded-lg bg-[#F3F4F6] w-fit">
+                    <button
                       type="button"
-                      variant={composeVisibility === "all" ? "default" : "outline"}
-                      size="sm"
-                      className={composeVisibility === "all" ? "bg-[#16A34A] hover:bg-[#15803D]" : ""}
+                      onClick={() => setComposeVisibility("private")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                        composeVisibility === "private"
+                          ? "bg-white shadow-sm text-[#111827]"
+                          : "text-[#6B7280] hover:text-[#111827]"
+                      }`}
+                    >
+                      <Lock className="size-3.5" />
+                      Private
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => {
                         setComposeVisibility("all")
                         setComposeRecipients(suppliersData.map(s => s.id))
                       }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                        composeVisibility === "all"
+                          ? "bg-white shadow-sm text-[#111827]"
+                          : "text-[#6B7280] hover:text-[#111827]"
+                      }`}
                     >
-                      <Globe className="size-4 mr-1" />
+                      <Globe className="size-3.5" />
                       All Suppliers
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={composeVisibility === "private" ? "default" : "outline"}
-                      size="sm"
-                      className={composeVisibility === "private" ? "bg-[#16A34A] hover:bg-[#15803D]" : ""}
-                      onClick={() => setComposeVisibility("private")}
-                    >
-                      <Lock className="size-4 mr-1" />
-                      Private
-                    </Button>
+                    </button>
                   </div>
+
+                  {composeVisibility === "all" && (
+                    <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-800">
+                      <Globe className="size-4 shrink-0 mt-0.5 text-amber-500" />
+                      <div className="text-xs leading-relaxed">
+                        <span className="font-semibold">This message will be sent to all {suppliersData.length} suppliers</span> registered for this RFP. All recipients will be able to see the message but not each other&apos;s replies.
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Recipients (only for private) */}
