@@ -55,6 +55,8 @@ import {
   ChevronDown,
   RefreshCw,
   Tag,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react"
 
 // Mock RFPs data
@@ -303,6 +305,7 @@ export default function MessagesPage() {
   const [replyMessage, setReplyMessage] = useState("")
   const [replyAttachments, setReplyAttachments] = useState<{ name: string; size: string }[]>([])
   const [showGlobalSuppliers, setShowGlobalSuppliers] = useState(false)
+  const [isFolderSidebarCollapsed, setIsFolderSidebarCollapsed] = useState(false)
 
   // Derived state
   const selectedThread = threads.find(t => t.id === selectedThreadId)
@@ -703,8 +706,19 @@ export default function MessagesPage() {
         {/* Main Content - 3 Column Layout */}
         <div className="flex flex-1 min-h-0">
           {/* Left Sidebar - Folders */}
-          <div className="w-56 border-r border-[#E5E7EB] bg-[#FAFAFA] p-3 shrink-0">
-            <nav className="space-y-1">
+          <div className={`${isFolderSidebarCollapsed ? "w-14" : "w-56"} border-r border-[#E5E7EB] bg-[#FAFAFA] shrink-0 flex flex-col transition-all duration-200`}>
+            {/* Sidebar header with toggle */}
+            <div className={`flex h-10 items-center border-b border-[#E5E7EB] px-2 ${isFolderSidebarCollapsed ? "justify-center" : "justify-end"}`}>
+              <button
+                onClick={() => setIsFolderSidebarCollapsed(!isFolderSidebarCollapsed)}
+                className="text-[#9CA3AF] hover:text-[#4B5563] p-1 rounded transition-colors"
+                aria-label={isFolderSidebarCollapsed ? "Expand folders" : "Collapse folders"}
+              >
+                {isFolderSidebarCollapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
+              </button>
+            </div>
+
+            <nav className="space-y-1 p-2 flex-1">
               {folders.map(folder => {
                 const count = getFolderCount(folder.key)
                 const isActive = selectedFolder === folder.key
@@ -717,20 +731,28 @@ export default function MessagesPage() {
                       setSelectedThreadId(null)
                       setSelectedThreadIds(new Set())
                     }}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isActive 
-                        ? "bg-[#16A34A]/10 text-[#16A34A] font-medium" 
+                    title={isFolderSidebarCollapsed ? folder.label : undefined}
+                    className={`w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors ${
+                      isActive
+                        ? "bg-[#16A34A]/10 text-[#16A34A] font-medium"
                         : "text-[#4B5563] hover:bg-[#F3F4F6]"
-                    }`}
+                    } ${isFolderSidebarCollapsed ? "justify-center" : ""}`}
                   >
-                    <Icon className={`size-4 ${isActive ? "text-[#16A34A]" : "text-[#9CA3AF]"}`} />
-                    <span className="flex-1 text-left">{folder.label}</span>
-                    {count > 0 && (
-                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                        isActive ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#6B7280]"
-                      }`}>
-                        {count}
-                      </span>
+                    <Icon className={`size-4 shrink-0 ${isActive ? "text-[#16A34A]" : "text-[#9CA3AF]"}`} />
+                    {!isFolderSidebarCollapsed && (
+                      <>
+                        <span className="flex-1 text-left">{folder.label}</span>
+                        {count > 0 && (
+                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                            isActive ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#6B7280]"
+                          }`}>
+                            {count}
+                          </span>
+                        )}
+                      </>
+                    )}
+                    {isFolderSidebarCollapsed && count > 0 && (
+                      <span className="absolute -top-1 -right-1 size-2 rounded-full bg-[#16A34A]" />
                     )}
                   </button>
                 )
@@ -738,32 +760,34 @@ export default function MessagesPage() {
             </nav>
 
             {/* Export section */}
-            <div className="mt-6 pt-4 border-t border-[#E5E7EB]">
-              <p className="text-xs font-medium text-[#9CA3AF] px-3 mb-2">EXPORT</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start text-[#6B7280] hover:text-[#111827]"
-                onClick={() => exportToCSV(filteredThreads, "messages.csv")}
-              >
-                <Download className="size-4 mr-2" />
-                Download All
-              </Button>
-              {selectedThreadIds.size > 0 && (
+            {!isFolderSidebarCollapsed && (
+              <div className="mt-auto pt-4 border-t border-[#E5E7EB] p-2">
+                <p className="text-xs font-medium text-[#9CA3AF] px-3 mb-2">EXPORT</p>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="w-full justify-start text-[#6B7280] hover:text-[#111827]"
-                  onClick={() => {
-                    const selected = threads.filter(t => selectedThreadIds.has(t.id))
-                    exportToCSV(selected, "messages_selection.csv")
-                  }}
+                  onClick={() => exportToCSV(filteredThreads, "messages.csv")}
                 >
                   <Download className="size-4 mr-2" />
-                  Download Selected ({selectedThreadIds.size})
+                  Download All
                 </Button>
-              )}
-            </div>
+                {selectedThreadIds.size > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-[#6B7280] hover:text-[#111827]"
+                    onClick={() => {
+                      const selected = threads.filter(t => selectedThreadIds.has(t.id))
+                      exportToCSV(selected, "messages_selection.csv")
+                    }}
+                  >
+                    <Download className="size-4 mr-2" />
+                    Download Selected ({selectedThreadIds.size})
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Middle - Thread List */}
