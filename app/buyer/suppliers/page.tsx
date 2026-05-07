@@ -54,7 +54,7 @@ export default function SuppliersPage() {
   return (
     <div className="flex h-full bg-background">
       {/* Main list view */}
-      <div className="flex-1 flex flex-col border-r border-border">
+      <div className="flex-1 flex flex-col">
         <SuppliersList
           suppliers={suppliers}
           onAddSupplier={() => {
@@ -72,18 +72,21 @@ export default function SuppliersPage() {
         />
       </div>
 
-      {/* Side panel for details */}
+      {/* Details modal */}
       {selectedSupplier && !showAddForm && !editingSupplier && (
-        <div className="w-96 border-l border-border bg-background overflow-y-auto">
-          <SupplierDetailPanel
-            supplier={selectedSupplier}
-            onEdit={(supplier) => {
-              setEditingSupplier(supplier)
-              setShowAddForm(true)
-            }}
-            onClose={() => setSelectedSupplier(null)}
-            onUpdate={handleUpdateSupplier}
-          />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg border border-border shadow-modal w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <SupplierDetailPanel
+              supplier={selectedSupplier}
+              onEdit={(supplier) => {
+                setSelectedSupplier(null)
+                setEditingSupplier(supplier)
+                setShowAddForm(true)
+              }}
+              onClose={() => setSelectedSupplier(null)}
+              onUpdate={handleUpdateSupplier}
+            />
+          </div>
         </div>
       )}
 

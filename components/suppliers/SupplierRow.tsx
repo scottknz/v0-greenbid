@@ -135,7 +135,7 @@ export function SupplierRow({
               onClick={() => onViewDetails(supplier)}
               className="text-text-secondary hover:text-text-primary"
             >
-              View
+              Details
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
