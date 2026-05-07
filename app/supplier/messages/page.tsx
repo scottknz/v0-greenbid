@@ -569,104 +569,36 @@ export default function MessagesPage() {
                   />
                 </div>
 
-                {/* Visibility */}
+                {/* Recipients — buyer staff only */}
                 <div className="space-y-2">
-                  <Label>Visibility</Label>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant={composeVisibility === "all" ? "default" : "outline"}
-                      size="sm"
-                      className={composeVisibility === "all" ? "bg-[#16A34A] hover:bg-[#15803D]" : ""}
-                      onClick={() => {
-                        setComposeVisibility("all")
-                        setComposeRecipients(suppliersData.map(s => s.id))
-                      }}
-                    >
-                      <Globe className="size-4 mr-1" />
-                      All Suppliers
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={composeVisibility === "private" ? "default" : "outline"}
-                      size="sm"
-                      className={composeVisibility === "private" ? "bg-[#16A34A] hover:bg-[#15803D]" : ""}
-                      onClick={() => setComposeVisibility("private")}
-                    >
-                      <Lock className="size-4 mr-1" />
-                      Private
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Recipients (only for private) */}
-                {composeVisibility === "private" && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label>Recipients</Label>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs text-[#16A34A] hover:text-[#15803D]"
-                        onClick={() => setShowGlobalSuppliers(!showGlobalSuppliers)}
+                  <Label>To (Buyer Staff)</Label>
+                  <div className="border border-[#E5E7EB] rounded-lg max-h-40 overflow-y-auto">
+                    {buyersData.map(buyer => (
+                      <label
+                        key={buyer.id}
+                        className="flex items-center gap-3 px-3 py-2 hover:bg-[#F9FAFB] cursor-pointer border-b border-[#E5E7EB] last:border-b-0"
                       >
-                        <Globe className="size-3 mr-1" />
-                        {showGlobalSuppliers ? "Show registered" : "Add from global"}
-                      </Button>
-                    </div>
-                    <div className="border border-[#E5E7EB] rounded-lg max-h-40 overflow-y-auto">
-                      {!showGlobalSuppliers ? (
-                        suppliersData.map(supplier => (
-                          <label
-                            key={supplier.id}
-                            className="flex items-center gap-3 px-3 py-2 hover:bg-[#F9FAFB] cursor-pointer border-b border-[#E5E7EB] last:border-b-0"
-                          >
-                            <Checkbox
-                              checked={composeRecipients.includes(supplier.id)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setComposeRecipients(prev => [...prev, supplier.id])
-                                } else {
-                                  setComposeRecipients(prev => prev.filter(id => id !== supplier.id))
-                                }
-                              }}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-[#111827] truncate">{supplier.name}</p>
-                              <p className="text-xs text-[#6B7280] truncate">{supplier.contact}</p>
-                            </div>
-                          </label>
-                        ))
-                      ) : (
-                        globalSuppliersData.map(supplier => (
-                          <label
-                            key={supplier.id}
-                            className="flex items-center gap-3 px-3 py-2 hover:bg-[#F9FAFB] cursor-pointer border-b border-[#E5E7EB] last:border-b-0"
-                          >
-                            <Checkbox
-                              checked={composeRecipients.includes(supplier.id)}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setComposeRecipients(prev => [...prev, supplier.id])
-                                } else {
-                                  setComposeRecipients(prev => prev.filter(id => id !== supplier.id))
-                                }
-                              }}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-[#111827] truncate">{supplier.name}</p>
-                              <p className="text-xs text-[#6B7280] truncate">{supplier.contact}</p>
-                            </div>
-                            <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200 shrink-0">
-                              Global
-                            </Badge>
-                          </label>
-                        ))
-                      )}
-                    </div>
+                        <Checkbox
+                          checked={composeRecipients.includes(buyer.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setComposeRecipients(prev => [...prev, buyer.id])
+                            } else {
+                              setComposeRecipients(prev => prev.filter(id => id !== buyer.id))
+                            }
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[#111827] truncate">{buyer.name}</p>
+                          <p className="text-xs text-[#6B7280] truncate">{buyer.role}</p>
+                        </div>
+                      </label>
+                    ))}
                   </div>
-                )}
+                  {composeRecipients.length === 0 && (
+                    <p className="text-xs text-[#9CA3AF]">Select at least one buyer staff member to send to.</p>
+                  )}
+                </div>
 
                 {/* Message */}
                 <div className="space-y-2">
