@@ -96,15 +96,13 @@ export function Sidebar({ variant }: SidebarProps) {
         isSidebarCollapsed ? 'w-[56px]' : 'w-[220px]'
       )}
     >
-      <div className="flex h-14 items-center justify-between border-b border-border px-4">
+      <div className={cn(
+        'flex h-14 items-center border-b border-border px-4',
+        isSidebarCollapsed ? 'justify-center' : 'justify-between'
+      )}>
         {!isSidebarCollapsed && (
           <Link href="/" className="flex items-center overflow-hidden hover:opacity-80 transition-opacity">
             <Image src="/greenbid-logo-green.png" alt="Greenbid" width={100} height={28} className="h-7 w-auto" />
-          </Link>
-        )}
-        {isSidebarCollapsed && (
-          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-            <div className="h-6 w-6 rounded bg-brand-green shrink-0" aria-hidden="true" />
           </Link>
         )}
         <button
