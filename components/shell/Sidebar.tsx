@@ -26,6 +26,8 @@ export function Sidebar({ variant }: SidebarProps) {
   const pathname = usePathname();
   const { isSidebarCollapsed, toggleSidebar, toggleChatPanel } = useShell();
 
+  console.log("[v0] Sidebar variant:", variant, "pathname:", pathname);
+
   const navItems = variant === 'buyer' ? buyerNav : supplierNav;
   const mainItems = navItems.filter((item) => item.section === 'main');
   const secondaryItems = navItems.filter((item) => item.section === 'secondary');
