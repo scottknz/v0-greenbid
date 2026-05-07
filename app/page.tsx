@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Leaf, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 export default function AuthPage() {
   const [isLoginMode, setIsLoginMode] = useState(true)
@@ -20,9 +21,8 @@ export default function AuthPage() {
         
         <div className="text-center text-white max-w-md relative z-10">
           <div className="flex justify-center mb-6">
-            <Leaf className="w-16 h-16" />
+            <Image src="/greenbid-logo.png" alt="Greenbid" width={240} height={60} className="h-16 w-auto" />
           </div>
-          <h1 className="text-4xl font-bold mb-4">Greenbid</h1>
           <p className="text-lg text-white/80 leading-relaxed">
             Streamline sustainable procurement. Connect buyers and suppliers in a transparent, compliance-driven RFP ecosystem.
           </p>
