@@ -108,7 +108,7 @@ const STATUS_CONFIG = {
   invited: { label: 'Invited', color: 'bg-blue-100 text-blue-800', icon: AlertCircle },
   in_progress: { label: 'In Progress', color: 'bg-amber-100 text-amber-800', icon: Clock },
   submitted: { label: 'Submitted', color: 'bg-purple-100 text-purple-800', icon: FileText },
-  awarded: { label: 'Awarded', color: 'bg-green-100 text-green-800', icon: CheckCircle },
+  awarded: { label: 'Awarded', color: 'bg-brand-green-light text-brand-green', icon: CheckCircle },
   rejected: { label: 'Not Selected', color: 'bg-grey-100 text-grey-600', icon: XCircle },
 }
 

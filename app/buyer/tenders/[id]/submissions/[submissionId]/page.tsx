@@ -264,7 +264,7 @@ const submissionsData: Record<string, {
 
 const activityTypes = [
   { key: "document_access", label: "Document Access", color: "bg-blue-100 text-blue-700" },
-  { key: "upload", label: "Upload", color: "bg-green-100 text-green-700" },
+  { key: "upload", label: "Upload", color: "bg-brand-green-light text-brand-green" },
   { key: "communication", label: "Communication", color: "bg-purple-100 text-purple-700" },
   { key: "form_submission", label: "Form", color: "bg-amber-100 text-amber-700" },
   { key: "login", label: "Login", color: "bg-gray-100 text-gray-700" },
@@ -1082,7 +1082,7 @@ export default function SubmissionDetailPage() {
                                       className="h-7 w-16 text-sm text-center mx-auto"
                                     />
                                   ) : (
-                                    <Badge className={`${sub.actualScore >= 90 ? 'bg-green-100 text-green-700' : sub.actualScore >= 80 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'} border-0`}>
+                                    <Badge className={`${sub.actualScore >= 90 ? 'bg-brand-green-light text-brand-green' : sub.actualScore >= 80 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'} border-0`}>
                                       {sub.actualScore}
                                     </Badge>
                                   )}
@@ -1222,7 +1222,7 @@ export default function SubmissionDetailPage() {
                                       className="h-8 w-20 text-sm"
                                     />
                                   ) : (
-                                    <Badge className={`${score >= 90 ? 'bg-green-100 text-green-700' : score >= 80 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'} border-0`}>
+                                    <Badge className={`${score >= 90 ? 'bg-brand-green-light text-brand-green' : score >= 80 ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'} border-0`}>
                                       {score}
                                     </Badge>
                                   )}

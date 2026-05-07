@@ -521,7 +521,7 @@ const activityTypes = [
   { key: "evaluation", label: "Evaluation", color: "bg-purple-100 text-purple-700" },
   { key: "document", label: "Document", color: "bg-amber-100 text-amber-700" },
   { key: "team", label: "Team", color: "bg-cyan-100 text-cyan-700" },
-  { key: "tender", label: "Tender", color: "bg-green-100 text-green-700" },
+  { key: "tender", label: "Tender", color: "bg-brand-green-light text-brand-green" },
   { key: "comment", label: "Comment", color: "bg-gray-100 text-gray-700" },
 ]
 
@@ -2834,7 +2834,7 @@ export default function TenderDetailPage() {
                                   <a
                                     key={idx}
                                     href={att.url}
-                                    className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${message.senderType === "buyer" ? "bg-green-600 hover:bg-green-700 text-white" : "bg-white border border-[#E5E7EB] hover:bg-[#F9FAFB] text-[#6B7280]"}`}
+                                    className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${message.senderType === "buyer" ? "bg-brand-green hover:bg-brand-green-dark text-white" : "bg-white border border-[#E5E7EB] hover:bg-[#F9FAFB] text-[#6B7280]"}`}
                                   >
                                     <Paperclip className="size-3" />
                                     {att.name}

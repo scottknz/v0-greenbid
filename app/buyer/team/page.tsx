@@ -177,7 +177,7 @@ export default function TeamPage() {
               >
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-green to-green-600 flex items-center justify-center text-white text-xs font-semibold">
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-green to-brand-green-dark flex items-center justify-center text-white text-xs font-semibold">
                       {member.name.charAt(0)}
                     </div>
                     <div>

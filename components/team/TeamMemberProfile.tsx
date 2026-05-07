@@ -46,7 +46,7 @@ export function TeamMemberProfile({ isOpen, member, onClose, onEdit }: TeamMembe
           {/* Profile Header */}
           <div className="flex items-start justify-between">
             <div className="flex gap-4">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-brand-green to-green-600 flex items-center justify-center text-white text-2xl font-semibold">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-brand-green to-brand-green-dark flex items-center justify-center text-white text-2xl font-semibold">
                 {member.name.charAt(0)}
               </div>
               <div>
@@ -71,7 +71,7 @@ export function TeamMemberProfile({ isOpen, member, onClose, onEdit }: TeamMembe
               <Button
                 onClick={() => onEdit(member)}
                 variant="outline"
-                className="text-brand-green hover:bg-green-50"
+                className="text-brand-green hover:bg-brand-green-light"
               >
                 Edit Profile
               </Button>
