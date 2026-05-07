@@ -27,7 +27,10 @@ export default function AuthPage() {
             />
           </div>
           <p className="text-lg font-medium text-text-secondary leading-relaxed">
-            Business making the world better one contract at a time.
+            Business making the world better.
+            <br />
+            <br />
+            One contract at a time.
           </p>
         </div>
       </div>
