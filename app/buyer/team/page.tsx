@@ -140,28 +140,28 @@ export default function TeamPage() {
 
       {/* Team Members Table */}
       <div className="border border-border rounded-lg overflow-hidden bg-white">
-        <table className="w-full">
+        <table className="w-full table-fixed">
           <thead className="bg-background border-b border-border">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="w-[220px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="w-[200px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Contact
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="w-[120px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Department
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="w-[100px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Role
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="w-[80px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 RFPs
               </th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="w-[120px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Last Activity
               </th>
-              <th className="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="w-[100px] px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Actions
               </th>
             </tr>
@@ -170,26 +170,30 @@ export default function TeamPage() {
             {filteredMembers.map((member) => (
               <tr
                 key={member.id}
+                onClick={() => {
+                  setSelectedMember(member)
+                  setShowProfile(true)
+                }}
                 className={cn(
-                  'hover:bg-background/50 transition-colors',
+                  'hover:bg-background/50 transition-colors cursor-pointer',
                   member.deletedAt && 'opacity-60'
                 )}
               >
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-brand-green to-brand-green-dark flex items-center justify-center text-white text-xs font-semibold">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 shrink-0 rounded-full bg-gradient-to-br from-brand-green to-brand-green-dark flex items-center justify-center text-white text-sm font-semibold">
                       {member.name.charAt(0)}
                     </div>
-                    <div>
-                      <p className="font-medium text-text-primary">{member.name}</p>
-                      {member.deletedAt && <p className="text-xs text-text-secondary">Deleted</p>}
+                    <div className="min-w-0">
+                      <p className="font-medium text-text-primary truncate">{member.name}</p>
+                      <p className="text-xs text-text-secondary truncate">{member.jobTitle}</p>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm text-text-secondary">
-                  <div>
-                    <p className="text-text-primary">{member.email}</p>
-                    {member.phone && <p className="text-xs text-text-secondary">{member.phone}</p>}
+                <td className="px-6 py-4 text-sm">
+                  <div className="min-w-0">
+                    <p className="text-text-primary truncate">{member.email}</p>
+                    {member.phone && <p className="text-xs text-text-secondary truncate">{member.phone}</p>}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-text-primary">
@@ -201,14 +205,14 @@ export default function TeamPage() {
                   </Badge>
                 </td>
                 <td className="px-6 py-4 text-sm text-text-primary">
-                  <Badge variant="outline">{member.assignedRFPs.length} RFPs</Badge>
+                  <Badge variant="outline">{member.assignedRFPs.length}</Badge>
                 </td>
                 <td className="px-6 py-4 text-sm text-text-secondary">
                   {member.lastActivity
                     ? new Date(member.lastActivity).toLocaleDateString()
                     : 'Never'}
                 </td>
-                <td className="px-6 py-4 text-right">
+                <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -216,13 +220,6 @@ export default function TeamPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => {
-                        setSelectedMember(member)
-                        setShowProfile(true)
-                      }}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Details
-                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => {
                         setSelectedMember(member)
                         setShowModal(true)
