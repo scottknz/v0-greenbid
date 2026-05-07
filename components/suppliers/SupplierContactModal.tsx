@@ -6,6 +6,7 @@ import { Supplier, TeamMember } from '@/types/supplier'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 interface SupplierContactModalProps {
   supplier: Supplier
@@ -28,6 +29,7 @@ export function SupplierContactModal({
   member,
   onClose,
 }: SupplierContactModalProps) {
+  const router = useRouter()
   // Filter projects based on member's relatedRFPs
   const memberProjects = mockProjects.filter(p => 
     member.relatedRFPs.includes(p.id) || 
@@ -279,10 +281,13 @@ export function SupplierContactModal({
           </Button>
           <Button 
             className="bg-[#16A34A] hover:bg-[#15803D]"
-            onClick={() => window.location.href = `mailto:${member.email}`}
+            onClick={() => {
+              onClose()
+              router.push(`/buyer/messages?compose=true&to=${encodeURIComponent(member.name)}&email=${encodeURIComponent(member.email)}`)
+            }}
           >
             <Mail className="h-4 w-4 mr-2" />
-            Send Email
+            Send Message
           </Button>
         </div>
       </div>

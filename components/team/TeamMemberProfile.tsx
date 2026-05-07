@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { X, Mail, Phone, Pencil, Activity, Briefcase, Award, Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 const ROLE_COLORS = {
   Lead: 'bg-[#16A34A] text-white',
@@ -34,6 +35,8 @@ interface TeamMemberProfileProps {
 }
 
 export function TeamMemberProfile({ isOpen, member, onClose, onEdit }: TeamMemberProfileProps) {
+  const router = useRouter()
+
   if (!isOpen || !member) return null
 
   // Get projects for this member based on assigned RFPs
@@ -100,7 +103,16 @@ export function TeamMemberProfile({ isOpen, member, onClose, onEdit }: TeamMembe
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-[#F9FAFB] rounded-lg p-4">
                 <p className="text-xs text-text-secondary mb-1">Email</p>
-                <p className="text-sm font-medium text-text-primary">{member.email}</p>
+                <button
+                  onClick={() => {
+                    onClose()
+                    router.push(`/buyer/messages?compose=true&to=${encodeURIComponent(member.name)}&email=${encodeURIComponent(member.email)}`)
+                  }}
+                  className="text-sm font-medium text-[#16A34A] hover:underline text-left flex items-center gap-1"
+                >
+                  <Mail className="h-3.5 w-3.5 shrink-0" />
+                  {member.email}
+                </button>
               </div>
               <div className="bg-[#F9FAFB] rounded-lg p-4">
                 <p className="text-xs text-text-secondary mb-1">Phone</p>

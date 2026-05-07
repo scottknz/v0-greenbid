@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -283,6 +284,8 @@ const allThreadsData = [
 ]
 
 export default function MessagesPage() {
+  const searchParams = useSearchParams()
+
   // State
   const [threads, setThreads] = useState(allThreadsData)
   const [selectedFolder, setSelectedFolder] = useState("inbox")
@@ -298,6 +301,7 @@ export default function MessagesPage() {
   const [composeSubject, setComposeSubject] = useState("")
   const [composeMessage, setComposeMessage] = useState("")
   const [composeRecipients, setComposeRecipients] = useState<string[]>([])
+  const [composeTo, setComposeTo] = useState<{ name: string; email: string } | null>(null)
   const [composeVisibility, setComposeVisibility] = useState<"all" | "private">("private")
   const [composeAttachments, setComposeAttachments] = useState<{ name: string; size: string }[]>([])
   
@@ -306,6 +310,19 @@ export default function MessagesPage() {
   const [replyAttachments, setReplyAttachments] = useState<{ name: string; size: string }[]>([])
   const [showGlobalSuppliers, setShowGlobalSuppliers] = useState(false)
   const [isFolderSidebarCollapsed, setIsFolderSidebarCollapsed] = useState(false)
+
+  // Auto-open compose when navigated from a contact modal
+  useEffect(() => {
+    if (searchParams.get("compose") === "true") {
+      const toName = searchParams.get("to") || ""
+      const toEmail = searchParams.get("email") || ""
+      if (toName || toEmail) {
+        setComposeTo({ name: toName, email: toEmail })
+        setComposeSubject(toName ? `Message to ${toName}` : "")
+      }
+      setComposeOpen(true)
+    }
+  }, [searchParams])
 
   // Derived state
   const selectedThread = threads.find(t => t.id === selectedThreadId)
@@ -560,6 +577,23 @@ export default function MessagesPage() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Pre-filled To recipient from contact modal */}
+                {composeTo && (
+                  <div className="space-y-2">
+                    <Label>To</Label>
+                    <div className="flex items-center justify-between px-3 py-2 rounded-md border border-[#16A34A]/50 bg-[#F0FDF4] text-sm">
+                      <span className="font-medium text-[#16A34A]">{composeTo.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setComposeTo(null)}
+                        className="text-text-secondary hover:text-text-primary ml-2"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Subject */}
                 <div className="space-y-2">
