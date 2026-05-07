@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { Search, Filter, Plus, Upload } from 'lucide-react'
-import { Supplier, ALL_EXPERTISE } from '@/types/supplier'
+import { Supplier, TeamMember, ALL_EXPERTISE } from '@/types/supplier'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +15,8 @@ interface SuppliersListProps {
   onImportCSV: () => void
   onViewDetails: (supplier: Supplier) => void
   onEdit: (supplier: Supplier) => void
+  onDelete: (supplier: Supplier) => void
+  onContactClick?: (supplier: Supplier, member: TeamMember) => void
 }
 
 export function SuppliersList({
@@ -23,6 +25,8 @@ export function SuppliersList({
   onImportCSV,
   onViewDetails,
   onEdit,
+  onDelete,
+  onContactClick,
 }: SuppliersListProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedSuppliers, setExpandedSuppliers] = useState<Set<string>>(
@@ -244,6 +248,8 @@ export function SuppliersList({
                 onToggleExpand={() => toggleExpand(supplier.id)}
                 onViewDetails={onViewDetails}
                 onEdit={onEdit}
+                onDelete={onDelete}
+                onContactClick={onContactClick}
               />
             ))}
           </div>

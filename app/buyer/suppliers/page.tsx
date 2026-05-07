@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react'
 import { mockSuppliers } from '@/lib/mock-suppliers'
-import { Supplier } from '@/types/supplier'
+import { Supplier, TeamMember } from '@/types/supplier'
 import { SuppliersList } from '@/components/suppliers/SuppliersList'
 import { SupplierDetailPanel } from '@/components/suppliers/SupplierDetailPanel'
 import { AddSupplierForm } from '@/components/suppliers/AddSupplierForm'
 import { CSVImportDialog } from '@/components/suppliers/CSVImportDialog'
+import { SupplierContactModal } from '@/components/suppliers/SupplierContactModal'
+import { Button } from '@/components/ui/button'
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers)
@@ -14,6 +16,8 @@ export default function SuppliersPage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
+  const [deletingSupplier, setDeletingSupplier] = useState<Supplier | null>(null)
+  const [contactModalData, setContactModalData] = useState<{ supplier: Supplier; member: TeamMember } | null>(null)
 
   const handleAddSupplier = (newSupplier: Supplier) => {
     setSuppliers([...suppliers, newSupplier])
@@ -33,6 +37,20 @@ export default function SuppliersPage() {
     setShowImportDialog(false)
   }
 
+  const handleDeleteSupplier = (supplier: Supplier) => {
+    setDeletingSupplier(supplier)
+  }
+
+  const confirmDeleteSupplier = () => {
+    if (deletingSupplier) {
+      setSuppliers(suppliers.filter((s) => s.id !== deletingSupplier.id))
+      if (selectedSupplier?.id === deletingSupplier.id) {
+        setSelectedSupplier(null)
+      }
+      setDeletingSupplier(null)
+    }
+  }
+
   return (
     <div className="flex h-full bg-background">
       {/* Main list view */}
@@ -49,6 +67,8 @@ export default function SuppliersPage() {
             setEditingSupplier(supplier)
             setShowAddForm(true)
           }}
+          onDelete={handleDeleteSupplier}
+          onContactClick={(supplier, member) => setContactModalData({ supplier, member })}
         />
       </div>
 
@@ -95,6 +115,38 @@ export default function SuppliersPage() {
             />
           </div>
         </div>
+      )}
+
+      {/* Delete confirmation dialog */}
+      {deletingSupplier && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg border border-border shadow-modal max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-text-primary mb-2">Delete Supplier</h3>
+            <p className="text-sm text-text-secondary mb-6">
+              Are you sure you want to delete <strong>{deletingSupplier.name}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setDeletingSupplier(null)}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={confirmDeleteSupplier}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contact detail modal */}
+      {contactModalData && (
+        <SupplierContactModal
+          supplier={contactModalData.supplier}
+          member={contactModalData.member}
+          onClose={() => setContactModalData(null)}
+        />
       )}
     </div>
   )

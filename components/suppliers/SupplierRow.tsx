@@ -1,11 +1,17 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ChevronDown, MoreHorizontal, Mail, Phone, MapPin } from 'lucide-react'
+import { ChevronDown, MoreHorizontal, Mail, Phone, MapPin, Edit, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Supplier, TeamMember } from '@/types/supplier'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface SupplierRowProps {
   supplier: Supplier
@@ -13,6 +19,8 @@ interface SupplierRowProps {
   onToggleExpand: () => void
   onViewDetails: (supplier: Supplier) => void
   onEdit: (supplier: Supplier) => void
+  onDelete: (supplier: Supplier) => void
+  onContactClick?: (supplier: Supplier, member: TeamMember) => void
 }
 
 export function SupplierRow({
@@ -21,6 +29,8 @@ export function SupplierRow({
   onToggleExpand,
   onViewDetails,
   onEdit,
+  onDelete,
+  onContactClick,
 }: SupplierRowProps) {
   const tierColors = {
     preferred: 'bg-brand-green-light text-brand-green',
@@ -127,14 +137,30 @@ export function SupplierRow({
             >
               View
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(supplier)}
-              className="h-8 w-8"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit(supplier)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onDelete(supplier)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -146,7 +172,11 @@ export function SupplierRow({
             </p>
             <div className="space-y-2">
               {supplier.teamMembers.map((member) => (
-                <TeamMemberRow key={member.id} member={member} />
+                <TeamMemberRow 
+                  key={member.id} 
+                  member={member} 
+                  onClick={() => onContactClick?.(supplier, member)}
+                />
               ))}
             </div>
           </div>
@@ -156,11 +186,14 @@ export function SupplierRow({
   )
 }
 
-function TeamMemberRow({ member }: { member: TeamMember }) {
+function TeamMemberRow({ member, onClick }: { member: TeamMember; onClick?: () => void }) {
   return (
-    <div className="flex items-center gap-4 py-2 px-4 rounded bg-background border border-border/50">
+    <div 
+      className="flex items-center gap-4 py-2 px-4 rounded bg-background border border-border/50 cursor-pointer hover:bg-surface-hover hover:border-[#16A34A]/30 transition-colors"
+      onClick={onClick}
+    >
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-text-primary truncate">
+        <p className="text-sm font-medium text-text-primary truncate hover:text-[#16A34A]">
           {member.name}
         </p>
         <p className="text-xs text-text-secondary truncate">
