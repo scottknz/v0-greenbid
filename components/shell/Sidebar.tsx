@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -97,11 +98,13 @@ export function Sidebar({ variant }: SidebarProps) {
     >
       <div className="flex h-14 items-center justify-between border-b border-border px-4">
         {!isSidebarCollapsed && (
-          <Link href="/" className="flex items-center gap-2 overflow-hidden hover:opacity-80 transition-opacity">
-            <div className="h-6 w-6 rounded bg-text-primary shrink-0" aria-hidden="true" />
-            <span className="truncate font-semibold tracking-tight text-text-primary">
-              greenbid
-            </span>
+          <Link href="/" className="flex items-center overflow-hidden hover:opacity-80 transition-opacity">
+            <Image src="/greenbid-logo-green.png" alt="Greenbid" width={100} height={28} className="h-7 w-auto" />
+          </Link>
+        )}
+        {isSidebarCollapsed && (
+          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+            <div className="h-6 w-6 rounded bg-brand-green shrink-0" aria-hidden="true" />
           </Link>
         )}
         <button

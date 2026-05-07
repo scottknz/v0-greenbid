@@ -16,9 +16,10 @@
   --text-muted:        #9CA3AF;
   --text-disabled:     #D1D5DB;
 
-  --brand-green:       #16A34A;
-  --brand-green-light: #F0FDF4;
-  --brand-green-mid:   #22C55E;
+  --brand-green:       #52CC52;
+  --brand-green-light: #F0FAF0;
+  --brand-green-mid:   #6ED86E;
+  --brand-green-dark:  #3DAA3D;
 
   --warning:           #F59E0B;
   --warning-light:     #FFFBEB;
@@ -94,7 +95,7 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans), sans-serif;
+  --font-sans: var(--font-poppins), 'Poppins', sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
 
   --color-background: var(--background);
@@ -112,6 +113,7 @@
   --color-brand-green: var(--brand-green);
   --color-brand-green-light: var(--brand-green-light);
   --color-brand-green-mid: var(--brand-green-mid);
+  --color-brand-green-dark: var(--brand-green-dark);
 
   --color-warning: var(--warning);
   --color-warning-light: var(--warning-light);
@@ -158,7 +160,7 @@
   body {
     background: var(--background);
     color: var(--text-primary);
-    font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+    font-family: var(--font-poppins), 'Poppins', Arial, Helvetica, sans-serif;
   }
 }
 

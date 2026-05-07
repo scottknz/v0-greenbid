@@ -12,39 +12,28 @@ export default function AuthPage() {
   const [isLoginMode, setIsLoginMode] = useState(true)
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Left side - Sustainability visual */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-brand-green via-brand-green-mid to-emerald-700 items-center justify-center p-8 relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-20 right-20 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
-        
-        <div className="text-center text-white max-w-md relative z-10">
-          <div className="flex justify-center mb-6">
-            <Image src="/greenbid-logo.png" alt="Greenbid" width={240} height={60} className="h-16 w-auto" />
+    <div className="flex min-h-screen">
+      {/* Left side - White panel with logo and slogan */}
+      <div className="hidden lg:flex lg:w-1/2 bg-white items-center justify-center p-12 border-r border-border">
+        <div className="text-center max-w-md">
+          <div className="flex justify-center mb-8">
+            <Image
+              src="/greenbid-logo-green.png"
+              alt="Greenbid"
+              width={280}
+              height={80}
+              className="h-20 w-auto"
+              priority
+            />
           </div>
-          <p className="text-lg text-white/80 leading-relaxed">
-            Streamline sustainable procurement. Connect buyers and suppliers in a transparent, compliance-driven RFP ecosystem.
+          <p className="text-lg font-medium text-text-secondary leading-relaxed">
+            Business making the world better one contract at a time.
           </p>
-          <div className="mt-8 space-y-3 text-sm text-white/70">
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
-              Manage RFPs with ease
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
-              Track compliance requirements
-            </p>
-            <p className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
-              Secure proposal submissions
-            </p>
-          </div>
         </div>
       </div>
 
-      {/* Right side - Auth card */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
+      {/* Right side - Auth form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-background p-6 sm:p-8">
         <Card className="w-full max-w-sm shadow-modal border-border">
           {/* Auth tabs */}
           <div className="flex border-b border-border">
