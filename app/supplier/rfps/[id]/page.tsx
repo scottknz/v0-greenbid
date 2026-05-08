@@ -123,9 +123,9 @@ export default function RFPDetailPage() {
   const [selectedMemberId, setSelectedMemberId] = useState('')
   const [selectedRole, setSelectedRole] = useState<RFPTeamRole>('Reviewer')
 
-  // Approval workflow states
+  // Approval workflow states - use mockRFPDetail directly since rfp is defined later
   const [currentApproval, setCurrentApproval] = useState<ApprovalRequest | null>(
-    mockSupplierApprovalRequests.find(a => a.itemId === rfp.id) || null
+    mockSupplierApprovalRequests.find(a => a.itemId === mockRFPDetail.id) || null
   )
 
   const internalTeamAsApprovers = team.filter(m => ['Lead', 'Approver'].includes(m.role))
@@ -135,32 +135,6 @@ export default function RFPDetailPage() {
     email: m.email,
     role: m.role,
   }))
-
-  const handleSendForApproval = (data: { approverIds: string[]; message: string; approvalMode: 'any' | 'all' }) => {
-    const newApproval: ApprovalRequest = {
-      id: `apr-${Date.now()}`,
-      type: 'rfp_submission',
-      itemId: rfp.id,
-      itemTitle: rfp.title,
-      requestedBy: 'user-john',
-      requestedByName: 'John Smith',
-      requestedAt: new Date().toISOString(),
-      message: data.message,
-      approvalMode: data.approvalMode,
-      approvers: availableTeamApprovers
-        .filter(a => data.approverIds.includes(a.id))
-        .map(a => ({
-          userId: a.id,
-          name: a.name,
-          email: a.email,
-          role: a.role,
-          status: 'pending' as const,
-        })),
-      status: 'pending',
-    }
-    setCurrentApproval(newApproval)
-    console.log('[v0] RFP approval request sent:', newApproval)
-  }
 
   const handleTeamAddMember = () => {
     if (!selectedMemberId) return
@@ -188,6 +162,31 @@ export default function RFPDetailPage() {
   const availableTeamMembers = internalTeamMembers.filter((m) => !team.some((t) => t.id === m.id))
 
   const rfp = mockRFPDetail
+
+  const handleSendForApproval = (data: { approverIds: string[]; message: string; approvalMode: 'any' | 'all' }) => {
+    const newApproval: ApprovalRequest = {
+      id: `apr-${Date.now()}`,
+      type: 'rfp_submission',
+      itemId: rfp.id,
+      itemTitle: rfp.title,
+      requestedBy: 'user-john',
+      requestedByName: 'John Smith',
+      requestedAt: new Date().toISOString(),
+      message: data.message,
+      approvalMode: data.approvalMode,
+      approvers: availableTeamApprovers
+        .filter(a => data.approverIds.includes(a.id))
+        .map(a => ({
+          userId: a.id,
+          name: a.name,
+          email: a.email,
+          role: a.role,
+          status: 'pending' as const,
+        })),
+      status: 'pending',
+    }
+    setCurrentApproval(newApproval)
+  }
   
   // Calculate days until deadline
   const daysDue = Math.ceil((new Date(rfp.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))

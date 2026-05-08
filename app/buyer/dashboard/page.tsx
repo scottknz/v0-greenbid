@@ -22,7 +22,11 @@ const tenderColumns = [
   {
     key: 'name',
     header: 'RFP Name',
-    cell: (row: DashboardTenderRow) => <span className="font-medium">{row.name}</span>,
+    cell: (row: DashboardTenderRow) => (
+      <Link href={`/buyer/tenders/${row.id}`} className="font-medium text-text-primary hover:text-brand-green hover:underline">
+        {row.name}
+      </Link>
+    ),
     className: 'w-[40%]',
   },
   {
