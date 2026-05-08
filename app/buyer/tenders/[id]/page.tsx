@@ -707,6 +707,13 @@ const tabs = [
 export default function TenderDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const [isEditingRFP, setIsEditingRFP] = useState(false)
+  const [editableRFPData, setEditableRFPData] = useState({
+    name: tenderData.name,
+    description: tenderData.description,
+    category: tenderData.category,
+    internalContact: tenderData.owner,
+  })
   const [activeTab, setActiveTab] = useState("overview")
   const [criteriaEditOpen, setCriteriaEditOpen] = useState(false)
   const [editableCriteria, setEditableCriteria] = useState(tenderData.evaluationCriteria)
@@ -749,6 +756,11 @@ export default function TenderDetailPage() {
     } else {
       setSelectedActivityRows(new Set(rows.map(a => a.id)))
     }
+  }
+
+  const handleSaveRFPEdit = () => {
+    setIsEditingRFP(false)
+    // In production, this would call an API to save the changes
   }
 
   const exportActivitiesToCSV = (activities: typeof activityData, filename: string) => {
@@ -1252,10 +1264,43 @@ export default function TenderDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="border-[#E5E7EB]">
-              <Pencil className="size-4 mr-2" />
-              Edit
-            </Button>
+            {isEditingRFP ? (
+              <>
+                <Button
+                  variant="outline"
+                  className="border-[#E5E7EB]"
+                  onClick={() => {
+                    setIsEditingRFP(false)
+                    setEditableRFPData({
+                      name: tenderData.name,
+                      description: tenderData.description,
+                      category: tenderData.category,
+                      internalContact: tenderData.owner,
+                    })
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-[#16A34A] hover:bg-[#15803D]"
+                  onClick={handleSaveRFPEdit}
+                >
+                  <Save className="size-4 mr-2" />
+                  Save Changes
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  className="border-[#E5E7EB]"
+                  onClick={() => setIsEditingRFP(true)}
+                >
+                  <Pencil className="size-4 mr-2" />
+                  Edit
+                </Button>
+              </>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="border-[#E5E7EB]">
@@ -1371,63 +1416,97 @@ export default function TenderDetailPage() {
         {activeTab === "overview" && (
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
+              {/* Title - Editable */}
+              {isEditingRFP && (
+                <Card className="border-[#E5E7EB] bg-white">
+                  <CardHeader>
+                    <CardTitle className="text-base">RFP Title</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Input
+                      value={editableRFPData.name}
+                      onChange={(e) =>
+                        setEditableRFPData((prev) => ({ ...prev, name: e.target.value }))
+                      }
+                      placeholder="Enter RFP title..."
+                      className="text-lg font-semibold"
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Description */}
               <Card className="border-[#E5E7EB] bg-white">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0">
                   <CardTitle className="text-lg">RFP Description</CardTitle>
-                  <div className="flex items-center gap-1">
-                    {!descriptionEdit.saved && (
-                      <>
+                  {!isEditingRFP && (
+                    <div className="flex items-center gap-1">
+                      {!descriptionEdit.saved && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs text-[#6B7280] hover:text-[#16A34A]"
+                            onClick={() => {
+                              // In production, call AI API
+                              setDescriptionEdit(prev => ({ 
+                                ...prev, 
+                                text: "This RFP seeks qualified suppliers for sustainable office supplies to support our organization's environmental commitments. We require eco-friendly products that meet strict sustainability criteria while maintaining quality and cost-effectiveness.",
+                                saved: false 
+                              }))
+                            }}
+                          >
+                            <Sparkles className="size-3 mr-1" />
+                            Complete with AI
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs text-[#16A34A]"
+                            onClick={() => setDescriptionEdit(prev => ({ ...prev, saved: true }))}
+                          >
+                            <Save className="size-3 mr-1" />
+                            Save
+                          </Button>
+                        </>
+                      )}
+                      {descriptionEdit.saved && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 px-2 text-xs text-[#6B7280] hover:text-[#16A34A]"
-                          onClick={() => {
-                            // In production, call AI API
-                            setDescriptionEdit(prev => ({ 
-                              ...prev, 
-                              text: "This RFP seeks qualified suppliers for sustainable office supplies to support our organization's environmental commitments. We require eco-friendly products that meet strict sustainability criteria while maintaining quality and cost-effectiveness.",
-                              saved: false 
-                            }))
-                          }}
+                          className="h-7 px-2 text-xs text-[#6B7280]"
+                          onClick={() => setDescriptionEdit(prev => ({ ...prev, saved: false }))}
                         >
-                          <Sparkles className="size-3 mr-1" />
-                          Complete with AI
+                          <Pencil className="size-3 mr-1" />
+                          Edit
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs text-[#16A34A]"
-                          onClick={() => setDescriptionEdit(prev => ({ ...prev, saved: true }))}
-                        >
-                          <Save className="size-3 mr-1" />
-                          Save
-                        </Button>
-                      </>
-                    )}
-                    {descriptionEdit.saved && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs text-[#6B7280]"
-                        onClick={() => setDescriptionEdit(prev => ({ ...prev, saved: false }))}
-                      >
-                        <Pencil className="size-3 mr-1" />
-                        Edit
-                      </Button>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
-                  {descriptionEdit.saved ? (
-                    <p className="text-[#111827] leading-relaxed">{descriptionEdit.text}</p>
-                  ) : (
+                  {isEditingRFP ? (
                     <Textarea
-                      value={descriptionEdit.text}
-                      onChange={(e) => setDescriptionEdit(prev => ({ ...prev, text: e.target.value }))}
+                      value={editableRFPData.description}
+                      onChange={(e) =>
+                        setEditableRFPData((prev) => ({ ...prev, description: e.target.value }))
+                      }
                       className="min-h-[100px] text-sm text-[#6B7280]"
                       placeholder="Enter RFP description..."
                     />
+                  ) : (
+                    <>
+                      {descriptionEdit.saved ? (
+                        <p className="text-[#111827] leading-relaxed">{descriptionEdit.text}</p>
+                      ) : (
+                        <Textarea
+                          value={descriptionEdit.text}
+                          onChange={(e) => setDescriptionEdit(prev => ({ ...prev, text: e.target.value }))}
+                          className="min-h-[100px] text-sm text-[#6B7280]"
+                          placeholder="Enter RFP description..."
+                        />
+                      )}
+                    </>
                   )}
                 </CardContent>
               </Card>
@@ -1518,6 +1597,42 @@ export default function TenderDetailPage() {
 
             {/* Sidebar */}
             <div className="space-y-4">
+              {/* Internal Contact */}
+              <Card className="border-[#E5E7EB] bg-white">
+                <CardHeader>
+                  <CardTitle className="text-base">Internal Contact</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {isEditingRFP ? (
+                    <div className="space-y-2">
+                      <Label className="text-xs text-[#6B7280]">Primary Contact</Label>
+                      <select
+                        value={editableRFPData.internalContact}
+                        onChange={(e) =>
+                          setEditableRFPData((prev) => ({
+                            ...prev,
+                            internalContact: e.target.value,
+                          }))
+                        }
+                        className="w-full px-3 py-2 rounded-md border border-[#E5E7EB] text-sm text-[#111827] bg-white"
+                      >
+                        {teamMembers.map((member) => (
+                          <option key={member.id} value={member.name}>
+                            {member.name} - {member.projectRole}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-xs text-[#6B7280] mb-2">Primary Contact</p>
+                      <p className="text-sm font-medium text-[#111827]">
+                        {editableRFPData.internalContact}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
               {/* Team */}
               <Card className="border-[#E5E7EB] bg-white">
                 <CardContent className="p-4 space-y-3">
