@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TeamMember } from '@/types/team'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,6 +32,24 @@ export function TeamMemberModal({ isOpen, member, onClose, onSave }: TeamMemberM
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Sync form data whenever the modal opens or the member prop changes
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        name: member?.name || '',
+        email: member?.email || '',
+        phone: member?.phone || '',
+        jobTitle: member?.jobTitle || '',
+        department: member?.department || 'Procurement',
+        roleType: member?.roleType || 'Editor',
+        status: member?.status || 'active',
+        internalNotes: member?.internalNotes || '',
+        assignedRFPs: member?.assignedRFPs || [],
+      })
+      setErrors({})
+    }
+  }, [isOpen, member])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
