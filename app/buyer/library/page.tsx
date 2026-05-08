@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { jsPDF } from 'jspdf'
 import { LibraryDocument, LibraryList } from '@/components/library/LibraryList'
 import { DocumentUploadForm } from '@/components/library/DocumentUploadForm'
 import { DocumentDetailsModal } from '@/components/library/DocumentDetailsModal'
@@ -39,7 +40,14 @@ export default function LibraryPage() {
   const handleDownload = (id: string) => {
     const doc = documents.find((d) => d.id === id)
     if (doc) {
-      // In a real app, this would trigger the actual download
+      const pdf = new jsPDF()
+      pdf.setFontSize(14)
+      pdf.text(doc.name, 20, 20)
+      pdf.setFontSize(10)
+      pdf.text(`Document: ${doc.name}`, 20, 35)
+      pdf.text(`Category: ${doc.category}`, 20, 45)
+      pdf.text(`Version: ${doc.version || 'N/A'}`, 20, 55)
+      pdf.save(`${doc.name}.pdf`)
     }
   }
 
