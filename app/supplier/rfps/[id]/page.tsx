@@ -63,6 +63,8 @@ import {
   Star,
   Tag,
   TrendingUp,
+  MessageSquare,
+  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { internalTeamMembers } from '@/lib/mock-rfp'
@@ -78,6 +80,7 @@ import {
 import type { RFPTeamMember, RFPTeamRole } from '@/types/rfp'
 import { ApprovalRequestModal } from '@/components/approval/ApprovalRequestModal'
 import { ApprovalStatus } from '@/components/approval/ApprovalStatus'
+import { SupplierCopilot } from '@/components/proposal/SupplierCopilot'
 import { mockSupplierApprovalRequests } from '@/lib/mock-approvals'
 import type { ApprovalRequest } from '@/types/approval'
 
@@ -126,6 +129,7 @@ export default function RFPDetailPage() {
   const [selectedRole, setSelectedRole] = useState<RFPTeamRole>('Reviewer')
 
   const [approvalCardOpen, setApprovalCardOpen] = useState(true)
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false)
 
   // Approval workflow states - use mockRFPDetail directly since rfp is defined later
   const [currentApproval, setCurrentApproval] = useState<ApprovalRequest | null>(
@@ -326,8 +330,15 @@ export default function RFPDetailPage() {
     return false
   }
 
+  const handleCopilotMessage = (message: string) => {
+    // Handle copilot messages - in production, this would interact with AI
+    console.log('[v0] Copilot message:', message)
+  }
+
   return (
-    <div className="space-y-6 p-6">
+    <div className={cn('flex h-screen bg-background', isCopilotOpen && 'overflow-hidden')}>
+      <div className={cn('flex-1 flex flex-col overflow-hidden', isCopilotOpen ? 'mr-80' : '')}>
+        <div className="space-y-6 p-6 overflow-y-auto flex-1"
       {/* Header with back button */}
       <div className="flex items-center gap-4">
         <Button
@@ -1281,6 +1292,44 @@ export default function RFPDetailPage() {
         availableApprovers={availableTeamApprovers}
         onSubmit={handleSendForApproval}
       />
+        </div>
+      </div>
+
+      {/* Copilot Toggle Button */}
+      {!isCopilotOpen && (
+        <button
+          onClick={() => setIsCopilotOpen(true)}
+          className="fixed right-4 bottom-4 h-12 w-12 rounded-full bg-brand-green hover:bg-brand-green/90 text-white shadow-lg flex items-center justify-center transition-colors z-40"
+          aria-label="Open AI copilot"
+        >
+          <MessageSquare className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* Copilot Panel */}
+      {isCopilotOpen && (
+        <div className="fixed right-0 top-0 bottom-0 w-80 bg-white border-l border-border shadow-lg flex flex-col z-50">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-brand-green" />
+              <h3 className="text-sm font-semibold text-text-primary">Proposal Copilot</h3>
+            </div>
+            <button
+              onClick={() => setIsCopilotOpen(false)}
+              className="rounded-md text-text-muted hover:bg-surface-hover hover:text-text-primary p-1.5 transition-colors"
+              aria-label="Close copilot"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <SupplierCopilot
+              rfpTitle={rfp.title}
+              onSendMessage={handleCopilotMessage}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
