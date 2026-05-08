@@ -88,7 +88,6 @@ const SUBMISSION_STATUS_CONFIG = {
 
 export default function RFPDetailPage() {
   const router = useRouter()
-  const router = useRouter()
   const params = useParams()
   const [responseText, setResponseText] = useState('')
 
