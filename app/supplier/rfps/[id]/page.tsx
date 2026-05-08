@@ -269,10 +269,10 @@ export default function RFPDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Buyer Contact Card */}
+          {/* Internal Contact Card */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Buyer Contact</CardTitle>
+              <CardTitle className="text-base">Internal Contact</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
