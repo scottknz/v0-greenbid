@@ -67,11 +67,11 @@ import { internalTeamMembers } from '@/lib/mock-rfp'
 import { 
   mockRFPDetail, 
   mockApprovers, 
-  SUPPLIER_SUPPLIER_PHASE_CONFIG,
-  SUPPLIER_SUPPLIER_PHASE_ORDER,
+  SUPPLIER_PHASE_CONFIG,
+  SUPPLIER_PHASE_ORDER,
   type SupplierRFPPhase,
-  type SupplierRFPSupplierRFPPhaseTransition,
-  type SupplierSupplierProposalNote 
+  type SupplierRFPPhaseTransition,
+  type SupplierProposalNote 
 } from '@/lib/mock-supplier-rfps'
 import type { RFPTeamMember, RFPTeamRole } from '@/types/rfp'
 
@@ -90,8 +90,8 @@ export default function RFPDetailPage() {
   
   // Phase and submission state
   const [currentPhase, setCurrentPhase] = useState<SupplierRFPPhase>(mockRFPDetail.currentPhase)
-  const [phaseHistory, setPhaseHistory] = useState<SupplierRFPSupplierRFPPhaseTransition[]>(mockRFPDetail.phaseHistory)
-  const [proposalNotes, setSupplierProposalNotes] = useState<SupplierSupplierProposalNote[]>(mockRFPDetail.proposalNotes)
+  const [phaseHistory, setPhaseHistory] = useState<SupplierRFPPhaseTransition[]>(mockRFPDetail.phaseHistory)
+  const [proposalNotes, setProposalNotes] = useState<SupplierProposalNote[]>(mockRFPDetail.proposalNotes)
   const [phaseBeforeDecline, setPhaseBeforeDecline] = useState<SupplierRFPPhase | null>(mockRFPDetail.phaseBeforeDecline)
   
   // Modal states
@@ -237,7 +237,7 @@ export default function RFPDetailPage() {
       user: 'Current User',
       text: newNoteText,
     }
-    setSupplierProposalNotes([...proposalNotes, newNote])
+    setProposalNotes([...proposalNotes, newNote])
     setNewNoteText('')
     setShowAddNoteModal(false)
   }
