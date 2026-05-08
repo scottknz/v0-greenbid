@@ -10,7 +10,7 @@ type SortDirection = "asc" | "desc"
 
 type TenderData = {
   name: string
-  status: "draft" | "active" | "evaluation" | "completed"
+  status: "draft" | "accepting_bids" | "evaluating" | "completed"
   submissions: number
   deadline: string
   created: string
@@ -21,7 +21,7 @@ type TenderData = {
 const tendersData: TenderData[] = [
   {
     name: "Comprehensive Scope 3 Value Chain Emissions Analysis",
-    status: "active",
+    status: "accepting_bids",
     submissions: 8,
     deadline: "May 15, 2026",
     created: "Apr 1, 2026",
@@ -30,7 +30,7 @@ const tendersData: TenderData[] = [
   },
   {
     name: "SBTi Target Setting & Validation Support",
-    status: "evaluation",
+    status: "evaluating",
     submissions: 12,
     deadline: "Apr 28, 2026",
     created: "Mar 15, 2026",
@@ -87,7 +87,7 @@ export default function BuyerDashboard() {
 
       switch (sortField) {
         case "status":
-          const statusOrder = { draft: 0, active: 1, evaluation: 2, completed: 3 }
+          const statusOrder = { draft: 0, accepting_bids: 1, evaluating: 2, completed: 3 }
           comparison = statusOrder[a.status] - statusOrder[b.status]
           break
         case "submissions":
@@ -418,9 +418,9 @@ function TenderRow({
   owner: string
 }) {
   const statusConfig = {
-    draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
-    active: { label: "Active", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
-    evaluation: { label: "Evaluation", className: "bg-amber-50 text-amber-700 border-amber-200" },
+      draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
+      accepting_bids: { label: "Accepting Bids", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
+      evaluating: { label: "Evaluating", className: "bg-amber-50 text-amber-700 border-amber-200" },
     completed: { label: "Completed", className: "bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]" },
   }
 

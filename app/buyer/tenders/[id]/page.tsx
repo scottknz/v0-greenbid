@@ -75,7 +75,7 @@ const tenderData = {
   id: "1",
   name: "Comprehensive Scope 3 Value Chain Emissions Analysis",
   referenceId: "TND-2026-001",
-  status: "active" as const,
+  status: "accepting_bids" as const,
   category: "Scope 3 / Value Chain",
   description: "Procurement of sustainable and eco-friendly office supplies including recycled paper products, biodegradable pens and markers, energy-efficient desk accessories, and environmentally certified furniture items. This RFP aims to reduce our carbon footprint while maintaining high-quality standards for workplace materials.",
   requirements: [
@@ -518,7 +518,7 @@ const documentsData = [
 
 const activityTypes = [
   { key: "submission", label: "Submission", color: "bg-blue-100 text-blue-700" },
-  { key: "evaluation", label: "Evaluation", color: "bg-purple-100 text-purple-700" },
+    { key: "evaluation", label: "Evaluating", color: "bg-purple-100 text-purple-700" },
   { key: "document", label: "Document", color: "bg-amber-100 text-amber-700" },
   { key: "team", label: "Team", color: "bg-cyan-100 text-cyan-700" },
   { key: "tender", label: "Tender", color: "bg-brand-green-light text-brand-green" },
@@ -1207,7 +1207,7 @@ export default function TenderDetailPage() {
     draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
     open: { label: "Open", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
     active: { label: "Active", className: "bg-blue-50 text-blue-700 border-blue-200" },
-    evaluation: { label: "Evaluation", className: "bg-amber-50 text-amber-700 border-amber-200" },
+      evaluation: { label: "Evaluating", className: "bg-amber-50 text-amber-700 border-amber-200" },
     closed: { label: "Closed", className: "bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]" },
   }
 

@@ -62,10 +62,10 @@ import {
 
 // Mock RFPs data
 const rfpsData = [
-  { id: "rfp1", title: "Comprehensive Scope 3 Value Chain Emissions Analysis", status: "open" },
-  { id: "rfp2", title: "SBTi Target Setting & Validation Support", status: "open" },
+  { id: "rfp1", title: "Comprehensive Scope 3 Value Chain Emissions Analysis", status: "published" },
+  { id: "rfp2", title: "SBTi Target Setting & Validation Support", status: "published" },
   { id: "rfp3", title: "Embodied Carbon Life Cycle Assessment (LCA)", status: "closed" },
-  { id: "rfp4", title: "ISSB (IFRS S1 & S2) Integration & Reporting", status: "evaluation" },
+  { id: "rfp4", title: "ISSB (IFRS S1 & S2) Integration & Reporting", status: "evaluating" },
 ]
 
 // Mock buyers/team members

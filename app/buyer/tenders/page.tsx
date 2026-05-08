@@ -27,7 +27,7 @@ import {
   Download,
 } from "lucide-react"
 
-type TenderStatus = "draft" | "open" | "active" | "evaluation" | "closed"
+type TenderStatus = "draft" | "published" | "accepting_bids" | "evaluating" | "closed"
 type SortField = "name" | "status" | "category" | "submissions" | "deadline" | "budget" | null
 type SortDirection = "asc" | "desc"
 
@@ -48,7 +48,7 @@ const allTendersData: TenderData[] = [
     id: "1",
     name: "Comprehensive Scope 3 Value Chain Emissions Analysis",
     referenceId: "TND-2026-001",
-    status: "active",
+    status: "accepting_bids",
     category: "Scope 3 / Value Chain",
     submissions: 8,
     deadline: "May 15, 2026",
@@ -59,7 +59,7 @@ const allTendersData: TenderData[] = [
     id: "2",
     name: "SBTi Target Setting & Validation Support",
     referenceId: "TND-2026-002",
-    status: "evaluation",
+    status: "evaluating",
     category: "Target Setting (SBTi)",
     submissions: 12,
     deadline: "Apr 28, 2026",
@@ -92,7 +92,7 @@ const allTendersData: TenderData[] = [
     id: "5",
     name: "Renewable Energy Procurement & VPPA Structuring",
     referenceId: "TND-2026-005",
-    status: "active",
+    status: "accepting_bids",
     category: "Renewable Energy (PPA/VPPA)",
     submissions: 6,
     deadline: "May 22, 2026",
@@ -103,7 +103,7 @@ const allTendersData: TenderData[] = [
     id: "6",
     name: "Sustainable Catering Services",
     referenceId: "TND-2026-006",
-    status: "open",
+    status: "published",
     category: "Services",
     submissions: 3,
     deadline: "May 15, 2026",
@@ -114,7 +114,7 @@ const allTendersData: TenderData[] = [
     id: "7",
     name: "Electric Vehicle Fleet",
     referenceId: "TND-2026-007",
-    status: "open",
+    status: "published",
     category: "Transportation",
     submissions: 5,
     deadline: "May 20, 2026",
@@ -125,7 +125,7 @@ const allTendersData: TenderData[] = [
     id: "8",
     name: "Solar Panel Installation",
     referenceId: "TND-2026-008",
-    status: "evaluation",
+    status: "evaluating",
     category: "Energy",
     submissions: 9,
     deadline: "Apr 5, 2026",
@@ -159,9 +159,9 @@ const allTendersData: TenderData[] = [
 const statusTabs = [
   { key: "all", label: "All", count: allTendersData.length },
   { key: "draft", label: "Draft", count: allTendersData.filter(t => t.status === "draft").length },
-  { key: "open", label: "Open", count: allTendersData.filter(t => t.status === "open").length },
-  { key: "active", label: "Active", count: allTendersData.filter(t => t.status === "active").length },
-  { key: "evaluation", label: "Evaluation", count: allTendersData.filter(t => t.status === "evaluation").length },
+  { key: "published", label: "Published", count: allTendersData.filter(t => t.status === "published").length },
+  { key: "accepting_bids", label: "Accepting Bids", count: allTendersData.filter(t => t.status === "accepting_bids").length },
+  { key: "evaluating", label: "Evaluating", count: allTendersData.filter(t => t.status === "evaluating").length },
   { key: "closed", label: "Closed", count: allTendersData.filter(t => t.status === "closed").length },
 ]
 
@@ -225,7 +225,7 @@ export default function TendersPage() {
             comparison = a.name.localeCompare(b.name)
             break
           case "status":
-            const statusOrder = { draft: 0, open: 1, active: 2, evaluation: 3, closed: 4 }
+            const statusOrder = { draft: 0, published: 1, accepting_bids: 2, evaluating: 3, closed: 4 }
             comparison = statusOrder[a.status] - statusOrder[b.status]
             break
           case "category":
@@ -489,9 +489,9 @@ function TenderRow({
 
   const statusConfig: Record<TenderStatus, { label: string; className: string }> = {
     draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
-    open: { label: "Open", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
-    active: { label: "Active", className: "bg-blue-50 text-blue-700 border-blue-200" },
-    evaluation: { label: "Evaluation", className: "bg-amber-50 text-amber-700 border-amber-200" },
+    published: { label: "Published", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
+    accepting_bids: { label: "Accepting Bids", className: "bg-blue-50 text-blue-700 border-blue-200" },
+    evaluating: { label: "Evaluating", className: "bg-amber-50 text-amber-700 border-amber-200" },
     closed: { label: "Closed", className: "bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]" },
   }
 
