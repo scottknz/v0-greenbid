@@ -124,7 +124,6 @@ export default function RFPDetailPage() {
   const [selectedRole, setSelectedRole] = useState<RFPTeamRole>('Reviewer')
 
   // Approval workflow states
-  const [showApprovalModal, setShowApprovalModal] = useState(false)
   const [currentApproval, setCurrentApproval] = useState<ApprovalRequest | null>(
     mockSupplierApprovalRequests.find(a => a.itemId === rfp.id) || null
   )
