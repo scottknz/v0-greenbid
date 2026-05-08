@@ -46,10 +46,19 @@ export interface BuyerCredentials {
   scienceBasedTarget?: boolean
 }
 
+export interface RFPDocument {
+  id: string
+  name: string
+  type: 'pdf' | 'docx' | 'xlsx' | 'zip'
+  size: string
+  url: string
+}
+
 export interface MarketplaceRFP {
   id: string
   title: string
   summary: string
+  fullDescription?: string     // Extended description for detail view
   buyerCompany: string
   buyerInitials: string
   buyerColor: string           // tailwind bg class for avatar fallback
@@ -68,6 +77,10 @@ export interface MarketplaceRFP {
   buyerCredentials: BuyerCredentials
   status: 'open' | 'closing-soon' | 'closed'
   featured?: boolean
+  documents: RFPDocument[]
+  evaluationCriteria?: string[]
+  deliverables?: string[]
+  timeline?: string
 }
 
 export const mockMarketplaceRFPs: MarketplaceRFP[] = [
@@ -108,6 +121,27 @@ export const mockMarketplaceRFPs: MarketplaceRFP[] = [
     },
     status: 'open',
     featured: true,
+    fullDescription: 'Unilever PLC is undertaking a comprehensive review of its Scope 3 value chain emissions across all 15 categories of the GHG Protocol Corporate Value Chain Standard. This engagement will cover our operations in 14 countries, encompassing raw material sourcing, manufacturing partners, logistics, product use, and end-of-life treatment. The successful bidder will work closely with our sustainability team and procurement function to gather primary data from tier 1 suppliers and model emissions for tier 2 and beyond. Final deliverables include a verified emissions inventory, hotspot analysis, and a science-based reduction roadmap.',
+    documents: [
+      { id: 'doc-001', name: 'RFP_Scope3_Analysis_Full.pdf', type: 'pdf', size: '2.4 MB', url: '#' },
+      { id: 'doc-002', name: 'Supplier_Data_Template.xlsx', type: 'xlsx', size: '156 KB', url: '#' },
+      { id: 'doc-003', name: 'Evaluation_Criteria.pdf', type: 'pdf', size: '340 KB', url: '#' },
+      { id: 'doc-004', name: 'Terms_and_Conditions.pdf', type: 'pdf', size: '520 KB', url: '#' },
+    ],
+    evaluationCriteria: [
+      'Technical capability and methodology (40%)',
+      'Relevant experience in FMCG sector (25%)',
+      'Price and value for money (20%)',
+      'Project timeline and resource plan (15%)',
+    ],
+    deliverables: [
+      'Complete Scope 3 emissions inventory (all 15 categories)',
+      'Hotspot analysis report with visualisations',
+      'Science-based reduction roadmap (2030 and 2050)',
+      'Executive summary for board presentation',
+      'Data platform integration specifications',
+    ],
+    timeline: '6 months from contract signature',
   },
   {
     id: 'mkt-002',
@@ -146,6 +180,25 @@ export const mockMarketplaceRFPs: MarketplaceRFP[] = [
     },
     status: 'closing-soon',
     featured: true,
+    fullDescription: 'Patagonia Inc. is committed to setting ambitious, science-based emissions reduction targets aligned with the Paris Agreement 1.5°C pathway. We require an experienced consultancy to guide our SBTi near-term target development process, including baseline emissions recalculation, scenario modelling for Scope 1, 2, and 3 pathways, stakeholder engagement workshops, and preparation of the formal SBTi submission package.',
+    documents: [
+      { id: 'doc-005', name: 'RFP_SBTi_Target_Setting.pdf', type: 'pdf', size: '1.8 MB', url: '#' },
+      { id: 'doc-006', name: 'Current_Emissions_Baseline.xlsx', type: 'xlsx', size: '245 KB', url: '#' },
+      { id: 'doc-007', name: 'Stakeholder_List.pdf', type: 'pdf', size: '120 KB', url: '#' },
+    ],
+    evaluationCriteria: [
+      'SBTi methodology expertise (35%)',
+      'Track record of successful submissions (30%)',
+      'Stakeholder engagement approach (20%)',
+      'Cost and timeline (15%)',
+    ],
+    deliverables: [
+      'Baseline emissions recalculation report',
+      'Near-term target options analysis',
+      'Stakeholder engagement summary',
+      'SBTi submission package',
+    ],
+    timeline: '4 months from contract signature',
   },
   {
     id: 'mkt-003',
@@ -182,6 +235,16 @@ export const mockMarketplaceRFPs: MarketplaceRFP[] = [
       scienceBasedTarget: false,
     },
     status: 'open',
+    documents: [
+      { id: 'doc-008', name: 'RFP_Solar_PPA_Advisory.pdf', type: 'pdf', size: '1.2 MB', url: '#' },
+      { id: 'doc-009', name: 'Site_Locations_Map.pdf', type: 'pdf', size: '890 KB', url: '#' },
+    ],
+    evaluationCriteria: [
+      'Australian energy market expertise (40%)',
+      'PPA negotiation track record (30%)',
+      'Cost (30%)',
+    ],
+    timeline: '3 months from contract signature',
   },
   {
     id: 'mkt-004',
@@ -220,6 +283,18 @@ export const mockMarketplaceRFPs: MarketplaceRFP[] = [
     },
     status: 'open',
     featured: true,
+    documents: [
+      { id: 'doc-010', name: 'RFP_Circular_Economy_Strategy.pdf', type: 'pdf', size: '2.1 MB', url: '#' },
+      { id: 'doc-011', name: 'Current_Packaging_Portfolio.xlsx', type: 'xlsx', size: '340 KB', url: '#' },
+      { id: 'doc-012', name: 'EU_PPWR_Summary.pdf', type: 'pdf', size: '180 KB', url: '#' },
+    ],
+    evaluationCriteria: [
+      'Circular design methodology (35%)',
+      'FMCG packaging experience (25%)',
+      'EU regulation knowledge (20%)',
+      'Cost and timeline (20%)',
+    ],
+    timeline: '5 months from contract signature',
   },
   {
     id: 'mkt-005',
@@ -257,6 +332,17 @@ export const mockMarketplaceRFPs: MarketplaceRFP[] = [
       scienceBasedTarget: true,
     },
     status: 'closing-soon',
+    documents: [
+      { id: 'doc-013', name: 'RFP_Double_Materiality_CSRD.pdf', type: 'pdf', size: '1.5 MB', url: '#' },
+      { id: 'doc-014', name: 'Stakeholder_Map.pdf', type: 'pdf', size: '220 KB', url: '#' },
+    ],
+    evaluationCriteria: [
+      'CSRD/ESRS methodology expertise (40%)',
+      'LATAM experience (25%)',
+      'Language capabilities (20%)',
+      'Cost (15%)',
+    ],
+    timeline: '4 months from contract signature',
   },
   {
     id: 'mkt-006',
@@ -294,6 +380,18 @@ export const mockMarketplaceRFPs: MarketplaceRFP[] = [
       scienceBasedTarget: true,
     },
     status: 'open',
+    documents: [
+      { id: 'doc-015', name: 'RFP_Supply_Chain_Risk.pdf', type: 'pdf', size: '2.8 MB', url: '#' },
+      { id: 'doc-016', name: 'Current_Supplier_List.xlsx', type: 'xlsx', size: '1.2 MB', url: '#' },
+      { id: 'doc-017', name: 'Risk_Framework_Template.docx', type: 'docx', size: '450 KB', url: '#' },
+    ],
+    evaluationCriteria: [
+      'Supply chain mapping capability (35%)',
+      'ESG risk methodology (30%)',
+      'Southeast Asia experience (20%)',
+      'Cost and timeline (15%)',
+    ],
+    timeline: '8 months from contract signature',
   },
   {
     id: 'mkt-007',
@@ -330,6 +428,17 @@ export const mockMarketplaceRFPs: MarketplaceRFP[] = [
       scienceBasedTarget: false,
     },
     status: 'open',
+    documents: [
+      { id: 'doc-018', name: 'RFP_Carbon_Credit_Strategy.pdf', type: 'pdf', size: '1.9 MB', url: '#' },
+      { id: 'doc-019', name: 'Current_Offset_Portfolio.xlsx', type: 'xlsx', size: '280 KB', url: '#' },
+    ],
+    evaluationCriteria: [
+      'VCM expertise (40%)',
+      'Article 6.4 knowledge (25%)',
+      'Oil & gas experience (20%)',
+      'Cost (15%)',
+    ],
+    timeline: '6 months from contract signature',
   },
   {
     id: 'mkt-008',
@@ -367,5 +476,17 @@ export const mockMarketplaceRFPs: MarketplaceRFP[] = [
       scienceBasedTarget: true,
     },
     status: 'open',
+    documents: [
+      { id: 'doc-020', name: 'RFP_Green_Building_Certification.pdf', type: 'pdf', size: '2.2 MB', url: '#' },
+      { id: 'doc-021', name: 'Building_Portfolio_List.xlsx', type: 'xlsx', size: '890 KB', url: '#' },
+      { id: 'doc-022', name: 'Current_NABERS_Ratings.pdf', type: 'pdf', size: '340 KB', url: '#' },
+    ],
+    evaluationCriteria: [
+      'NABERS/Green Star accreditation (35%)',
+      'Portfolio-level experience (30%)',
+      'Financial services context (20%)',
+      'Cost and timeline (15%)',
+    ],
+    timeline: '6 months from contract signature',
   },
 ]

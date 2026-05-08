@@ -25,12 +25,40 @@ import {
   Building2,
   ExternalLink,
   ChevronRight,
+  ChevronDown,
+  Download,
+  File,
+  FileSpreadsheet,
+  FileArchive,
+  ListChecks,
+  Target,
+  CalendarClock,
 } from 'lucide-react'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { mockMarketplaceRFPs } from '@/lib/mock-marketplace'
 import { AddToRFPsModal } from '@/components/marketplace/AddToRFPsModal'
 
 function getDaysUntil(deadline: string) {
   return Math.ceil((new Date(deadline).getTime() - Date.now()) / 86400000)
+}
+
+function getDocIcon(type: string) {
+  switch (type) {
+    case 'xlsx': return FileSpreadsheet
+    case 'zip': return FileArchive
+    case 'docx': return FileText
+    default: return File
+  }
+}
+
+function getDocColor(type: string) {
+  switch (type) {
+    case 'pdf': return 'text-red-500'
+    case 'xlsx': return 'text-green-600'
+    case 'docx': return 'text-blue-600'
+    case 'zip': return 'text-amber-600'
+    default: return 'text-gray-500'
+  }
 }
 
 function CredentialBadge({ children, variant = 'neutral' }: { children: React.ReactNode; variant?: 'green' | 'blue' | 'amber' | 'red' | 'neutral' }) {
@@ -55,6 +83,15 @@ export default function MarketplaceDetailPage() {
 
   const [saved, setSaved] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [detailsExpanded, setDetailsExpanded] = useState(false)
+
+  // Determine user type from URL path (in production, this would come from auth context)
+  // For now, we check if the referrer or current path suggests buyer vs supplier
+  const [userType, setUserType] = useState<'buyer' | 'supplier'>('supplier')
+
+  // Simulate checking user type (in production, this would be from auth/session)
+  // Buyers access via /buyer/marketplace, suppliers via /marketplace or /supplier/marketplace
+  const isSupplier = userType === 'supplier'
 
   if (!rfp) {
     return (
@@ -92,25 +129,27 @@ export default function MarketplaceDetailPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Marketplace
           </Link>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSaveClick}
-              className={cn(saved && 'border-[#16A34A] text-[#16A34A] bg-[#F0FDF4]')}
-            >
-              {saved ? <BookmarkCheck className="h-4 w-4 mr-1.5" /> : <Bookmark className="h-4 w-4 mr-1.5" />}
-              {saved ? 'Saved to Pipeline' : 'Add to My RFP Pipeline'}
-            </Button>
-            <Button
-              size="sm"
-              className="bg-[#16A34A] hover:bg-[#15803D]"
-              onClick={() => { if (!saved) setShowModal(true) }}
-            >
-              Register Interest
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+          {isSupplier && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSaveClick}
+                className={cn(saved && 'border-[#16A34A] text-[#16A34A] bg-[#F0FDF4]')}
+              >
+                {saved ? <BookmarkCheck className="h-4 w-4 mr-1.5" /> : <Bookmark className="h-4 w-4 mr-1.5" />}
+                {saved ? 'Saved to Pipeline' : 'Add to My RFP Pipeline'}
+              </Button>
+              <Button
+                size="sm"
+                className="bg-[#16A34A] hover:bg-[#15803D]"
+                onClick={() => { if (!saved) setShowModal(true) }}
+              >
+                Register Interest
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -207,6 +246,43 @@ export default function MarketplaceDetailPage() {
             </CardContent>
           </Card>
 
+          {/* RFP Documents */}
+          {rfp.documents && rfp.documents.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Download className="h-4 w-4 text-[#16A34A]" />
+                  RFP Documents
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  {rfp.documents.map(doc => {
+                    const DocIcon = getDocIcon(doc.type)
+                    return (
+                      <a
+                        key={doc.id}
+                        href={doc.url}
+                        className="flex items-center gap-3 p-2.5 rounded-lg border border-border hover:bg-gray-50 transition-colors group"
+                      >
+                        <div className={cn('h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center', getDocColor(doc.type))}>
+                          <DocIcon className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-text-primary truncate group-hover:text-[#16A34A] transition-colors">
+                            {doc.name}
+                          </p>
+                          <p className="text-xs text-text-muted">{doc.size}</p>
+                        </div>
+                        <Download className="h-4 w-4 text-text-muted group-hover:text-[#16A34A] transition-colors shrink-0" />
+                      </a>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Q&A */}
           <Card>
             <CardHeader className="pb-3">
@@ -241,31 +317,111 @@ export default function MarketplaceDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Detailed View — Collapsible */}
+          <Collapsible open={detailsExpanded} onOpenChange={setDetailsExpanded}>
+            <Card>
+              <CollapsibleTrigger asChild>
+                <CardHeader className="cursor-pointer select-none hover:bg-gray-50/50 transition-colors pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <ListChecks className="h-4 w-4 text-[#16A34A]" />
+                      Full RFP Details
+                    </CardTitle>
+                    <ChevronDown className={cn('h-4 w-4 text-text-secondary transition-transform', detailsExpanded && 'rotate-180')} />
+                  </div>
+                  {!detailsExpanded && (
+                    <p className="text-xs text-text-muted mt-1">Click to view evaluation criteria, deliverables, and timeline</p>
+                  )}
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="pt-0 space-y-5">
+                  {/* Full Description */}
+                  {rfp.fullDescription && (
+                    <div>
+                      <p className="text-xs font-semibold text-text-primary uppercase tracking-wide mb-2">Full Description</p>
+                      <p className="text-sm text-text-secondary leading-relaxed">{rfp.fullDescription}</p>
+                    </div>
+                  )}
+
+                  {/* Evaluation Criteria */}
+                  {rfp.evaluationCriteria && rfp.evaluationCriteria.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-text-primary uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                        <Target className="h-3.5 w-3.5 text-[#16A34A]" />
+                        Evaluation Criteria
+                      </p>
+                      <ul className="space-y-1.5">
+                        {rfp.evaluationCriteria.map((criterion, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A] shrink-0 mt-1.5" />
+                            <span className="text-sm text-text-secondary">{criterion}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Deliverables */}
+                  {rfp.deliverables && rfp.deliverables.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-text-primary uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5 text-[#16A34A]" />
+                        Expected Deliverables
+                      </p>
+                      <ul className="space-y-1.5">
+                        {rfp.deliverables.map((deliverable, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <CheckCircle className="h-3.5 w-3.5 text-[#16A34A] shrink-0 mt-0.5" />
+                            <span className="text-sm text-text-secondary">{deliverable}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Timeline */}
+                  {rfp.timeline && (
+                    <div>
+                      <p className="text-xs font-semibold text-text-primary uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                        <CalendarClock className="h-3.5 w-3.5 text-[#16A34A]" />
+                        Expected Timeline
+                      </p>
+                      <p className="text-sm text-text-secondary">{rfp.timeline}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         </div>
 
         {/* Sidebar */}
         <div className="space-y-5">
-          {/* Add to pipeline CTA */}
-          <Card className={cn('border', saved ? 'border-[#16A34A]/40' : 'border-border')}>
-            <CardContent className="p-4 space-y-3">
-              <p className="text-xs font-semibold text-text-primary">
-                {saved ? 'Added to your RFP Pipeline' : 'Interested in this opportunity?'}
-              </p>
-              <p className="text-[11px] text-text-muted leading-relaxed">
-                {saved
-                  ? 'Your team has been notified. View this in your RFP dashboard to manage your response.'
-                  : 'Add this to your internal RFP pipeline to start tracking it, add notes, and share with your team.'}
-              </p>
-              <Button
-                size="sm"
-                onClick={handleSaveClick}
-                className={cn('w-full text-xs', saved ? 'bg-[#15803D] hover:bg-[#166534]' : 'bg-[#16A34A] hover:bg-[#15803D]')}
-              >
-                {saved ? <BookmarkCheck className="h-3.5 w-3.5 mr-1.5" /> : <Bookmark className="h-3.5 w-3.5 mr-1.5" />}
-                {saved ? 'View in My RFP Pipeline' : 'Add to My RFP Pipeline'}
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Add to pipeline CTA — suppliers only */}
+          {isSupplier && (
+            <Card className={cn('border', saved ? 'border-[#16A34A]/40' : 'border-border')}>
+              <CardContent className="p-4 space-y-3">
+                <p className="text-xs font-semibold text-text-primary">
+                  {saved ? 'Added to your RFP Pipeline' : 'Interested in this opportunity?'}
+                </p>
+                <p className="text-[11px] text-text-muted leading-relaxed">
+                  {saved
+                    ? 'Your team has been notified. View this in your RFP dashboard to manage your response.'
+                    : 'Add this to your internal RFP pipeline to start tracking it, add notes, and share with your team.'}
+                </p>
+                <Button
+                  size="sm"
+                  onClick={handleSaveClick}
+                  className={cn('w-full text-xs', saved ? 'bg-[#15803D] hover:bg-[#166534]' : 'bg-[#16A34A] hover:bg-[#15803D]')}
+                >
+                  {saved ? <BookmarkCheck className="h-3.5 w-3.5 mr-1.5" /> : <Bookmark className="h-3.5 w-3.5 mr-1.5" />}
+                  {saved ? 'View in My RFP Pipeline' : 'Add to My RFP Pipeline'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Buyer credentials */}
           <Card>
@@ -368,8 +524,8 @@ export default function MarketplaceDetailPage() {
         </div>
       </div>
 
-      {/* Add to pipeline modal */}
-      {showModal && (
+      {/* Add to pipeline modal — suppliers only */}
+      {isSupplier && showModal && (
         <AddToRFPsModal
           open={showModal}
           rfp={rfp}
