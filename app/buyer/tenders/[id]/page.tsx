@@ -548,10 +548,10 @@ const activityData = [
 
 // Team members for this tender
 const teamMembersData = [
-  { id: "t1", name: "Sarah Chen", email: "sarah.chen@company.com", companyTitle: "Senior Procurement Manager", projectRole: "Lead", isLead: true },
-  { id: "t2", name: "James Wilson", email: "james.wilson@company.com", companyTitle: "Finance Analyst", projectRole: "Budget Reviewer", isLead: false },
-  { id: "t3", name: "Emily Rodriguez", email: "emily.rodriguez@company.com", companyTitle: "Sustainability Officer", projectRole: "ESG Evaluator", isLead: false },
-  { id: "t4", name: "Michael Park", email: "michael.park@company.com", companyTitle: "Legal Counsel", projectRole: "Contract Reviewer", isLead: false },
+  { id: "t1", name: "Sarah Chen", email: "sarah.chen@company.com", phone: "(555) 123-4567", companyTitle: "Senior Procurement Manager", projectRole: "Lead", isLead: true },
+  { id: "t2", name: "James Wilson", email: "james.wilson@company.com", phone: "(555) 123-4568", companyTitle: "Finance Analyst", projectRole: "Budget Reviewer", isLead: false },
+  { id: "t3", name: "Emily Rodriguez", email: "emily.rodriguez@company.com", phone: "(555) 123-4569", companyTitle: "Sustainability Officer", projectRole: "ESG Evaluator", isLead: false },
+  { id: "t4", name: "Michael Park", email: "michael.park@company.com", phone: "(555) 123-4570", companyTitle: "Legal Counsel", projectRole: "Contract Reviewer", isLead: false },
 ]
 
 // Available company members to add
@@ -713,7 +713,12 @@ export default function TenderDetailPage() {
     description: tenderData.description,
     category: tenderData.category,
     internalContact: tenderData.owner,
+    budget: tenderData.budget,
+    deadline: tenderData.deadline,
   })
+  const [showSaveNotification, setShowSaveNotification] = useState(false)
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [activeTab, setActiveTab] = useState("overview")
   const [criteriaEditOpen, setCriteriaEditOpen] = useState(false)
   const [editableCriteria, setEditableCriteria] = useState(tenderData.evaluationCriteria)
@@ -758,8 +763,59 @@ export default function TenderDetailPage() {
     }
   }
 
-  const handleSaveRFPEdit = () => {
+  const hasChanges = () => {
+    return (
+      editableRFPData.name !== tenderData.name ||
+      editableRFPData.description !== tenderData.description ||
+      editableRFPData.category !== tenderData.category ||
+      editableRFPData.internalContact !== tenderData.owner ||
+      editableRFPData.budget !== tenderData.budget ||
+      editableRFPData.deadline !== tenderData.deadline
+    )
+  }
+
+  const handleCancelEdit = () => {
+    if (hasChanges()) {
+      setShowCancelConfirmation(true)
+    } else {
+      setIsEditingRFP(false)
+    }
+  }
+
+  const confirmCancel = () => {
     setIsEditingRFP(false)
+    setShowCancelConfirmation(false)
+    setValidationErrors([])
+    setEditableRFPData({
+      name: tenderData.name,
+      description: tenderData.description,
+      category: tenderData.category,
+      internalContact: tenderData.owner,
+      budget: tenderData.budget,
+      deadline: tenderData.deadline,
+    })
+  }
+
+  const handleSaveRFPEdit = () => {
+    const errors: string[] = []
+    
+    if (!editableRFPData.name.trim()) errors.push("Title is required")
+    if (!editableRFPData.description.trim()) errors.push("Description is required")
+    if (!editableRFPData.budget || editableRFPData.budget <= 0) errors.push("Budget must be greater than 0")
+    if (!editableRFPData.deadline) errors.push("Deadline is required")
+    
+    if (errors.length > 0) {
+      setValidationErrors(errors)
+      return
+    }
+    
+    setValidationErrors([])
+    setIsEditingRFP(false)
+    setShowSaveNotification(true)
+    
+    // Auto-hide notification after 3 seconds
+    setTimeout(() => setShowSaveNotification(false), 3000)
+    
     // In production, this would call an API to save the changes
   }
 
@@ -1269,15 +1325,7 @@ export default function TenderDetailPage() {
                 <Button
                   variant="outline"
                   className="border-[#E5E7EB]"
-                  onClick={() => {
-                    setIsEditingRFP(false)
-                    setEditableRFPData({
-                      name: tenderData.name,
-                      description: tenderData.description,
-                      category: tenderData.category,
-                      internalContact: tenderData.owner,
-                    })
-                  }}
+                  onClick={handleCancelEdit}
                 >
                   Cancel
                 </Button>
@@ -1329,6 +1377,55 @@ export default function TenderDetailPage() {
             </DropdownMenu>
           </div>
         </div>
+
+        {/* Save Notification */}
+        {showSaveNotification && (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <p className="text-sm text-green-800">RFP changes saved successfully!</p>
+          </div>
+        )}
+
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex gap-2 items-start">
+              <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</p>
+                <ul className="text-sm text-red-700 space-y-1">
+                  {validationErrors.map((error, idx) => (
+                    <li key={idx}>• {error}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cancel Confirmation Dialog */}
+        <Dialog open={showCancelConfirmation} onOpenChange={setShowCancelConfirmation}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Discard Changes?</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-[#6B7280]">You have unsaved changes. Are you sure you want to discard them?</p>
+            <DialogFooter className="gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowCancelConfirmation(false)}
+              >
+                Keep Editing
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmCancel}
+              >
+                Discard Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1433,6 +1530,67 @@ export default function TenderDetailPage() {
                     />
                   </CardContent>
                 </Card>
+              )}
+
+              {/* Additional Fields - Editable */}
+              {isEditingRFP && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Category */}
+                  <Card className="border-[#E5E7EB] bg-white">
+                    <CardHeader>
+                      <CardTitle className="text-base">Category</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <select
+                        value={editableRFPData.category}
+                        onChange={(e) =>
+                          setEditableRFPData((prev) => ({ ...prev, category: e.target.value }))
+                        }
+                        className="w-full px-3 py-2 rounded-md border border-[#E5E7EB] text-sm text-[#111827] bg-white"
+                      >
+                        <option value="Procurement">Procurement</option>
+                        <option value="Services">Services</option>
+                        <option value="Consulting">Consulting</option>
+                        <option value="Development">Development</option>
+                      </select>
+                    </CardContent>
+                  </Card>
+
+                  {/* Budget */}
+                  <Card className="border-[#E5E7EB] bg-white">
+                    <CardHeader>
+                      <CardTitle className="text-base">Budget</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Input
+                        type="number"
+                        value={editableRFPData.budget}
+                        onChange={(e) =>
+                          setEditableRFPData((prev) => ({ ...prev, budget: Number(e.target.value) }))
+                        }
+                        placeholder="Enter budget..."
+                        className="text-sm"
+                      />
+                    </CardContent>
+                  </Card>
+
+                  {/* Deadline */}
+                  <Card className="border-[#E5E7EB] bg-white">
+                    <CardHeader>
+                      <CardTitle className="text-base">Deadline</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Input
+                        type="date"
+                        value={editableRFPData.deadline}
+                        onChange={(e) =>
+                          setEditableRFPData((prev) => ({ ...prev, deadline: e.target.value }))
+                        }
+                        className="text-sm"
+                      />
+                    </CardContent>
+                  </Card>
+                </div>
               )}
 
               {/* Description */}
@@ -1624,11 +1782,29 @@ export default function TenderDetailPage() {
                       </select>
                     </div>
                   ) : (
-                    <div>
-                      <p className="text-xs text-[#6B7280] mb-2">Primary Contact</p>
-                      <p className="text-sm font-medium text-[#111827]">
-                        {editableRFPData.internalContact}
-                      </p>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs text-[#6B7280] mb-2">Primary Contact</p>
+                        <p className="text-sm font-medium text-[#111827]">
+                          {editableRFPData.internalContact}
+                        </p>
+                      </div>
+                      {teamMembers.find(m => m.name === editableRFPData.internalContact) && (
+                        <>
+                          <div>
+                            <p className="text-xs text-[#6B7280] mb-1">Email</p>
+                            <p className="text-sm text-[#111827]">
+                              {teamMembers.find(m => m.name === editableRFPData.internalContact)?.email}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-[#6B7280] mb-1">Phone</p>
+                            <p className="text-sm text-[#111827]">
+                              {teamMembers.find(m => m.name === editableRFPData.internalContact)?.phone || 'N/A'}
+                            </p>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </CardContent>
