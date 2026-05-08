@@ -38,7 +38,7 @@ import {
 import { cn } from '@/lib/utils'
 
 // Mock data for supplier RFPs
-export type RFPPhase = 'initial_review' | 'develop_proposal' | 'final_review' | 'submitted' | 'external_review' | 'awarded' | 'rejected' | 'declined'
+export type RFPPhase = 'new_rfp' | 'in_progress' | 'under_final_review' | 'submitted' | 'client_reviewing' | 'awarded' | 'rejected' | 'declined'
 
 export interface RFPPhaseTransition {
   phase: RFPPhase
@@ -52,10 +52,10 @@ const mockSupplierRFPs = [
     id: 'rfp-001',
     title: 'Comprehensive Scope 3 Value Chain Emissions Analysis',
     buyerCompany: 'Thistle Company',
-    currentPhase: 'develop_proposal' as RFPPhase,
+    currentPhase: 'in_progress' as RFPPhase,
     phaseHistory: [
-      { phase: 'initial_review' as RFPPhase, timestamp: '2026-03-15T10:00:00Z', user: 'Sarah Chen', notes: 'RFP received and reviewed' },
-      { phase: 'develop_proposal' as RFPPhase, timestamp: '2026-03-18T14:30:00Z', user: 'James Wilson', notes: 'Started proposal development' }
+      { phase: 'new_rfp' as RFPPhase, timestamp: '2026-03-15T10:00:00Z', user: 'Sarah Chen', notes: 'RFP received and reviewed' },
+      { phase: 'in_progress' as RFPPhase, timestamp: '2026-03-18T14:30:00Z', user: 'James Wilson', notes: 'Started proposal development' }
     ] as RFPPhaseTransition[],
     proposalNotes: [
       { timestamp: '2026-03-20T09:00:00Z', user: 'Sarah Chen', text: 'Need to gather additional data from clients' },
@@ -72,13 +72,13 @@ const mockSupplierRFPs = [
     id: 'rfp-002',
     title: 'SBTi Target Setting & Validation Support',
     buyerCompany: 'GreenCorp Industries',
-    currentPhase: 'external_review' as RFPPhase,
+    currentPhase: 'client_reviewing' as RFPPhase,
     phaseHistory: [
-      { phase: 'initial_review' as RFPPhase, timestamp: '2026-03-10T10:00:00Z', user: 'Sarah Chen', notes: 'RFP reviewed' },
-      { phase: 'develop_proposal' as RFPPhase, timestamp: '2026-03-11T09:00:00Z', user: 'Michael Park', notes: 'Proposal development started' },
-      { phase: 'final_review' as RFPPhase, timestamp: '2026-04-08T16:00:00Z', user: 'Sarah Chen', notes: 'Final review completed' },
+      { phase: 'new_rfp' as RFPPhase, timestamp: '2026-03-10T10:00:00Z', user: 'Sarah Chen', notes: 'RFP reviewed' },
+      { phase: 'in_progress' as RFPPhase, timestamp: '2026-03-11T09:00:00Z', user: 'Michael Park', notes: 'Proposal development started' },
+      { phase: 'under_final_review' as RFPPhase, timestamp: '2026-04-08T16:00:00Z', user: 'Sarah Chen', notes: 'Final review completed' },
       { phase: 'submitted' as RFPPhase, timestamp: '2026-04-10T12:00:00Z', user: 'James Wilson', notes: 'Proposal submitted to buyer' },
-      { phase: 'external_review' as RFPPhase, timestamp: '2026-04-11T08:00:00Z', user: 'System', notes: 'Automatically marked as under review' }
+      { phase: 'client_reviewing' as RFPPhase, timestamp: '2026-04-11T08:00:00Z', user: 'System', notes: 'Automatically marked as under review' }
     ] as RFPPhaseTransition[],
     proposalNotes: [
       { timestamp: '2026-03-15T10:00:00Z', user: 'Sarah Chen', text: 'Completed SBTi documentation review' },
@@ -98,11 +98,11 @@ const mockSupplierRFPs = [
     buyerCompany: 'EcoBuilders Ltd',
     currentPhase: 'awarded' as RFPPhase,
     phaseHistory: [
-      { phase: 'initial_review' as RFPPhase, timestamp: '2026-02-20T10:00:00Z', user: 'Sarah Chen', notes: 'RFP reviewed' },
-      { phase: 'develop_proposal' as RFPPhase, timestamp: '2026-02-21T09:00:00Z', user: 'Emily Rodriguez', notes: 'Proposal development started' },
-      { phase: 'final_review' as RFPPhase, timestamp: '2026-03-25T16:00:00Z', user: 'Sarah Chen', notes: 'Final review completed' },
+      { phase: 'new_rfp' as RFPPhase, timestamp: '2026-02-20T10:00:00Z', user: 'Sarah Chen', notes: 'RFP reviewed' },
+      { phase: 'in_progress' as RFPPhase, timestamp: '2026-02-21T09:00:00Z', user: 'Emily Rodriguez', notes: 'Proposal development started' },
+      { phase: 'under_final_review' as RFPPhase, timestamp: '2026-03-25T16:00:00Z', user: 'Sarah Chen', notes: 'Final review completed' },
       { phase: 'submitted' as RFPPhase, timestamp: '2026-03-29T14:00:00Z', user: 'James Wilson', notes: 'Proposal submitted' },
-      { phase: 'external_review' as RFPPhase, timestamp: '2026-03-30T09:00:00Z', user: 'System', notes: 'Under buyer review' },
+      { phase: 'client_reviewing' as RFPPhase, timestamp: '2026-03-30T09:00:00Z', user: 'System', notes: 'Under buyer review' },
       { phase: 'awarded' as RFPPhase, timestamp: '2026-04-05T11:00:00Z', user: 'System', notes: 'Won the contract' }
     ] as RFPPhaseTransition[],
     proposalNotes: [
@@ -120,9 +120,9 @@ const mockSupplierRFPs = [
     id: 'rfp-004',
     title: 'ISSB (IFRS S1 & S2) Integration & Reporting',
     buyerCompany: 'Financial Services Corp',
-    currentPhase: 'initial_review' as RFPPhase,
+    currentPhase: 'new_rfp' as RFPPhase,
     phaseHistory: [
-      { phase: 'initial_review' as RFPPhase, timestamp: '2026-04-01T10:00:00Z', user: 'Sarah Chen', notes: 'RFP received and reviewed' }
+      { phase: 'new_rfp' as RFPPhase, timestamp: '2026-04-01T10:00:00Z', user: 'Sarah Chen', notes: 'RFP received and reviewed' }
     ] as RFPPhaseTransition[],
     proposalNotes: [],
     registeredAt: '2026-04-01',
@@ -138,11 +138,11 @@ const mockSupplierRFPs = [
     buyerCompany: 'Manufacturing Plus',
     currentPhase: 'rejected' as RFPPhase,
     phaseHistory: [
-      { phase: 'initial_review' as RFPPhase, timestamp: '2026-02-01T10:00:00Z', user: 'Sarah Chen', notes: 'RFP reviewed' },
-      { phase: 'develop_proposal' as RFPPhase, timestamp: '2026-02-02T09:00:00Z', user: 'Alex Kumar', notes: 'Proposal development started' },
-      { phase: 'final_review' as RFPPhase, timestamp: '2026-03-10T16:00:00Z', user: 'Sarah Chen', notes: 'Final review completed' },
+      { phase: 'new_rfp' as RFPPhase, timestamp: '2026-02-01T10:00:00Z', user: 'Sarah Chen', notes: 'RFP reviewed' },
+      { phase: 'in_progress' as RFPPhase, timestamp: '2026-02-02T09:00:00Z', user: 'Alex Kumar', notes: 'Proposal development started' },
+      { phase: 'under_final_review' as RFPPhase, timestamp: '2026-03-10T16:00:00Z', user: 'Sarah Chen', notes: 'Final review completed' },
       { phase: 'submitted' as RFPPhase, timestamp: '2026-03-14T12:00:00Z', user: 'James Wilson', notes: 'Proposal submitted' },
-      { phase: 'external_review' as RFPPhase, timestamp: '2026-03-15T09:00:00Z', user: 'System', notes: 'Under buyer review' },
+      { phase: 'client_reviewing' as RFPPhase, timestamp: '2026-03-15T09:00:00Z', user: 'System', notes: 'Under buyer review' },
       { phase: 'rejected' as RFPPhase, timestamp: '2026-03-20T10:00:00Z', user: 'System', notes: 'Proposal not selected' }
     ] as RFPPhaseTransition[],
     proposalNotes: [
@@ -159,14 +159,14 @@ const mockSupplierRFPs = [
 ]
 
 const PHASE_CONFIG = {
-  initial_review: { label: 'Initial Review', color: 'bg-blue-100 text-blue-800', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', progressPercent: 14 },
-  develop_proposal: { label: 'Develop Proposal', color: 'bg-amber-100 text-amber-800', bgColor: 'bg-amber-50', borderColor: 'border-amber-200', progressPercent: 43 },
-  final_review: { label: 'Final Review', color: 'bg-orange-100 text-orange-800', bgColor: 'bg-orange-50', borderColor: 'border-orange-200', progressPercent: 57 },
+  new_rfp: { label: 'New RFP', color: 'bg-blue-100 text-blue-800', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', progressPercent: 14 },
+  in_progress: { label: 'In Progress', color: 'bg-amber-100 text-amber-800', bgColor: 'bg-amber-50', borderColor: 'border-amber-200', progressPercent: 43 },
+  under_final_review: { label: 'Under Final Review', color: 'bg-orange-100 text-orange-800', bgColor: 'bg-orange-50', borderColor: 'border-orange-200', progressPercent: 57 },
   submitted: { label: 'Submitted', color: 'bg-purple-100 text-purple-800', bgColor: 'bg-purple-50', borderColor: 'border-purple-200', progressPercent: 71 },
-  external_review: { label: 'External Review', color: 'bg-indigo-100 text-indigo-800', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200', progressPercent: 86 },
+  client_reviewing: { label: 'Client Reviewing', color: 'bg-indigo-100 text-indigo-800', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200', progressPercent: 86 },
   awarded: { label: 'Awarded', color: 'bg-green-100 text-green-800', bgColor: 'bg-green-50', borderColor: 'border-green-200', progressPercent: 100 },
   rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800', bgColor: 'bg-red-50', borderColor: 'border-red-200', progressPercent: 100 },
-  declined: { label: 'Declined', color: 'bg-gray-100 text-gray-800', bgColor: 'bg-gray-50', borderColor: 'border-gray-200', progressPercent: 0 },
+  declined: { label: 'Decline to Submit', color: 'bg-gray-100 text-gray-800', bgColor: 'bg-gray-50', borderColor: 'border-gray-200', progressPercent: 0 },
 }
 
 export default function SupplierRFPsPage() {
@@ -183,8 +183,8 @@ export default function SupplierRFPsPage() {
 
     const matchesTab =
       activeTab === 'all' ||
-      (activeTab === 'in_progress' && ['initial_review', 'develop_proposal', 'final_review'].includes(rfp.currentPhase)) ||
-      (activeTab === 'submitted' && ['submitted', 'external_review'].includes(rfp.currentPhase)) ||
+      (activeTab === 'in_progress' && ['new_rfp', 'in_progress', 'under_final_review'].includes(rfp.currentPhase)) ||
+      (activeTab === 'submitted' && ['submitted', 'client_reviewing'].includes(rfp.currentPhase)) ||
       (activeTab === 'awarded' && rfp.currentPhase === 'awarded') ||
       (activeTab === 'archived' && (rfp.currentPhase === 'rejected' || rfp.currentPhase === 'declined'))
 
@@ -193,8 +193,8 @@ export default function SupplierRFPsPage() {
 
   const counts = {
     all: mockSupplierRFPs.length,
-    in_progress: mockSupplierRFPs.filter((r) => ['initial_review', 'develop_proposal', 'final_review'].includes(r.currentPhase)).length,
-    submitted: mockSupplierRFPs.filter((r) => ['submitted', 'external_review'].includes(r.currentPhase)).length,
+    in_progress: mockSupplierRFPs.filter((r) => ['new_rfp', 'in_progress', 'under_final_review'].includes(r.currentPhase)).length,
+    submitted: mockSupplierRFPs.filter((r) => ['submitted', 'client_reviewing'].includes(r.currentPhase)).length,
     awarded: mockSupplierRFPs.filter((r) => r.currentPhase === 'awarded').length,
     archived: mockSupplierRFPs.filter((r) => r.currentPhase === 'rejected' || r.currentPhase === 'declined').length,
   }
@@ -238,14 +238,14 @@ export default function SupplierRFPsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Phases</SelectItem>
-              <SelectItem value="initial_review">Initial Review</SelectItem>
-              <SelectItem value="develop_proposal">Develop Proposal</SelectItem>
-              <SelectItem value="final_review">Final Review</SelectItem>
+              <SelectItem value="new_rfp">New RFP</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="under_final_review">Under Final Review</SelectItem>
               <SelectItem value="submitted">Submitted</SelectItem>
-              <SelectItem value="external_review">External Review</SelectItem>
+              <SelectItem value="client_reviewing">Client Reviewing</SelectItem>
               <SelectItem value="awarded">Awarded</SelectItem>
               <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="declined">Declined</SelectItem>
+              <SelectItem value="declined">Decline to Submit</SelectItem>
             </SelectContent>
           </Select>
 

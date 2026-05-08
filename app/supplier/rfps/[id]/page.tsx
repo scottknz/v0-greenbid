@@ -38,19 +38,19 @@ import {
 import { cn } from '@/lib/utils'
 
 // Phase types and configuration
-export type RFPPhase = 'initial_review' | 'develop_proposal' | 'final_review' | 'submitted' | 'external_review' | 'awarded' | 'rejected' | 'declined'
+export type RFPPhase = 'new_rfp' | 'in_progress' | 'under_final_review' | 'submitted' | 'client_reviewing' | 'awarded' | 'rejected' | 'declined'
 
-const PHASE_ORDER: RFPPhase[] = ['initial_review', 'develop_proposal', 'final_review', 'submitted', 'external_review']
+const PHASE_ORDER: RFPPhase[] = ['new_rfp', 'in_progress', 'under_final_review', 'submitted', 'client_reviewing']
 
 const PHASE_CONFIG = {
-  initial_review: { label: 'Initial Review', shortLabel: 'Review' },
-  develop_proposal: { label: 'Develop Proposal', shortLabel: 'Develop' },
-  final_review: { label: 'Final Review', shortLabel: 'Final' },
-  submitted: { label: 'Submitted', shortLabel: 'Submitted' },
-  external_review: { label: 'External Review', shortLabel: 'External' },
-  awarded: { label: 'Awarded', shortLabel: 'Awarded' },
-  rejected: { label: 'Rejected', shortLabel: 'Rejected' },
-  declined: { label: 'Declined', shortLabel: 'Declined' },
+  new_rfp: { label: 'New RFP' },
+  in_progress: { label: 'In Progress' },
+  under_final_review: { label: 'Under Final Review' },
+  submitted: { label: 'Submitted' },
+  client_reviewing: { label: 'Client Reviewing' },
+  awarded: { label: 'Awarded' },
+  rejected: { label: 'Rejected' },
+  declined: { label: 'Decline to Submit' },
 }
 
 interface PhaseTransition {
@@ -67,6 +67,14 @@ interface ProposalNote {
   text: string
 }
 
+// Mock approvers list
+const mockApprovers = [
+  { id: 'a1', name: 'Sarah Chen', email: 'sarah.chen@company.com', role: 'Senior Manager' },
+  { id: 'a2', name: 'James Wilson', email: 'james.wilson@company.com', role: 'Director' },
+  { id: 'a3', name: 'Emily Rodriguez', email: 'emily.rodriguez@company.com', role: 'VP Operations' },
+  { id: 'a4', name: 'Michael Park', email: 'michael.park@company.com', role: 'Legal Counsel' },
+]
+
 // Mock RFP detail data
 const mockRFPDetail = {
   id: 'rfp-001',
@@ -78,11 +86,12 @@ const mockRFPDetail = {
     phone: '+44 207 123 4567',
   },
   onlineRFPUrl: 'https://thistle.greenbid.com/rfp/scope3-analysis-2026',
-  currentPhase: 'develop_proposal' as RFPPhase,
+  currentPhase: 'in_progress' as RFPPhase,
   phaseHistory: [
-    { phase: 'initial_review' as RFPPhase, timestamp: '2026-03-15T10:00:00Z', user: 'Sarah Chen', notes: 'RFP received and reviewed. Good fit for our capabilities.' },
-    { phase: 'develop_proposal' as RFPPhase, timestamp: '2026-03-18T14:30:00Z', user: 'James Wilson', notes: 'Started proposal development' }
+    { phase: 'new_rfp' as RFPPhase, timestamp: '2026-03-15T10:00:00Z', user: 'Sarah Chen', notes: 'RFP received and reviewed. Good fit for our capabilities.' },
+    { phase: 'in_progress' as RFPPhase, timestamp: '2026-03-18T14:30:00Z', user: 'James Wilson', notes: 'Started proposal development' }
   ] as PhaseTransition[],
+  phaseBeforeDecline: null as RFPPhase | null,
   proposalNotes: [
     { id: 'note-1', timestamp: '2026-03-20T09:00:00Z', user: 'Sarah Chen', text: 'Need to gather additional emissions data from last 3 years' },
     { id: 'note-2', timestamp: '2026-03-22T15:00:00Z', user: 'James Wilson', text: 'Received all supporting documentation from operations team' }
@@ -138,20 +147,22 @@ export default function RFPDetailPage() {
   const [currentPhase, setCurrentPhase] = useState<RFPPhase>(mockRFPDetail.currentPhase)
   const [phaseHistory, setPhaseHistory] = useState<PhaseTransition[]>(mockRFPDetail.phaseHistory)
   const [proposalNotes, setProposalNotes] = useState<ProposalNote[]>(mockRFPDetail.proposalNotes)
+  const [phaseBeforeDecline, setPhaseBeforeDecline] = useState<RFPPhase | null>(mockRFPDetail.phaseBeforeDecline)
   
   // Modal states
-  const [showInitialReviewModal, setShowInitialReviewModal] = useState(false)
   const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false)
   const [showSubmissionModal, setShowSubmissionModal] = useState(false)
   const [showFinalReviewModal, setShowFinalReviewModal] = useState(false)
   const [showPhaseHistoryModal, setShowPhaseHistoryModal] = useState(false)
   const [showAddNoteModal, setShowAddNoteModal] = useState(false)
+  const [showApprovalModal, setShowApprovalModal] = useState(false)
   
   // Form states
   const [transitionNotes, setTransitionNotes] = useState('')
   const [newNoteText, setNewNoteText] = useState('')
   const [questionResponses, setQuestionResponses] = useState<Record<string, string>>({})
   const [submissionAttachments, setSubmissionAttachments] = useState<File[]>([])
+  const [selectedApprovers, setSelectedApprovers] = useState<string[]>([])
   
   const rfp = mockRFPDetail
   
@@ -184,6 +195,7 @@ export default function RFPDetailPage() {
   }
   
   const handleDeclineToSubmit = () => {
+    setPhaseBeforeDecline(currentPhase)
     const declineTransition: PhaseTransition = {
       phase: 'declined',
       timestamp: new Date().toISOString(),
@@ -194,7 +206,35 @@ export default function RFPDetailPage() {
     setCurrentPhase('declined')
     setTransitionNotes('')
     setShowDeclineConfirmModal(false)
-    setShowInitialReviewModal(false)
+  }
+  
+  const handleReinstateSubmission = () => {
+    if (phaseBeforeDecline) {
+      const reinstateTransition: PhaseTransition = {
+        phase: phaseBeforeDecline,
+        timestamp: new Date().toISOString(),
+        user: 'Current User',
+        notes: 'Reinstated submission',
+      }
+      setPhaseHistory([...phaseHistory, reinstateTransition])
+      setCurrentPhase(phaseBeforeDecline)
+      setPhaseBeforeDecline(null)
+    }
+  }
+  
+  const handleSendForApproval = () => {
+    if (selectedApprovers.length === 0) return
+    
+    // In production, this would send emails to selected approvers
+    const approvalTransition: PhaseTransition = {
+      phase: currentPhase,
+      timestamp: new Date().toISOString(),
+      user: 'Current User',
+      notes: `Sent for approval to: ${selectedApprovers.map(id => mockApprovers.find(a => a.id === id)?.name).join(', ')}`,
+    }
+    setPhaseHistory([...phaseHistory, approvalTransition])
+    setSelectedApprovers([])
+    setShowApprovalModal(false)
   }
   
   const handleSubmitProposal = () => {
@@ -224,20 +264,20 @@ export default function RFPDetailPage() {
   }
   
   const handleContinueResponse = () => {
-    if (currentPhase === 'initial_review') {
-      setShowInitialReviewModal(true)
-    } else if (currentPhase === 'develop_proposal') {
+    if (currentPhase === 'new_rfp') {
+      handleMoveForward()
+    } else if (currentPhase === 'in_progress') {
       setShowSubmissionModal(true)
-    } else if (currentPhase === 'final_review') {
-      setShowFinalReviewModal(true)
+    } else if (currentPhase === 'under_final_review') {
+      setShowApprovalModal(true)
     }
   }
   
   const getPhaseButtonLabel = () => {
     switch (currentPhase) {
-      case 'initial_review': return 'Continue Response'
-      case 'develop_proposal': return 'Continue Submission'
-      case 'final_review': return 'Review & Submit'
+      case 'new_rfp': return 'Start Working on Response'
+      case 'in_progress': return 'Continue Submission'
+      case 'under_final_review': return 'Send for Approval'
       default: return 'View Status'
     }
   }
@@ -280,7 +320,7 @@ export default function RFPDetailPage() {
       {/* Phase Progress Indicator */}
       <Card className="border-[#E5E7EB] bg-white">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start gap-6">
             {/* Main phases */}
             <div className="flex items-center flex-1">
               {PHASE_ORDER.map((phase, idx) => {
@@ -291,33 +331,21 @@ export default function RFPDetailPage() {
                 
                 return (
                   <div key={phase} className="flex items-center flex-1">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={cn(
-                          'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border-2 transition-all',
-                          isCompleted && 'bg-[#15803D] border-[#15803D] text-white',
-                          isCurrent && !isDeclined && 'bg-[#BBF7D0] border-[#16A34A] text-[#15803D]',
-                          isFuture && 'bg-gray-100 border-gray-300 text-gray-400',
-                          isDeclined && 'bg-gray-100 border-gray-300 text-gray-400'
-                        )}
-                      >
-                        {isCompleted ? <CheckCircle className="h-4 w-4" /> : idx + 1}
-                      </div>
-                      <span
-                        className={cn(
-                          'text-xs mt-2 text-center max-w-[80px]',
-                          isCompleted && 'text-[#15803D] font-medium',
-                          isCurrent && !isDeclined && 'text-[#16A34A] font-medium',
-                          (isFuture || isDeclined) && 'text-gray-400'
-                        )}
-                      >
-                        {PHASE_CONFIG[phase].shortLabel}
-                      </span>
+                    <div
+                      className={cn(
+                        'px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all',
+                        isCompleted && 'bg-[#15803D] text-white',
+                        isCurrent && !isDeclined && 'bg-[#BBF7D0] text-[#15803D] border border-[#16A34A]',
+                        isFuture && 'bg-gray-100 text-gray-400',
+                        isDeclined && 'bg-gray-100 text-gray-400'
+                      )}
+                    >
+                      {PHASE_CONFIG[phase].label}
                     </div>
                     {idx < PHASE_ORDER.length - 1 && (
                       <div
                         className={cn(
-                          'flex-1 h-0.5 mx-2',
+                          'flex-1 h-0.5 mx-1 min-w-[8px]',
                           currentPhaseIndex > idx ? 'bg-[#15803D]' : 'bg-gray-200'
                         )}
                       />
@@ -328,32 +356,41 @@ export default function RFPDetailPage() {
             </div>
             
             {/* Decline to Submit - Disconnected */}
-            <div className="flex items-center ml-6 pl-6 border-l border-gray-200">
-              <div className="flex flex-col items-center">
-                <div
-                  className={cn(
-                    'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium border-2 transition-all',
-                    currentPhase === 'declined'
-                      ? 'bg-red-500 border-red-500 text-white'
-                      : 'bg-red-50 border-red-300 text-red-400'
-                  )}
-                >
-                  <XCircle className="h-4 w-4" />
-                </div>
-                <span
-                  className={cn(
-                    'text-xs mt-2 text-center',
-                    currentPhase === 'declined' ? 'text-red-600 font-medium' : 'text-red-400'
-                  )}
-                >
-                  Decline
-                </span>
+            <div className="flex flex-col items-end ml-6 pl-6 border-l border-gray-200 min-w-[140px]">
+              <div
+                className={cn(
+                  'px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all',
+                  currentPhase === 'declined'
+                    ? 'bg-red-500 text-white'
+                    : 'bg-red-50 text-red-400 border border-red-200'
+                )}
+              >
+                {PHASE_CONFIG.declined.label}
               </div>
+              {currentPhase === 'declined' ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 text-xs h-7 border-green-300 text-green-700 hover:bg-green-50"
+                  onClick={handleReinstateSubmission}
+                >
+                  Reinstate Submission
+                </Button>
+              ) : !isTerminalPhase && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 text-xs h-7 border-red-300 text-red-600 hover:bg-red-50"
+                  onClick={() => setShowDeclineConfirmModal(true)}
+                >
+                  Decline to Submit
+                </Button>
+              )}
             </div>
           </div>
           
           {/* Action Button */}
-          {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'external_review' && (
+          {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && (
             <div className="mt-6 pt-4 border-t border-gray-100">
               <Button
                 onClick={handleContinueResponse}
@@ -368,14 +405,22 @@ export default function RFPDetailPage() {
           {/* Terminal state messages */}
           {currentPhase === 'declined' && (
             <div className="mt-6 pt-4 border-t border-gray-100">
-              <p className="text-sm text-red-600 font-medium">This proposal has been declined. No further action can be taken.</p>
+              <p className="text-sm text-red-600 font-medium">This proposal has been declined. Click &quot;Reinstate Submission&quot; to continue working on it.</p>
             </div>
           )}
           {currentPhase === 'submitted' && (
             <div className="mt-6 pt-4 border-t border-gray-100">
               <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
                 <CheckCircle className="h-4 w-4" />
-                Proposal submitted successfully. Awaiting buyer review.
+                Proposal submitted successfully. Awaiting client review.
+              </p>
+            </div>
+          )}
+          {currentPhase === 'client_reviewing' && (
+            <div className="mt-6 pt-4 border-t border-gray-100">
+              <p className="text-sm text-indigo-600 font-medium flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Client is currently reviewing your proposal.
               </p>
             </div>
           )}
@@ -656,53 +701,14 @@ export default function RFPDetailPage() {
         </div>
       </div>
       
-      {/* Initial Review Modal */}
-      <Dialog open={showInitialReviewModal} onOpenChange={setShowInitialReviewModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Initial Review Complete</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-text-secondary mb-4">
-            You have completed the initial review of this RFP. Would you like to move forward with developing a proposal or decline to submit?
-          </p>
-          <div className="space-y-3">
-            <Label htmlFor="transition-notes">Notes (optional)</Label>
-            <Textarea
-              id="transition-notes"
-              value={transitionNotes}
-              onChange={(e) => setTransitionNotes(e.target.value)}
-              placeholder="Add any notes about this decision..."
-              className="min-h-[80px]"
-            />
-          </div>
-          <DialogFooter className="gap-2 mt-4">
-            <Button
-              variant="outline"
-              className="text-red-600 border-red-200 hover:bg-red-50"
-              onClick={() => setShowDeclineConfirmModal(true)}
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              Decline to Submit
-            </Button>
-            <Button
-              className="bg-[#16A34A] hover:bg-[#15803D]"
-              onClick={handleMoveForward}
-            >
-              <ChevronRight className="h-4 w-4 mr-2" />
-              Move Forward with Proposal
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
       {/* Decline Confirmation Modal */}
       <Dialog open={showDeclineConfirmModal} onOpenChange={setShowDeclineConfirmModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-red-600">Confirm Decline</DialogTitle>
+            <DialogTitle className="text-red-600">Confirm Decline to Submit</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-text-secondary mb-4">
-            Are you sure you want to decline this RFP? This action cannot be undone and will prevent any further work on this proposal.
+            Are you sure you want to decline this RFP? This will pause all work on this proposal. You can reinstate it at any time if you change your mind.
           </p>
           <div className="space-y-3">
             <Label htmlFor="decline-reason">Reason for declining</Label>
@@ -860,6 +866,66 @@ export default function RFPDetailPage() {
             >
               <Send className="h-4 w-4 mr-2" />
               Submit Proposal
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Approval Modal */}
+      <Dialog open={showApprovalModal} onOpenChange={setShowApprovalModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Proposal for Approval</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-text-secondary mb-4">
+            Select the approvers who need to review this proposal before it can be submitted. They will receive an email with the current proposal status, responses, and attachments.
+          </p>
+          
+          <div className="space-y-3">
+            <Label>Select Approvers</Label>
+            <div className="space-y-2 max-h-[200px] overflow-y-auto">
+              {mockApprovers.map((approver) => (
+                <label
+                  key={approver.id}
+                  className={cn(
+                    'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
+                    selectedApprovers.includes(approver.id)
+                      ? 'border-[#16A34A] bg-green-50'
+                      : 'border-gray-200 hover:bg-gray-50'
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedApprovers.includes(approver.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedApprovers([...selectedApprovers, approver.id])
+                      } else {
+                        setSelectedApprovers(selectedApprovers.filter(id => id !== approver.id))
+                      }
+                    }}
+                    className="h-4 w-4 rounded border-gray-300 text-[#16A34A] focus:ring-[#16A34A]"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-text-primary">{approver.name}</p>
+                    <p className="text-xs text-text-secondary">{approver.role} • {approver.email}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+          
+          <DialogFooter className="gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowApprovalModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-[#16A34A] hover:bg-[#15803D]"
+              onClick={handleSendForApproval}
+              disabled={selectedApprovers.length === 0}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Send for Approval
             </Button>
           </DialogFooter>
         </DialogContent>
