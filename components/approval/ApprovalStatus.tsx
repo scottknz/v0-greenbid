@@ -17,6 +17,7 @@ import {
 export interface ApprovalStatusProps {
   approval: ApprovalRequest
   onRetry?: () => void
+  onResubmit?: () => void // Called when user confirms changes have been addressed
   compact?: boolean // Show compact view instead of full card
 }
 
@@ -28,7 +29,7 @@ const statusConfig = {
   delegated: { label: 'Delegated', color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
 };
 
-export function ApprovalStatus({ approval, onRetry, compact = false }: ApprovalStatusProps) {
+export function ApprovalStatus({ approval, onRetry, onResubmit, compact = false }: ApprovalStatusProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const config = statusConfig[approval.status];
   const approvedCount = approval.approvers.filter((a) => a.status === 'approved').length;
@@ -163,12 +164,24 @@ export function ApprovalStatus({ approval, onRetry, compact = false }: ApprovalS
         )}
 
         {approval.status === 'changes_requested' && (
-          <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-2.5">
-            <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-            <div className="text-xs">
-              <p className="font-medium text-blue-900">Changes Requested</p>
-              <p className="text-blue-800">Address the feedback and resubmit for approval</p>
+          <div className="space-y-2">
+            <div className="flex items-start gap-2 rounded-lg bg-blue-50 border border-blue-200 p-2.5">
+              <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+              <div className="text-xs">
+                <p className="font-medium text-blue-900">Changes Requested</p>
+                <p className="text-blue-800">Address the feedback above and resubmit for approval</p>
+              </div>
             </div>
+            {onResubmit && (
+              <Button
+                size="sm"
+                onClick={onResubmit}
+                className="w-full text-xs bg-[#16A34A] hover:bg-[#15803D]"
+              >
+                <CheckCircle2 className="h-3 w-3 mr-1.5" />
+                Changes Addressed - Resubmit for Approval
+              </Button>
+            )}
           </div>
         )}
 

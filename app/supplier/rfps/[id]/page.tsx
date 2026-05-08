@@ -167,6 +167,23 @@ export default function RFPDetailPage() {
 
   const rfp = mockRFPDetail
 
+  const handleResubmitForApproval = () => {
+    if (!currentApproval) return
+    // Reset all approvers to pending and update the approval request
+    const updatedApproval: ApprovalRequest = {
+      ...currentApproval,
+      status: 'pending',
+      requestedAt: new Date().toISOString(),
+      approvers: currentApproval.approvers.map(a => ({
+        ...a,
+        status: 'pending' as const,
+        comment: undefined,
+        respondedAt: undefined,
+      })),
+    }
+    setCurrentApproval(updatedApproval)
+  }
+
   const handleSendForApproval = (data: { approverIds: string[]; message: string; approvalMode: 'any' | 'all' }) => {
     const newApproval: ApprovalRequest = {
       id: `apr-${Date.now()}`,
@@ -279,7 +296,13 @@ export default function RFPDetailPage() {
     } else if (currentPhase === 'in_progress') {
       setShowSubmissionModal(true)
     } else if (currentPhase === 'under_final_review') {
-      setShowApprovalModal(true)
+      // If changes were requested, trigger resubmit; if no approval exists, open modal
+      if (currentApproval?.status === 'changes_requested') {
+        handleResubmitForApproval()
+      } else if (!currentApproval) {
+        setShowApprovalModal(true)
+      }
+      // If pending, button should be disabled (handled in getPhaseButtonDisabled)
     }
   }
   
@@ -287,9 +310,20 @@ export default function RFPDetailPage() {
     switch (currentPhase) {
       case 'new_rfp': return 'Start Working on Response'
       case 'in_progress': return 'Continue Submission'
-      case 'under_final_review': return 'Send for Approval'
+      case 'under_final_review': 
+        if (currentApproval?.status === 'pending') return 'Awaiting Approval'
+        if (currentApproval?.status === 'changes_requested') return 'Resubmit for Approval'
+        if (currentApproval?.status === 'approved') return 'Approved - Ready to Submit'
+        return 'Send for Approval'
       default: return 'View Status'
     }
+  }
+
+  const getPhaseButtonDisabled = () => {
+    if (currentPhase === 'under_final_review' && currentApproval?.status === 'pending') {
+      return true
+    }
+    return false
   }
 
   return (
@@ -405,7 +439,8 @@ export default function RFPDetailPage() {
               {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && currentPhase !== 'declined' && (
                 <Button
                   onClick={handleContinueResponse}
-                  className="bg-[#16A34A] hover:bg-[#15803D]"
+                  disabled={getPhaseButtonDisabled()}
+                  className="bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50"
                 >
                   <ChevronRight className="h-4 w-4 mr-2" />
                   {getPhaseButtonLabel()}
@@ -487,7 +522,11 @@ export default function RFPDetailPage() {
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="pt-0">
-                <ApprovalStatus approval={currentApproval} compact={false} />
+                <ApprovalStatus 
+                  approval={currentApproval} 
+                  compact={false} 
+                  onResubmit={currentApproval.status === 'changes_requested' ? handleResubmitForApproval : undefined}
+                />
               </CardContent>
             </CollapsibleContent>
           </Card>
