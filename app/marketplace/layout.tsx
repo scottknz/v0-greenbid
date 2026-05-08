@@ -1,3 +1,9 @@
+import { DashboardShell } from '@/components/shell/DashboardShell'
+
 export default function MarketplaceLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return (
+    <DashboardShell variant="supplier">
+      {children}
+    </DashboardShell>
+  )
 }
