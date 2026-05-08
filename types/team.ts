@@ -1,4 +1,4 @@
-export type RoleType = 'Viewer' | 'Editor' | 'Approver' | 'Lead'
+export type RoleType = 'Viewer' | 'Editor' | 'Approver' | 'Lead' | 'Inactive'
 export type Department = 'Procurement' | 'Sustainability' | 'Finance' | 'Legal' | 'Operations' | 'Other'
 export type ActivityType = 'created' | 'edited' | 'viewed_rfp' | 'approved_rfp' | 'commented' | 'submitted' | 'assigned_to_rfp' | 'removed_from_rfp'
 

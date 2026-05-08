@@ -19,6 +19,7 @@ const ROLE_COLORS = {
   Editor: 'bg-blue-100 text-blue-900',
   Approver: 'bg-purple-100 text-purple-900',
   Viewer: 'bg-grey-100 text-grey-900',
+  Inactive: 'bg-red-100 text-red-700',
 }
 
 function getRoleColor(role: string) {

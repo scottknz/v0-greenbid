@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 
 const DEPARTMENTS = ['Procurement', 'Sustainability', 'Finance', 'Legal', 'Operations', 'Other']
-const ROLE_TYPES = ['Lead', 'Editor', 'Approver', 'Viewer']
+const ROLE_TYPES = ['Lead', 'Editor', 'Approver', 'Viewer', 'Inactive']
 
 interface TeamMemberModalProps {
   isOpen: boolean
