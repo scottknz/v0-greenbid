@@ -5,7 +5,7 @@ import { LibraryDocument, DocumentAction } from '@/types/library'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { X, Save, Upload, Trash2, File } from 'lucide-react'
+import { X, Save, Upload, Trash2, File, Download } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 interface DocumentDetailsModalProps {
@@ -13,6 +13,7 @@ interface DocumentDetailsModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (document: LibraryDocument) => void
+  onDownload?: (id: string) => void
 }
 
 export function DocumentDetailsModal({
@@ -20,6 +21,7 @@ export function DocumentDetailsModal({
   isOpen,
   onClose,
   onSave,
+  onDownload,
 }: DocumentDetailsModalProps) {
   const [formData, setFormData] = useState<LibraryDocument>(document)
   const [isSaving, setIsSaving] = useState(false)
@@ -343,10 +345,19 @@ export function DocumentDetailsModal({
           >
             Cancel
           </Button>
+          {formData.attachment && (
+            <Button
+              variant="outline"
+              onClick={() => onDownload?.(document.id)}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+          )}
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="bg-[#16A34A] hover:bg-[#15803D]"
+            className="bg-[#16A34A] hover:bg-[#15803D] ml-auto"
           >
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? 'Saving...' : 'Save Changes'}

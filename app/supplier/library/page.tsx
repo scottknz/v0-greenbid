@@ -93,6 +93,7 @@ export default function LibraryPage() {
           isOpen={true}
           onClose={() => setSelectedDocument(null)}
           onSave={handleSaveDocument}
+          onDownload={handleDownload}
         />
       )}
 
