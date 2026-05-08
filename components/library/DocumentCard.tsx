@@ -74,11 +74,16 @@ export function DocumentCard({ document, onDownload, onDelete, onEdit }: Documen
         </button>
       </div>
 
-      {/* Category badge */}
-      <div className="mb-3">
+      {/* Category badge and file status */}
+      <div className="mb-3 flex items-center gap-2">
         <Badge className={`${CATEGORY_COLORS[document.category]} text-xs`}>
           {document.category}
         </Badge>
+        {!document.attachment && (
+          <Badge className="bg-red-100 text-red-700 border border-red-300 text-xs">
+            File not available
+          </Badge>
+        )}
       </div>
 
       {/* Tags */}
