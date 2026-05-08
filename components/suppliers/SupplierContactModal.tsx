@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { mockSharedProjects } from '@/lib/mock-dashboard'
 
 interface Note {
   id: string
@@ -22,15 +23,17 @@ interface SupplierContactModalProps {
   onClose: () => void
 }
 
-// Mock project data - in a real app this would come from the backend
+// Transform shared projects for supplier contact display
 const mockProjects = [
-  { id: 'rfp-001', name: 'Scope 3 Value Chain Emissions Analysis', status: 'won', isProjectLead: true, value: 150000 },
-  { id: 'rfp-002', name: 'SBTi Target Setting & Validation', status: 'won', isProjectLead: false, value: 95000 },
-  { id: 'rfp-003', name: 'Carbon Footprint Assessment', status: 'won', isProjectLead: true, value: 120000 },
-  { id: 'rfp-004', name: 'ISSB Compliance Reporting', status: 'lost', isProjectLead: false, value: 0 },
-  { id: 'rfp-005', name: 'Renewable Energy Strategy', status: 'bid', isProjectLead: true, value: 0 },
+  ...mockSharedProjects.map((p, i) => ({
+    id: p.id,
+    name: p.name,
+    status: p.status === 'completed' ? 'won' : p.status === 'active' ? 'bid' : 'lost',
+    isProjectLead: p.role === 'Lead',
+    value: p.status === 'completed' ? 95000 + (i * 25000) : 0,
+  })),
   { id: 'rfp-006', name: 'ESG Data Management Platform', status: 'lost', isProjectLead: false, value: 0 },
-]
+] as { id: string; name: string; status: string; isProjectLead: boolean; value: number }[]
 
 export function SupplierContactModal({
   supplier,

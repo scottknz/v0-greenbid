@@ -3,56 +3,37 @@
 import React from 'react';
 import Link from 'next/link';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { ActivityFeed, ActivityItem } from '@/components/dashboard/ActivityFeed';
+import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { DataTable } from '@/components/dashboard/DataTable';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
 import { Button } from '@/components/ui/button';
-import { TenderState } from '@/config/site';
 import {
   FileText, AlertCircle, Users, Award, Clock,
-  CheckCircle2, Mail, MoreHorizontal
+  MoreHorizontal
 } from 'lucide-react';
-
-interface TenderRow {
-  id: string;
-  name: string;
-  status: TenderState;
-  deadline: string;
-  suppliers: number;
-  score: string | null;
-  isNearingDeadline?: boolean;
-}
-
-const mockTenders: TenderRow[] = [
-  { id: '1', name: 'Comprehensive Scope 3 Value Chain Emissions Analysis', status: 'under_review', deadline: '2026-05-15', suppliers: 5, score: 'Pending' },
-  { id: '2', name: 'SBTi Target Setting & Validation Support', status: 'open_for_proposals', deadline: '2026-04-28', suppliers: 12, score: null, isNearingDeadline: true },
-  { id: '3', name: 'Embodied Carbon Life Cycle Assessment (LCA)', status: 'draft', deadline: '2026-06-01', suppliers: 0, score: null },
-  { id: '4', name: 'ISSB (IFRS S1 & S2) Integration & Reporting', status: 'awarded', deadline: '2026-03-31', suppliers: 8, score: '92/100' },
-];
-
-const mockActivities: ActivityItem[] = [
-  { id: '1', icon: CheckCircle2, action: 'Score confirmed for', target: 'SBTi Target Setting & Validation Support', timestamp: '2 hours ago', isUnread: true },
-  { id: '2', icon: Mail, action: 'Submission received from EcoMetrics Advisory', timestamp: '5 hours ago', isUnread: true },
-  { id: '3', icon: FileText, action: 'RFP published:', target: 'Comprehensive Scope 3 Value Chain Emissions Analysis', timestamp: '1 day ago' },
-  { id: '4', icon: Award, action: 'Contract awarded for', target: 'ISSB (IFRS S1 & S2) Integration & Reporting', timestamp: '2 days ago' },
-];
+import { 
+  mockDashboardTenders, 
+  mockDashboardActivities, 
+  mockDashboardStats,
+  type DashboardTenderRow 
+} from '@/lib/mock-dashboard';
 
 const tenderColumns = [
   {
     key: 'name',
     header: 'RFP Name',
-    cell: (row: TenderRow) => <span className="font-medium">{row.name}</span>,
+    cell: (row: DashboardTenderRow) => <span className="font-medium">{row.name}</span>,
     className: 'w-[40%]',
   },
   {
     key: 'status',
     header: 'Status',
-    cell: (row: TenderRow) => <StatusBadge status={row.status} />,
+    cell: (row: DashboardTenderRow) => <StatusBadge status={row.status} />,
   },
   {
     key: 'deadline',
     header: 'Deadline',
-    cell: (row: TenderRow) => (
+    cell: (row: DashboardTenderRow) => (
       <span className={row.isNearingDeadline ? 'text-warning font-medium flex items-center gap-1.5' : ''}>
         {row.isNearingDeadline && <Clock className="h-3 w-3" />}
         {row.deadline}
@@ -62,12 +43,12 @@ const tenderColumns = [
   {
     key: 'suppliers',
     header: 'Suppliers',
-    cell: (row: TenderRow) => row.suppliers.toString(),
+    cell: (row: DashboardTenderRow) => row.suppliers.toString(),
   },
   {
     key: 'score',
     header: 'Score',
-    cell: (row: TenderRow) => (
+    cell: (row: DashboardTenderRow) => (
       row.score ? <span className="text-text-secondary">{row.score}</span> : <span className="text-text-muted">-</span>
     ),
   },
@@ -97,10 +78,10 @@ export default function BuyerDashboardPage() {
 
       <div className="flex-1 p-6 space-y-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Active RFPs" value={12} icon={FileText} valueColor="text-brand-green" />
-          <StatCard title="Awaiting Review" value={4} icon={AlertCircle} valueColor="text-warning" trend="up" trendValue="+2" trendLabel="since yesterday" />
-          <StatCard title="Suppliers Invited" value={38} icon={Users} valueColor="text-info" />
-          <StatCard title="Awarded YTD" value={24} icon={Award} />
+          <StatCard title="Active RFPs" value={mockDashboardStats.activeRFPs} icon={FileText} valueColor="text-brand-green" />
+          <StatCard title="Awaiting Review" value={mockDashboardStats.awaitingReview} icon={AlertCircle} valueColor="text-warning" trend="up" trendValue={`+${mockDashboardStats.awaitingReviewChange}`} trendLabel="since yesterday" />
+          <StatCard title="Suppliers Invited" value={mockDashboardStats.suppliersInvited} icon={Users} valueColor="text-info" />
+          <StatCard title="Awarded YTD" value={mockDashboardStats.awardedYTD} icon={Award} />
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -108,7 +89,7 @@ export default function BuyerDashboardPage() {
             <div className="flex flex-col gap-4">
               <h2 className="text-sm font-semibold text-text-primary">Active RFPs</h2>
               <DataTable
-                data={mockTenders}
+                data={mockDashboardTenders}
                 columns={tenderColumns}
                 keyExtractor={(row) => row.id}
               />
@@ -118,7 +99,7 @@ export default function BuyerDashboardPage() {
           <div className="space-y-6">
             <ActivityFeed
               title="Recent Activity"
-              items={mockActivities}
+              items={mockDashboardActivities}
             />
             
             <div className="rounded-lg border border-border bg-background p-5 shadow-card">

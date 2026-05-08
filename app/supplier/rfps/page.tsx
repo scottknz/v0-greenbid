@@ -36,138 +36,11 @@ import {
   Download,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-// Mock data for supplier RFPs
-export type RFPPhase = 'new_rfp' | 'in_progress' | 'under_final_review' | 'submitted' | 'client_reviewing' | 'awarded' | 'rejected' | 'declined'
-
-export interface RFPPhaseTransition {
-  phase: RFPPhase
-  timestamp: string
-  user: string
-  notes?: string
-}
-
-const mockSupplierRFPs = [
-  {
-    id: 'rfp-001',
-    title: 'Comprehensive Scope 3 Value Chain Emissions Analysis',
-    buyerCompany: 'Thistle Company',
-    currentPhase: 'in_progress' as RFPPhase,
-    phaseHistory: [
-      { phase: 'new_rfp' as RFPPhase, timestamp: '2026-03-15T10:00:00Z', user: 'Sarah Chen', notes: 'RFP received and reviewed' },
-      { phase: 'in_progress' as RFPPhase, timestamp: '2026-03-18T14:30:00Z', user: 'James Wilson', notes: 'Started proposal development' }
-    ] as RFPPhaseTransition[],
-    proposalNotes: [
-      { timestamp: '2026-03-20T09:00:00Z', user: 'Sarah Chen', text: 'Need to gather additional data from clients' },
-      { timestamp: '2026-03-22T15:00:00Z', user: 'James Wilson', text: 'Received all supporting documentation' }
-    ],
-    registeredAt: '2026-03-15',
-    deadline: '2026-04-30',
-    budget: '$150,000 - $200,000',
-    category: 'Sustainability',
-    submissionStatus: 'draft',
-    completionPercent: 65,
-  },
-  {
-    id: 'rfp-002',
-    title: 'SBTi Target Setting & Validation Support',
-    buyerCompany: 'GreenCorp Industries',
-    currentPhase: 'client_reviewing' as RFPPhase,
-    phaseHistory: [
-      { phase: 'new_rfp' as RFPPhase, timestamp: '2026-03-10T10:00:00Z', user: 'Sarah Chen', notes: 'RFP reviewed' },
-      { phase: 'in_progress' as RFPPhase, timestamp: '2026-03-11T09:00:00Z', user: 'Michael Park', notes: 'Proposal development started' },
-      { phase: 'under_final_review' as RFPPhase, timestamp: '2026-04-08T16:00:00Z', user: 'Sarah Chen', notes: 'Final review completed' },
-      { phase: 'submitted' as RFPPhase, timestamp: '2026-04-10T12:00:00Z', user: 'James Wilson', notes: 'Proposal submitted to buyer' },
-      { phase: 'client_reviewing' as RFPPhase, timestamp: '2026-04-11T08:00:00Z', user: 'System', notes: 'Automatically marked as under review' }
-    ] as RFPPhaseTransition[],
-    proposalNotes: [
-      { timestamp: '2026-03-15T10:00:00Z', user: 'Sarah Chen', text: 'Completed SBTi documentation review' },
-      { timestamp: '2026-04-08T14:00:00Z', user: 'Michael Park', text: 'Final proposal polish complete' }
-    ],
-    registeredAt: '2026-03-10',
-    deadline: '2026-04-15',
-    budget: '$80,000 - $120,000',
-    category: 'Climate',
-    submissionStatus: 'submitted',
-    submittedAt: '2026-04-10',
-    completionPercent: 100,
-  },
-  {
-    id: 'rfp-003',
-    title: 'Embodied Carbon Life Cycle Assessment (LCA)',
-    buyerCompany: 'EcoBuilders Ltd',
-    currentPhase: 'awarded' as RFPPhase,
-    phaseHistory: [
-      { phase: 'new_rfp' as RFPPhase, timestamp: '2026-02-20T10:00:00Z', user: 'Sarah Chen', notes: 'RFP reviewed' },
-      { phase: 'in_progress' as RFPPhase, timestamp: '2026-02-21T09:00:00Z', user: 'Emily Rodriguez', notes: 'Proposal development started' },
-      { phase: 'under_final_review' as RFPPhase, timestamp: '2026-03-25T16:00:00Z', user: 'Sarah Chen', notes: 'Final review completed' },
-      { phase: 'submitted' as RFPPhase, timestamp: '2026-03-29T14:00:00Z', user: 'James Wilson', notes: 'Proposal submitted' },
-      { phase: 'client_reviewing' as RFPPhase, timestamp: '2026-03-30T09:00:00Z', user: 'System', notes: 'Under buyer review' },
-      { phase: 'awarded' as RFPPhase, timestamp: '2026-04-05T11:00:00Z', user: 'System', notes: 'Won the contract' }
-    ] as RFPPhaseTransition[],
-    proposalNotes: [
-      { timestamp: '2026-03-20T10:00:00Z', user: 'Emily Rodriguez', text: 'LCA assessment finalized' }
-    ],
-    registeredAt: '2026-02-20',
-    deadline: '2026-03-31',
-    budget: '$200,000 - $280,000',
-    category: 'Construction',
-    submissionStatus: 'awarded',
-    awardedAt: '2026-04-05',
-    completionPercent: 100,
-  },
-  {
-    id: 'rfp-004',
-    title: 'ISSB (IFRS S1 & S2) Integration & Reporting',
-    buyerCompany: 'Financial Services Corp',
-    currentPhase: 'new_rfp' as RFPPhase,
-    phaseHistory: [
-      { phase: 'new_rfp' as RFPPhase, timestamp: '2026-04-01T10:00:00Z', user: 'Sarah Chen', notes: 'RFP received and reviewed' }
-    ] as RFPPhaseTransition[],
-    proposalNotes: [],
-    registeredAt: '2026-04-01',
-    deadline: '2026-05-15',
-    budget: '$100,000 - $150,000',
-    category: 'Reporting',
-    submissionStatus: 'not_started',
-    completionPercent: 0,
-  },
-  {
-    id: 'rfp-005',
-    title: 'Renewable Energy Procurement Strategy',
-    buyerCompany: 'Manufacturing Plus',
-    currentPhase: 'rejected' as RFPPhase,
-    phaseHistory: [
-      { phase: 'new_rfp' as RFPPhase, timestamp: '2026-02-01T10:00:00Z', user: 'Sarah Chen', notes: 'RFP reviewed' },
-      { phase: 'in_progress' as RFPPhase, timestamp: '2026-02-02T09:00:00Z', user: 'Alex Kumar', notes: 'Proposal development started' },
-      { phase: 'under_final_review' as RFPPhase, timestamp: '2026-03-10T16:00:00Z', user: 'Sarah Chen', notes: 'Final review completed' },
-      { phase: 'submitted' as RFPPhase, timestamp: '2026-03-14T12:00:00Z', user: 'James Wilson', notes: 'Proposal submitted' },
-      { phase: 'client_reviewing' as RFPPhase, timestamp: '2026-03-15T09:00:00Z', user: 'System', notes: 'Under buyer review' },
-      { phase: 'rejected' as RFPPhase, timestamp: '2026-03-20T10:00:00Z', user: 'System', notes: 'Proposal not selected' }
-    ] as RFPPhaseTransition[],
-    proposalNotes: [
-      { timestamp: '2026-03-10T14:00:00Z', user: 'Alex Kumar', text: 'Proposal finalized' }
-    ],
-    registeredAt: '2026-02-01',
-    deadline: '2026-03-15',
-    budget: '$50,000 - $75,000',
-    category: 'Energy',
-    submissionStatus: 'rejected',
-    rejectedAt: '2026-03-20',
-    completionPercent: 100,
-  },
-]
-
-const PHASE_CONFIG = {
-  new_rfp: { label: 'New RFP', color: 'bg-blue-100 text-blue-800', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', progressPercent: 14 },
-  in_progress: { label: 'In Progress', color: 'bg-amber-100 text-amber-800', bgColor: 'bg-amber-50', borderColor: 'border-amber-200', progressPercent: 43 },
-  under_final_review: { label: 'Under Final Review', color: 'bg-orange-100 text-orange-800', bgColor: 'bg-orange-50', borderColor: 'border-orange-200', progressPercent: 57 },
-  submitted: { label: 'Submitted', color: 'bg-purple-100 text-purple-800', bgColor: 'bg-purple-50', borderColor: 'border-purple-200', progressPercent: 71 },
-  client_reviewing: { label: 'Client Reviewing', color: 'bg-indigo-100 text-indigo-800', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200', progressPercent: 86 },
-  awarded: { label: 'Awarded', color: 'bg-green-100 text-green-800', bgColor: 'bg-green-50', borderColor: 'border-green-200', progressPercent: 100 },
-  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800', bgColor: 'bg-red-50', borderColor: 'border-red-200', progressPercent: 100 },
-  declined: { label: 'Decline to Submit', color: 'bg-gray-100 text-gray-800', bgColor: 'bg-gray-50', borderColor: 'border-gray-200', progressPercent: 0 },
-}
+import { 
+  mockSupplierRFPs, 
+  SUPPLIER_PHASE_CONFIG,
+  type SupplierRFPPhase 
+} from '@/lib/mock-supplier-rfps'
 
 export default function SupplierRFPsPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -286,7 +159,7 @@ export default function SupplierRFPsPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {filteredRFPs.map((rfp) => {
-                  const phaseConfig = PHASE_CONFIG[rfp.currentPhase]
+                  const phaseConfig = SUPPLIER_PHASE_CONFIG[rfp.currentPhase]
                   const daysDue = Math.ceil((new Date(rfp.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
                   const isDeadlineSoon = daysDue <= 7 && daysDue > 0
                   const isOverdue = daysDue < 0

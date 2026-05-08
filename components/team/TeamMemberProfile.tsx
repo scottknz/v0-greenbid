@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { mockSharedProjects } from '@/lib/mock-dashboard'
 
 interface Note {
   id: string
@@ -26,13 +27,14 @@ function getRoleColor(role: string) {
   return ROLE_COLORS[role as keyof typeof ROLE_COLORS] || 'bg-grey-100 text-grey-900'
 }
 
-// Mock project data for team members
-const mockProjects = [
-  { id: 'rfp-001', title: 'Cloud Infrastructure Upgrade', status: 'Active', role: 'Lead', value: '$450,000' },
-  { id: 'rfp-002', title: 'Office Supplies Contract', status: 'Completed', role: 'Reviewer', value: '$85,000' },
-  { id: 'rfp-003', title: 'IT Security Services', status: 'Active', role: 'Lead', value: '$320,000' },
-  { id: 'rfp-004', title: 'Marketing Agency Selection', status: 'Completed', role: 'Contributor', value: '$150,000' },
-]
+// Transform shared projects for team member profile display
+const mockProjects = mockSharedProjects.map(p => ({
+  id: p.id,
+  title: p.name,
+  status: p.status === 'active' ? 'Active' : p.status === 'completed' ? 'Completed' : 'Pending',
+  role: p.role,
+  value: p.status === 'completed' ? '$150,000' : p.status === 'active' ? '$250,000' : '$0',
+}))
 
 interface TeamMemberProfileProps {
   isOpen: boolean

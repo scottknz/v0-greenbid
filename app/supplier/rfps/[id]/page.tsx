@@ -64,6 +64,15 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { internalTeamMembers } from '@/lib/mock-rfp'
+import { 
+  mockRFPDetail, 
+  mockApprovers, 
+  SUPPLIER_SUPPLIER_PHASE_CONFIG,
+  SUPPLIER_SUPPLIER_PHASE_ORDER,
+  type SupplierRFPPhase,
+  type SupplierRFPSupplierRFPPhaseTransition,
+  type SupplierSupplierProposalNote 
+} from '@/lib/mock-supplier-rfps'
 import type { RFPTeamMember, RFPTeamRole } from '@/types/rfp'
 
 const ROLE_OPTIONS: RFPTeamRole[] = ['Lead', 'Reviewer', 'Approver', 'Observer']
@@ -75,117 +84,15 @@ const roleStyles: Record<RFPTeamRole, string> = {
   Observer: 'bg-gray-100 text-gray-600 border-gray-200',
 }
 
-// Phase types and configuration
-export type RFPPhase = 'new_rfp' | 'in_progress' | 'under_final_review' | 'submitted' | 'client_reviewing' | 'awarded' | 'rejected' | 'declined'
-
-const PHASE_ORDER: RFPPhase[] = ['new_rfp', 'in_progress', 'under_final_review', 'submitted', 'client_reviewing', 'awarded']
-
-const PHASE_CONFIG = {
-  new_rfp: { label: 'New RFP' },
-  in_progress: { label: 'In Progress' },
-  under_final_review: { label: 'Under Final Review' },
-  submitted: { label: 'Submitted' },
-  client_reviewing: { label: 'Client Reviewing' },
-  awarded: { label: 'Awarded' },
-  rejected: { label: 'Not Successful' },
-  declined: { label: 'Decline to Submit' },
-}
-
-interface PhaseTransition {
-  phase: RFPPhase
-  timestamp: string
-  user: string
-  notes?: string
-}
-
-interface ProposalNote {
-  id: string
-  timestamp: string
-  user: string
-  text: string
-}
-
-// Mock approvers list
-const mockApprovers = [
-  { id: 'a1', name: 'Sarah Chen', email: 'sarah.chen@company.com', role: 'Senior Manager' },
-  { id: 'a2', name: 'James Wilson', email: 'james.wilson@company.com', role: 'Director' },
-  { id: 'a3', name: 'Emily Rodriguez', email: 'emily.rodriguez@company.com', role: 'VP Operations' },
-  { id: 'a4', name: 'Michael Park', email: 'michael.park@company.com', role: 'Legal Counsel' },
-]
-
-// Mock RFP detail data
-const mockRFPDetail = {
-  id: 'rfp-001',
-  title: 'Comprehensive Scope 3 Value Chain Emissions Analysis',
-  buyerCompany: 'Thistle Company',
-  buyerContact: {
-    name: 'Emma Thompson',
-    email: 'emma@thistle.com',
-    phone: '+44 207 123 4567',
-  },
-  onlineRFPUrl: 'https://thistle.greenbid.com/rfp/scope3-analysis-2026',
-  currentPhase: 'in_progress' as RFPPhase,
-  phaseHistory: [
-    { phase: 'new_rfp' as RFPPhase, timestamp: '2026-03-15T10:00:00Z', user: 'Sarah Chen', notes: 'RFP received and reviewed. Good fit for our capabilities.' },
-    { phase: 'in_progress' as RFPPhase, timestamp: '2026-03-18T14:30:00Z', user: 'James Wilson', notes: 'Started proposal development' }
-  ] as PhaseTransition[],
-  phaseBeforeDecline: null as RFPPhase | null,
-  proposalNotes: [
-    { id: 'note-1', timestamp: '2026-03-20T09:00:00Z', user: 'Sarah Chen', text: 'Need to gather additional emissions data from last 3 years' },
-    { id: 'note-2', timestamp: '2026-03-22T15:00:00Z', user: 'James Wilson', text: 'Received all supporting documentation from operations team' }
-  ] as ProposalNote[],
-  registeredAt: '2026-03-15',
-  deadline: '2026-04-30',
-  budget: '$150,000 - $200,000',
-  estimatedValue: 175000,
-  category: 'Sustainability',
-  description:
-    'We are seeking a sustainability consultant to conduct a comprehensive Scope 3 emissions analysis across our entire value chain. This includes supplier emissions, transportation, waste, and end-of-life product analysis.',
-  requirements: [
-    'Deep expertise in Scope 3 emissions methodology',
-    'Experience with supply chain carbon accounting',
-    'Knowledge of GHG Protocol standards',
-    'Ability to conduct supplier engagement and data collection',
-    'Experience with carbon accounting software (e.g., Catena-X, Sphera)',
-  ],
-  deliverables: [
-    'Baseline Scope 3 emissions inventory',
-    'Category-wise breakdown and analysis',
-    'Hotspot identification report',
-    'Recommendations for reduction strategies',
-    'Executive summary for stakeholders',
-  ],
-  documents: [
-    { name: 'RFP_Scope3_Analysis_2026.pdf', size: '2.4 MB', uploadedAt: '2026-03-15' },
-    { name: 'Company_Background.docx', size: '1.2 MB', uploadedAt: '2026-03-15' },
-    { name: 'Technical_Specifications.xlsx', size: '850 KB', uploadedAt: '2026-03-16' },
-  ],
-  timeline: [
-    { phase: 'Proposal Submission', date: '2026-04-30' },
-    { phase: 'Vendor Shortlisting', date: '2026-05-15' },
-    { phase: 'Interviews', date: '2026-05-20' },
-    { phase: 'Contract Negotiation', date: '2026-06-01' },
-    { phase: 'Project Start', date: '2026-06-15' },
-  ],
-  buyerQuestions: [
-    { id: 'q1', question: 'Describe your experience with Scope 3 emissions analysis', type: 'text', required: true },
-    { id: 'q2', question: 'List your relevant certifications and methodologies used', type: 'text', required: true },
-    { id: 'q3', question: 'Provide a high-level project timeline with milestones', type: 'text', required: true },
-    { id: 'q4', question: 'What is your proposed pricing structure?', type: 'text', required: true },
-    { id: 'q5', question: 'Describe your team composition and key personnel', type: 'text', required: false },
-    { id: 'q6', question: 'Provide case studies of similar past projects', type: 'text', required: false },
-  ],
-}
-
 export default function RFPDetailPage() {
   const router = useRouter()
   const params = useParams()
   
   // Phase and submission state
-  const [currentPhase, setCurrentPhase] = useState<RFPPhase>(mockRFPDetail.currentPhase)
-  const [phaseHistory, setPhaseHistory] = useState<PhaseTransition[]>(mockRFPDetail.phaseHistory)
-  const [proposalNotes, setProposalNotes] = useState<ProposalNote[]>(mockRFPDetail.proposalNotes)
-  const [phaseBeforeDecline, setPhaseBeforeDecline] = useState<RFPPhase | null>(mockRFPDetail.phaseBeforeDecline)
+  const [currentPhase, setCurrentPhase] = useState<SupplierRFPPhase>(mockRFPDetail.currentPhase)
+  const [phaseHistory, setPhaseHistory] = useState<SupplierRFPSupplierRFPPhaseTransition[]>(mockRFPDetail.phaseHistory)
+  const [proposalNotes, setSupplierProposalNotes] = useState<SupplierSupplierProposalNote[]>(mockRFPDetail.proposalNotes)
+  const [phaseBeforeDecline, setPhaseBeforeDecline] = useState<SupplierRFPPhase | null>(mockRFPDetail.phaseBeforeDecline)
   
   // Modal states
   const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false)
@@ -245,12 +152,12 @@ export default function RFPDetailPage() {
   const isOverdue = daysDue < 0
   
   // Get phase index for progress indicator
-  const currentPhaseIndex = PHASE_ORDER.indexOf(currentPhase)
+  const currentPhaseIndex = SUPPLIER_PHASE_ORDER.indexOf(currentPhase)
   const isTerminalPhase = ['awarded', 'rejected', 'declined'].includes(currentPhase)
   
   // Phase transition handlers
   const handleMoveForward = () => {
-    const newTransition: PhaseTransition = {
+    const newTransition: SupplierRFPPhaseTransition = {
       phase: currentPhase,
       timestamp: new Date().toISOString(),
       user: 'Current User',
@@ -258,8 +165,8 @@ export default function RFPDetailPage() {
     }
     
     const nextPhaseIndex = currentPhaseIndex + 1
-    if (nextPhaseIndex < PHASE_ORDER.length) {
-      const nextPhase = PHASE_ORDER[nextPhaseIndex]
+    if (nextPhaseIndex < SUPPLIER_PHASE_ORDER.length) {
+      const nextPhase = SUPPLIER_PHASE_ORDER[nextPhaseIndex]
       setPhaseHistory([...phaseHistory, { ...newTransition, phase: nextPhase }])
       setCurrentPhase(nextPhase)
     }
@@ -268,7 +175,7 @@ export default function RFPDetailPage() {
   
   const handleDeclineToSubmit = () => {
     setPhaseBeforeDecline(currentPhase)
-    const declineTransition: PhaseTransition = {
+    const declineTransition: SupplierRFPPhaseTransition = {
       phase: 'declined',
       timestamp: new Date().toISOString(),
       user: 'Current User',
@@ -282,7 +189,7 @@ export default function RFPDetailPage() {
   
   const handleReinstateSubmission = () => {
     if (phaseBeforeDecline) {
-      const reinstateTransition: PhaseTransition = {
+      const reinstateTransition: SupplierRFPPhaseTransition = {
         phase: phaseBeforeDecline,
         timestamp: new Date().toISOString(),
         user: 'Current User',
@@ -298,7 +205,7 @@ export default function RFPDetailPage() {
     if (selectedApprovers.length === 0) return
     
     // In production, this would send emails to selected approvers
-    const approvalTransition: PhaseTransition = {
+    const approvalTransition: SupplierRFPPhaseTransition = {
       phase: currentPhase,
       timestamp: new Date().toISOString(),
       user: 'Current User',
@@ -310,7 +217,7 @@ export default function RFPDetailPage() {
   }
   
   const handleSubmitProposal = () => {
-    const submitTransition: PhaseTransition = {
+    const submitTransition: SupplierRFPPhaseTransition = {
       phase: 'submitted',
       timestamp: new Date().toISOString(),
       user: 'Current User',
@@ -324,13 +231,13 @@ export default function RFPDetailPage() {
   
   const handleAddNote = () => {
     if (!newNoteText.trim()) return
-    const newNote: ProposalNote = {
+    const newNote: SupplierProposalNote = {
       id: `note-${Date.now()}`,
       timestamp: new Date().toISOString(),
       user: 'Current User',
       text: newNoteText,
     }
-    setProposalNotes([...proposalNotes, newNote])
+    setSupplierProposalNotes([...proposalNotes, newNote])
     setNewNoteText('')
     setShowAddNoteModal(false)
   }
@@ -413,8 +320,8 @@ export default function RFPDetailPage() {
 
           {/* Phase labels row */}
           <div className="flex items-center">
-            {PHASE_ORDER.map((phase, idx) => {
-              const isFinalOutcomeSlot = idx === PHASE_ORDER.length - 1
+            {SUPPLIER_PHASE_ORDER.map((phase, idx) => {
+              const isFinalOutcomeSlot = idx === SUPPLIER_PHASE_ORDER.length - 1
               const isCompleted = currentPhaseIndex > idx && !['declined'].includes(currentPhase)
               const isCurrent = currentPhase === phase
               const isRejected = currentPhase === 'rejected' && isFinalOutcomeSlot
@@ -427,7 +334,7 @@ export default function RFPDetailPage() {
                   : currentPhase === 'rejected'
                   ? 'Not Successful'
                   : 'Final Outcome'
-                : PHASE_CONFIG[phase].label
+                : SUPPLIER_PHASE_CONFIG[phase].label
 
               return (
                 <div key={phase} className="flex items-center flex-1">
@@ -448,7 +355,7 @@ export default function RFPDetailPage() {
                   >
                     {label}
                   </div>
-                  {idx < PHASE_ORDER.length - 1 && (
+                  {idx < SUPPLIER_PHASE_ORDER.length - 1 && (
                     <div
                       className={cn(
                         'flex-1 h-0.5 mx-1 min-w-[6px]',
@@ -885,7 +792,7 @@ export default function RFPDetailPage() {
                     )}
                   </div>
                   <div className="flex-1 pb-3">
-                    <p className="font-medium text-text-primary">{PHASE_CONFIG[transition.phase].label}</p>
+                    <p className="font-medium text-text-primary">{SUPPLIER_PHASE_CONFIG[transition.phase].label}</p>
                     <p className="text-xs text-text-secondary">
                       {new Date(transition.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} by {transition.user}
                     </p>
@@ -1192,7 +1099,7 @@ export default function RFPDetailPage() {
                   )}
                 </div>
                 <div className="flex-1 pb-4">
-                  <p className="font-medium text-text-primary">{PHASE_CONFIG[transition.phase].label}</p>
+                  <p className="font-medium text-text-primary">{SUPPLIER_PHASE_CONFIG[transition.phase].label}</p>
                   <p className="text-xs text-text-secondary">
                     {new Date(transition.timestamp).toLocaleString('en-GB', {
                       day: 'numeric',
