@@ -28,6 +28,7 @@ export const supplierNav: NavItem[] = [
   { label: 'Library', href: '/supplier/library', icon: 'BookOpen', section: 'main' },
   { label: 'Activity Log', href: '/supplier/activity', icon: 'ClipboardList', section: 'main' },
   { label: 'Messages', href: '/supplier/messages', icon: 'Mail', section: 'main' },
+  { label: 'AI Copilot', href: '#', icon: 'MessageSquare', section: 'secondary', isChatTrigger: true },
   { label: 'Marketplace', href: '/marketplace', icon: 'Library', section: 'secondary' },
   { label: 'Settings', href: '/settings', icon: 'Settings', section: 'secondary' },
 ];
