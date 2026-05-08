@@ -61,6 +61,8 @@ import {
   Mail,
   Phone,
   Star,
+  Tag,
+  TrendingUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { internalTeamMembers } from '@/lib/mock-rfp'
@@ -122,6 +124,8 @@ export default function RFPDetailPage() {
   const [addingTeamMember, setAddingTeamMember] = useState(false)
   const [selectedMemberId, setSelectedMemberId] = useState('')
   const [selectedRole, setSelectedRole] = useState<RFPTeamRole>('Reviewer')
+
+  const [approvalCardOpen, setApprovalCardOpen] = useState(true)
 
   // Approval workflow states - use mockRFPDetail directly since rfp is defined later
   const [currentApproval, setCurrentApproval] = useState<ApprovalRequest | null>(
@@ -456,42 +460,88 @@ export default function RFPDetailPage() {
         </div>
       )}
 
+      {/* Approval Status — collapsible, near top */}
+      {currentApproval && (
+        <Collapsible open={approvalCardOpen} onOpenChange={setApprovalCardOpen}>
+          <Card className={cn('border', currentApproval.status === 'pending' ? 'border-amber-200' : currentApproval.status === 'approved' ? 'border-[#16A34A]/40' : 'border-blue-200')}>
+            <CollapsibleTrigger asChild>
+              <CardHeader className="cursor-pointer select-none pb-3 hover:bg-gray-50/50 transition-colors rounded-t-lg">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    {currentApproval.status === 'pending' && <Clock className="h-4 w-4 text-amber-500" />}
+                    {currentApproval.status === 'approved' && <CheckCircle className="h-4 w-4 text-[#16A34A]" />}
+                    {currentApproval.status === 'changes_requested' && <AlertCircle className="h-4 w-4 text-blue-500" />}
+                    Approval Status
+                    <Badge className={cn('text-[10px] h-4 px-1.5 ml-1',
+                      currentApproval.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                      currentApproval.status === 'approved' ? 'bg-[#F0FDF4] text-[#166534] border border-[#16A34A]/20' :
+                      'bg-blue-50 text-blue-700 border border-blue-200'
+                    )}>
+                      {currentApproval.status === 'pending' ? `${currentApproval.approvers.filter(a => a.status === 'approved').length}/${currentApproval.approvers.length} approved` :
+                       currentApproval.status === 'approved' ? 'Approved' : 'Changes Requested'}
+                    </Badge>
+                  </CardTitle>
+                  <ChevronDown className={cn('h-4 w-4 text-text-secondary transition-transform', approvalCardOpen && 'rotate-180')} />
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <ApprovalStatus approval={currentApproval} compact={false} />
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         {/* Main content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Key Details */}
+          {/* Key Details — single-line pill row */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Key Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-3">
-                  <Calendar className="h-4 w-4 text-text-secondary mt-0.5 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-text-secondary">Submission Deadline</p>
-                    <p className="text-sm font-medium text-text-primary">
-                      {new Date(rfp.deadline).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </p>
-                  </div>
+            <CardContent className="py-3 px-4">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Building2 className="h-3.5 w-3.5 text-text-secondary" />
+                  <span className="text-xs text-text-secondary">Buyer:</span>
+                  <span className="text-xs font-medium text-text-primary">{rfp.buyerCompany}</span>
                 </div>
-                <div className="flex items-start gap-3">
-                  <DollarSign className="h-4 w-4 text-text-secondary mt-0.5 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-text-secondary">Budget Range</p>
-                    <p className="text-sm font-medium text-text-primary">{rfp.budget}</p>
-                  </div>
+                <div className="w-px h-3.5 bg-border hidden sm:block" />
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Tag className="h-3.5 w-3.5 text-text-secondary" />
+                  <span className="text-xs text-text-secondary">Category:</span>
+                  <span className="text-xs font-medium text-text-primary">{rfp.category}</span>
                 </div>
-              </div>
-              <div className="flex items-start gap-3 pt-2 border-t border-border">
-                <FileText className="h-4 w-4 text-text-secondary mt-0.5 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-text-secondary">Category</p>
-                  <p className="text-sm font-medium text-text-primary">{rfp.category}</p>
+                <div className="w-px h-3.5 bg-border hidden sm:block" />
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <DollarSign className="h-3.5 w-3.5 text-text-secondary" />
+                  <span className="text-xs text-text-secondary">Budget:</span>
+                  <span className="text-xs font-medium text-text-primary">{rfp.budget}</span>
+                </div>
+                <div className="w-px h-3.5 bg-border hidden sm:block" />
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <TrendingUp className="h-3.5 w-3.5 text-text-secondary" />
+                  <span className="text-xs text-text-secondary">Est. Value:</span>
+                  <span className="text-xs font-medium text-text-primary">${rfp.estimatedValue.toLocaleString()}</span>
+                </div>
+                <div className="w-px h-3.5 bg-border hidden sm:block" />
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Calendar className="h-3.5 w-3.5 text-text-secondary" />
+                  <span className="text-xs text-text-secondary">Deadline:</span>
+                  <span className={cn('text-xs font-medium', isOverdue ? 'text-red-600' : isDeadlineSoon ? 'text-amber-600' : 'text-text-primary')}>
+                    {new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {!isTerminalPhase && !isOverdue && daysDue > 0 && (
+                      <span className="ml-1 text-text-secondary font-normal">({daysDue}d)</span>
+                    )}
+                  </span>
+                </div>
+                <div className="w-px h-3.5 bg-border hidden sm:block" />
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Clock className="h-3.5 w-3.5 text-text-secondary" />
+                  <span className="text-xs text-text-secondary">Registered:</span>
+                  <span className="text-xs font-medium text-text-primary">
+                    {new Date(rfp.registeredAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -1177,13 +1227,6 @@ export default function RFPDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Approval Status */}
-      {currentApproval && (
-        <div className="mt-8">
-          <ApprovalStatus approval={currentApproval} compact={false} />
-        </div>
-      )}
 
       {/* New Approval Request Modal */}
       <ApprovalRequestModal
