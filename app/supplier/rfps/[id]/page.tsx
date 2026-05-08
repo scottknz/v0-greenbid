@@ -74,6 +74,10 @@ import {
   type SupplierProposalNote 
 } from '@/lib/mock-supplier-rfps'
 import type { RFPTeamMember, RFPTeamRole } from '@/types/rfp'
+import { ApprovalRequestModal } from '@/components/approval/ApprovalRequestModal'
+import { ApprovalStatus } from '@/components/approval/ApprovalStatus'
+import { mockSupplierApprovalRequests } from '@/lib/mock-approvals'
+import type { ApprovalRequest } from '@/types/approval'
 
 const ROLE_OPTIONS: RFPTeamRole[] = ['Lead', 'Reviewer', 'Approver', 'Observer']
 
@@ -118,6 +122,46 @@ export default function RFPDetailPage() {
   const [addingTeamMember, setAddingTeamMember] = useState(false)
   const [selectedMemberId, setSelectedMemberId] = useState('')
   const [selectedRole, setSelectedRole] = useState<RFPTeamRole>('Reviewer')
+
+  // Approval workflow states
+  const [showApprovalModal, setShowApprovalModal] = useState(false)
+  const [currentApproval, setCurrentApproval] = useState<ApprovalRequest | null>(
+    mockSupplierApprovalRequests.find(a => a.itemId === rfp.id) || null
+  )
+
+  const internalTeamAsApprovers = team.filter(m => ['Lead', 'Approver'].includes(m.role))
+  const availableTeamApprovers = team.map(m => ({
+    id: m.id,
+    name: m.name,
+    email: m.email,
+    role: m.role,
+  }))
+
+  const handleSendForApproval = (data: { approverIds: string[]; message: string; approvalMode: 'any' | 'all' }) => {
+    const newApproval: ApprovalRequest = {
+      id: `apr-${Date.now()}`,
+      type: 'rfp_submission',
+      itemId: rfp.id,
+      itemTitle: rfp.title,
+      requestedBy: 'user-john',
+      requestedByName: 'John Smith',
+      requestedAt: new Date().toISOString(),
+      message: data.message,
+      approvalMode: data.approvalMode,
+      approvers: availableTeamApprovers
+        .filter(a => data.approverIds.includes(a.id))
+        .map(a => ({
+          userId: a.id,
+          name: a.name,
+          email: a.email,
+          role: a.role,
+          status: 'pending' as const,
+        })),
+      status: 'pending',
+    }
+    setCurrentApproval(newApproval)
+    console.log('[v0] RFP approval request sent:', newApproval)
+  }
 
   const handleTeamAddMember = () => {
     if (!selectedMemberId) return
@@ -199,21 +243,6 @@ export default function RFPDetailPage() {
       setCurrentPhase(phaseBeforeDecline)
       setPhaseBeforeDecline(null)
     }
-  }
-  
-  const handleSendForApproval = () => {
-    if (selectedApprovers.length === 0) return
-    
-    // In production, this would send emails to selected approvers
-    const approvalTransition: SupplierRFPPhaseTransition = {
-      phase: currentPhase,
-      timestamp: new Date().toISOString(),
-      user: 'Current User',
-      notes: `Sent for approval to: ${selectedApprovers.map(id => mockApprovers.find(a => a.id === id)?.name).join(', ')}`,
-    }
-    setPhaseHistory([...phaseHistory, approvalTransition])
-    setSelectedApprovers([])
-    setShowApprovalModal(false)
   }
   
   const handleSubmitProposal = () => {
@@ -1150,6 +1179,28 @@ export default function RFPDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Approval Status */}
+      {currentApproval && (
+        <div className="mt-8">
+          <ApprovalStatus approval={currentApproval} compact={false} />
+        </div>
+      )}
+
+      {/* New Approval Request Modal */}
+      <ApprovalRequestModal
+        open={showApprovalModal && !currentApproval}
+        onOpenChange={(open) => {
+          if (!open) setShowApprovalModal(false)
+        }}
+        title="Send Proposal for Approval"
+        description="Select team members to review and approve this proposal before submission to the buyer. Approvers will receive emails with a direct link to review."
+        type="rfp_submission"
+        itemId={rfp.id}
+        itemTitle={rfp.title}
+        availableApprovers={availableTeamApprovers}
+        onSubmit={handleSendForApproval}
+      />
     </div>
   )
 }

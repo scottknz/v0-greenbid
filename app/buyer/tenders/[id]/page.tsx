@@ -68,7 +68,12 @@ import {
   Reply,
   Globe,
   Lock,
+  Zap,
 } from "lucide-react"
+import { ApprovalRequestModal } from "@/components/approval/ApprovalRequestModal"
+import { ApprovalStatus } from "@/components/approval/ApprovalStatus"
+import { mockBuyerApprovalRequests } from "@/lib/mock-approvals"
+import type { ApprovalRequest } from "@/types/approval"
 
 // Mock data - in production this would come from an API
 const tenderData = {
@@ -747,6 +752,45 @@ export default function TenderDetailPage() {
   const [activitySortOrder, setActivitySortOrder] = useState<"asc" | "desc">("desc")
   const [selectedActivityRows, setSelectedActivityRows] = useState<Set<string>>(new Set())
 
+  // Approval workflow states
+  const [showApprovalModal, setShowApprovalModal] = useState(false)
+  const [currentApproval, setCurrentApproval] = useState<ApprovalRequest | null>(
+    mockBuyerApprovalRequests.find(a => a.itemId === tenderData.id) || null
+  )
+  const [approvalMode, setApprovalMode] = useState<'any' | 'all'>('all')
+
+  const availableApproversForBuyer = [
+    { id: 'user-emily', name: 'Emily Rodriguez', email: 'emily.rodriguez@company.com', role: 'VP Sustainability' },
+    { id: 'user-james', name: 'James Wilson', email: 'james.wilson@company.com', role: 'Finance Director' },
+    { id: 'user-michael', name: 'Michael Park', email: 'michael.park@company.com', role: 'Legal Counsel' },
+  ]
+
+  const handleSendForApproval = (data: { approverIds: string[]; message: string; approvalMode: 'any' | 'all' }) => {
+    const newApproval: ApprovalRequest = {
+      id: `apr-${Date.now()}`,
+      type: 'rfp_publication',
+      itemId: tenderData.id,
+      itemTitle: tenderData.name,
+      requestedBy: 'user-sarah',
+      requestedByName: 'Sarah Chen',
+      requestedAt: new Date().toISOString(),
+      message: data.message,
+      approvalMode: data.approvalMode,
+      approvers: availableApproversForBuyer
+        .filter(a => data.approverIds.includes(a.id))
+        .map(a => ({
+          userId: a.id,
+          name: a.name,
+          email: a.email,
+          role: a.role,
+          status: 'pending' as const,
+        })),
+      status: 'pending',
+    }
+    setCurrentApproval(newApproval)
+    console.log('[v0] Approval request sent:', newApproval)
+  }
+
   const toggleActivityRow = (id: string) => {
     setSelectedActivityRows(prev => {
       const next = new Set(prev)
@@ -1329,13 +1373,18 @@ export default function TenderDetailPage() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  className="bg-[#16A34A] hover:bg-[#15803D]"
-                  onClick={handleSaveRFPEdit}
-                >
-                  <Save className="size-4 mr-2" />
-                  Save Changes
-                </Button>
+            <Button
+              className="bg-[#16A34A] hover:bg-[#15803D]"
+              onClick={() => {
+                if (!currentApproval) {
+                  setShowApprovalModal(true)
+                }
+              }}
+              disabled={currentApproval?.status === 'pending'}
+            >
+              <Zap className="size-4 mr-2" />
+              {currentApproval?.status === 'pending' ? 'Awaiting Approvals' : 'Send for Approval'}
+            </Button>
               </>
             ) : (
               <>
@@ -3442,8 +3491,27 @@ export default function TenderDetailPage() {
             </Card>
           </div>
         )}
-    </div>
-  )
+
+        {/* Approval Status */}
+        {currentApproval && (
+          <div className="mt-8">
+            <ApprovalStatus approval={currentApproval} compact={false} />
+          </div>
+        )}
+      </div>
+
+      {/* Approval Modal */}
+      <ApprovalRequestModal
+        open={showApprovalModal}
+        onOpenChange={setShowApprovalModal}
+        title="Send RFP for Approval"
+        description="Select internal approvers to review and approve this RFP before publication. They will receive emails with a direct link to review."
+        type="rfp_publication"
+        itemId={tenderData.id}
+        itemTitle={tenderData.name}
+        availableApprovers={availableApproversForBuyer}
+        onSubmit={handleSendForApproval}
+      />
 }
 
 function SubmissionStatusBadge({ status }: { status: string }) {
