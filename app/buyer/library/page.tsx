@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { LibraryList } from '@/components/library/LibraryList'
+import { LibraryDocument, LibraryList } from '@/components/library/LibraryList'
 import { DocumentUploadForm } from '@/components/library/DocumentUploadForm'
+import { DocumentDetailsModal } from '@/components/library/DocumentDetailsModal'
 import { Button } from '@/components/ui/button'
 import { mockLibraryDocuments } from '@/lib/mock-library'
 import { Plus } from 'lucide-react'
@@ -10,6 +11,7 @@ import { Plus } from 'lucide-react'
 export default function LibraryPage() {
   const [documents, setDocuments] = useState(mockLibraryDocuments)
   const [showUploadForm, setShowUploadForm] = useState(false)
+  const [selectedDocument, setSelectedDocument] = useState<LibraryDocument | null>(null)
 
   const handleUpload = (formData: any) => {
     const newDocument = {
@@ -39,6 +41,17 @@ export default function LibraryPage() {
     if (doc) {
       // In a real app, this would trigger the actual download
     }
+  }
+
+  const handleEdit = (document: LibraryDocument) => {
+    setSelectedDocument(document)
+  }
+
+  const handleSaveDocument = (updatedDocument: LibraryDocument) => {
+    setDocuments((prev) =>
+      prev.map((doc) => (doc.id === updatedDocument.id ? updatedDocument : doc))
+    )
+    setSelectedDocument(null)
   }
 
   return (
@@ -73,12 +86,23 @@ export default function LibraryPage() {
         </div>
       )}
 
+      {/* Document Details Modal */}
+      {selectedDocument && (
+        <DocumentDetailsModal
+          document={selectedDocument}
+          isOpen={true}
+          onClose={() => setSelectedDocument(null)}
+          onSave={handleSaveDocument}
+        />
+      )}
+
       {/* Documents List */}
       <div className="flex-1 overflow-y-auto p-6">
         <LibraryList
           documents={documents}
           onDownload={handleDownload}
           onDelete={handleDelete}
+          onEdit={handleEdit}
         />
       </div>
     </div>

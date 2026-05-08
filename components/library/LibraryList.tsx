@@ -13,9 +13,10 @@ interface LibraryListProps {
   documents: LibraryDocument[]
   onDownload?: (id: string) => void
   onDelete?: (id: string) => void
+  onEdit?: (document: LibraryDocument) => void
 }
 
-export function LibraryList({ documents, onDownload, onDelete }: LibraryListProps) {
+export function LibraryList({ documents, onDownload, onDelete, onEdit }: LibraryListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -174,6 +175,7 @@ export function LibraryList({ documents, onDownload, onDelete }: LibraryListProp
               document={doc}
               onDownload={onDownload}
               onDelete={onDelete}
+              onEdit={onEdit}
             />
           ))}
         </div>
