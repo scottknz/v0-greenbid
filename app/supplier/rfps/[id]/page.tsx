@@ -296,9 +296,6 @@ export default function RFPDetailPage() {
                   {rfp.buyerContact.phone}
                 </a>
               </div>
-              <Button className="w-full mt-4 bg-[#16A34A] hover:bg-[#15803D]" size="sm">
-                Contact Buyer
-              </Button>
             </CardContent>
           </Card>
 
