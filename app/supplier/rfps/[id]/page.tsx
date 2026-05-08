@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -86,6 +87,7 @@ const SUBMISSION_STATUS_CONFIG = {
 }
 
 export default function RFPDetailPage() {
+  const router = useRouter()
   const router = useRouter()
   const params = useParams()
   const [responseText, setResponseText] = useState('')
@@ -281,9 +283,14 @@ export default function RFPDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-text-secondary mb-1">Email</p>
-                <a href={`mailto:${rfp.buyerContact.email}`} className="text-sm text-[#16A34A] hover:underline">
+                <button
+                  onClick={() => {
+                    router.push(`/supplier/messages?compose=true&to=${encodeURIComponent(rfp.buyerContact.name)}&email=${encodeURIComponent(rfp.buyerContact.email)}`)
+                  }}
+                  className="text-sm text-[#16A34A] hover:underline"
+                >
                   {rfp.buyerContact.email}
-                </a>
+                </button>
               </div>
               <div>
                 <p className="text-xs text-text-secondary mb-1">Phone</p>

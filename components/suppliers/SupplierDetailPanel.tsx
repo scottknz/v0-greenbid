@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { X, Edit2, Trash2, Mail, Phone, MapPin, Award, StickyNote, Plus, Send } from 'lucide-react'
 import { Supplier } from '@/types/supplier'
 import { Badge } from '@/components/ui/badge'
@@ -28,6 +29,7 @@ export function SupplierDetailPanel({
   onClose,
   onUpdate,
 }: SupplierDetailPanelProps) {
+  const router = useRouter()
   const [notes, setNotes] = useState<Note[]>([])
   const [newNote, setNewNote] = useState('')
 
@@ -143,12 +145,14 @@ export function SupplierDetailPanel({
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-text-secondary shrink-0" />
-              <a
-                href={`mailto:${supplier.companyContact.email}`}
+              <button
+                onClick={() => {
+                  router.push(`/buyer/messages?compose=true&to=${encodeURIComponent(supplier.companyContact.name)}&email=${encodeURIComponent(supplier.companyContact.email)}`)
+                }}
                 className="text-sm text-brand-green hover:underline truncate"
               >
                 {supplier.companyContact.email}
-              </a>
+              </button>
             </div>
             <div className="flex items-center gap-3">
               <Phone className="h-4 w-4 text-text-secondary shrink-0" />

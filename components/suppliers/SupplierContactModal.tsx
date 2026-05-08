@@ -112,12 +112,14 @@ export function SupplierContactModal({
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-text-secondary shrink-0" />
-                <a
-                  href={`mailto:${member.email}`}
+                <button
+                  onClick={() => {
+                    router.push(`/buyer/messages?compose=true&to=${encodeURIComponent(member.name)}&email=${encodeURIComponent(member.email)}`)
+                  }}
                   className="text-sm text-[#16A34A] hover:underline"
                 >
                   {member.email}
-                </a>
+                </button>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-text-secondary shrink-0" />
