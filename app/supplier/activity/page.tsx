@@ -18,6 +18,7 @@ import {
   Filter,
   Calendar,
   Clock,
+  FileText,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { 
