@@ -130,6 +130,7 @@ export default function RFPDetailPage() {
 
   const [approvalCardOpen, setApprovalCardOpen] = useState(true)
   const [isCopilotOpen, setIsCopilotOpen] = useState(false)
+  const [interestRegistered, setInterestRegistered] = useState(false)
 
   // Approval workflow states - use mockRFPDetail directly since rfp is defined later
   const [currentApproval, setCurrentApproval] = useState<ApprovalRequest | null>(
@@ -335,6 +336,11 @@ export default function RFPDetailPage() {
     console.log('[v0] Copilot message:', message)
   }
 
+  const handleRegisterInterest = () => {
+    setInterestRegistered(true)
+    console.log('[v0] Interest registered for RFP:', rfp.id)
+  }
+
   return (
     <div className={cn('flex h-screen bg-background', isCopilotOpen && 'overflow-hidden')}>
       <div className={cn('flex-1 flex flex-col overflow-hidden', isCopilotOpen ? 'mr-80' : '')}>
@@ -445,8 +451,8 @@ export default function RFPDetailPage() {
           </div>
 
           {/* Action row */}
-          <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
-            <div>
+          <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2">
               {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && currentPhase !== 'declined' && (
                 <Button
                   onClick={handleContinueResponse}
@@ -483,15 +489,37 @@ export default function RFPDetailPage() {
               )}
             </div>
 
-            {/* Decline to Submit — single understated link-style button, hidden once terminal */}
-            {!isTerminalPhase && currentPhase !== 'declined' && (
-              <button
-                onClick={() => setShowDeclineConfirmModal(true)}
-                className="text-xs text-gray-400 hover:text-red-500 transition-colors underline underline-offset-2 ml-4"
-              >
-                Decline to Submit
-              </button>
-            )}
+            {/* Register Interest & Decline buttons */}
+            <div className="flex items-center gap-2">
+              {/* Register Interest button */}
+              {currentPhase === 'new_rfp' && !interestRegistered && (
+                <Button
+                  onClick={handleRegisterInterest}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1.5"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  Register Interest
+                </Button>
+              )}
+              {interestRegistered && (
+                <Badge className="bg-[#F0FDF4] text-[#166534] border border-[#16A34A]/20 text-[10px]">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Interest Registered
+                </Badge>
+              )}
+
+              {/* Decline to Submit — single understated link-style button, hidden once terminal */}
+              {!isTerminalPhase && currentPhase !== 'declined' && (
+                <button
+                  onClick={() => setShowDeclineConfirmModal(true)}
+                  className="text-xs text-gray-400 hover:text-red-500 transition-colors underline underline-offset-2"
+                >
+                  Decline
+                </button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
