@@ -1205,9 +1205,9 @@ export default function TenderDetailPage() {
 
   const statusConfig = {
     draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
-    open: { label: "Open", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
-    active: { label: "Active", className: "bg-blue-50 text-blue-700 border-blue-200" },
-      evaluation: { label: "Evaluating", className: "bg-amber-50 text-amber-700 border-amber-200" },
+    published: { label: "Published", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
+    accepting_bids: { label: "Accepting Bids", className: "bg-blue-50 text-blue-700 border-blue-200" },
+    evaluating: { label: "Evaluating", className: "bg-amber-50 text-amber-700 border-amber-200" },
     closed: { label: "Closed", className: "bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]" },
   }
 
@@ -1225,7 +1225,7 @@ export default function TenderDetailPage() {
             variant="ghost"
             size="sm"
             className="text-[#6B7280] hover:text-[#111827]"
-            onClick={() => router.push("/tenders")}
+            onClick={() => router.push("/buyer/tenders")}
           >
             <ArrowLeft className="size-4 mr-1" />
             Back to RFPs
