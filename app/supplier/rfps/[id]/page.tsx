@@ -338,7 +338,7 @@ export default function RFPDetailPage() {
   return (
     <div className={cn('flex h-screen bg-background', isCopilotOpen && 'overflow-hidden')}>
       <div className={cn('flex-1 flex flex-col overflow-hidden', isCopilotOpen ? 'mr-80' : '')}>
-        <div className="space-y-6 p-6 overflow-y-auto flex-1"
+        <div className="space-y-6 p-6 overflow-y-auto flex-1">
       {/* Header with back button */}
       <div className="flex items-center gap-4">
         <Button
