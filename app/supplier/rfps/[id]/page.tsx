@@ -264,7 +264,6 @@ export default function RFPDetailPage() {
       setCurrentPhase(nextPhase)
     }
     setTransitionNotes('')
-    setShowInitialReviewModal(false)
   }
   
   const handleDeclineToSubmit = () => {
