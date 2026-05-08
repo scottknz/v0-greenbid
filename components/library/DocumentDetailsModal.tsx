@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { LibraryDocument } from '@/types/library'
+import { LibraryDocument, DocumentAction } from '@/types/library'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { X, Save } from 'lucide-react'
+import { X, Save, Upload, Trash2, File } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 
 interface DocumentDetailsModalProps {
@@ -23,13 +23,76 @@ export function DocumentDetailsModal({
 }: DocumentDetailsModalProps) {
   const [formData, setFormData] = useState<LibraryDocument>(document)
   const [isSaving, setIsSaving] = useState(false)
+  const [newFile, setNewFile] = useState<File | null>(null)
+  const [isRemoving, setIsRemoving] = useState(false)
 
   const handleSave = async () => {
     setIsSaving(true)
+    
+    // Create action log entries for changes
+    const actions: DocumentAction[] = formData.actionLog || []
+    
+    if (newFile) {
+      actions.push({
+        id: `action-${Date.now()}`,
+        type: formData.attachment ? 'file_replaced' : 'file_added',
+        description: `${formData.attachment ? 'Replaced' : 'Added'} file: ${newFile.name}`,
+        timestamp: new Date().toISOString(),
+        performedBy: 'Current User',
+      })
+      
+      setFormData(prev => ({
+        ...prev,
+        attachment: {
+          name: newFile.name,
+          size: newFile.size,
+          type: newFile.type,
+          uploadedAt: new Date().toISOString(),
+        },
+        actionLog: actions,
+      }))
+    }
+    
+    if (isRemoving && formData.attachment) {
+      actions.push({
+        id: `action-${Date.now()}`,
+        type: 'file_deleted',
+        description: `Deleted file: ${formData.attachment.name}`,
+        timestamp: new Date().toISOString(),
+        performedBy: 'Current User',
+      })
+      
+      setFormData(prev => ({
+        ...prev,
+        attachment: undefined,
+        actionLog: actions,
+      }))
+    }
+    
+    // Record general edits
+    if (formData.name !== document.name || formData.description !== document.description || formData.version !== document.version) {
+      const changes = []
+      if (formData.name !== document.name) changes.push(`name updated to "${formData.name}"`)
+      if (formData.description !== document.description) changes.push('description updated')
+      if (formData.version !== document.version) changes.push(`version updated to ${formData.version}`)
+      
+      actions.push({
+        id: `action-${Date.now()}`,
+        type: 'edited',
+        description: `Document edited: ${changes.join(', ')}`,
+        timestamp: new Date().toISOString(),
+        performedBy: 'Current User',
+      })
+    }
+    
+    const finalData = { ...formData, actionLog: actions }
+    
     // Simulate save delay
     await new Promise(resolve => setTimeout(resolve, 500))
-    onSave(formData)
+    onSave(finalData)
     setIsSaving(false)
+    setNewFile(null)
+    setIsRemoving(false)
     onClose()
   }
 
@@ -165,12 +228,100 @@ export function DocumentDetailsModal({
             </div>
           </div>
 
-          {/* Usage Stats */}
-          <div className="p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              Used in <span className="font-medium text-foreground">{formData.usedInRFPs?.length || 0} RFPs</span>
-            </p>
+          {/* File Attachment */}
+          <div className="border-t border-border pt-6">
+            <label className="text-sm font-medium text-foreground block mb-3">
+              File Attachment
+            </label>
+            {formData.attachment && !isRemoving ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                  <File className="h-5 w-5 text-[#16A34A]" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {formData.attachment.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {(formData.attachment.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsRemoving(true)}
+                    className="text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Uploaded {new Date(formData.attachment.uploadedAt).toLocaleString()}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="border-2 border-dashed border-border rounded-lg p-4">
+                  <div className="flex flex-col items-center gap-2">
+                    <Upload className="h-5 w-5 text-muted-foreground" />
+                    <label className="text-center cursor-pointer">
+                      <span className="text-sm text-muted-foreground">
+                        {isRemoving && formData.attachment ? 'Upload new file' : 'Choose a file to upload'}
+                      </span>
+                      <input
+                        type="file"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            setNewFile(file)
+                            setIsRemoving(false)
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+                {newFile && (
+                  <div className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200">
+                    <File className="h-4 w-4 text-[#16A34A]" />
+                    <span className="text-sm text-[#16A34A]">{newFile.name}</span>
+                    <button
+                      onClick={() => setNewFile(null)}
+                      className="ml-auto text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
+          {/* Action Log */}
+          {formData.actionLog && formData.actionLog.length > 0 && (
+            <div className="border-t border-border pt-6">
+              <label className="text-sm font-medium text-foreground block mb-3">
+                Edit History
+              </label>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {[...formData.actionLog].reverse().map((action) => (
+                  <div key={action.id} className="p-2 bg-muted rounded text-xs">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-foreground font-medium">{action.description}</p>
+                        <p className="text-muted-foreground mt-0.5">
+                          by {action.performedBy}
+                        </p>
+                      </div>
+                      <span className="text-muted-foreground shrink-0 ml-2">
+                        {new Date(action.timestamp).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Upload Date */}
           <div>
