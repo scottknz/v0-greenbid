@@ -57,7 +57,7 @@ const tendersData: TenderData[] = [
   },
   {
     name: "Renewable Energy Procurement & VPPA Structuring",
-    status: "active",
+    status: "accepting_bids",
     submissions: 6,
     deadline: "Apr 22, 2026",
     created: "Mar 10, 2026",
