@@ -40,7 +40,7 @@ import { cn } from '@/lib/utils'
 // Phase types and configuration
 export type RFPPhase = 'new_rfp' | 'in_progress' | 'under_final_review' | 'submitted' | 'client_reviewing' | 'awarded' | 'rejected' | 'declined'
 
-const PHASE_ORDER: RFPPhase[] = ['new_rfp', 'in_progress', 'under_final_review', 'submitted', 'client_reviewing']
+const PHASE_ORDER: RFPPhase[] = ['new_rfp', 'in_progress', 'under_final_review', 'submitted', 'client_reviewing', 'awarded']
 
 const PHASE_CONFIG = {
   new_rfp: { label: 'New RFP' },
@@ -49,7 +49,7 @@ const PHASE_CONFIG = {
   submitted: { label: 'Submitted' },
   client_reviewing: { label: 'Client Reviewing' },
   awarded: { label: 'Awarded' },
-  rejected: { label: 'Rejected' },
+  rejected: { label: 'Not Successful' },
   declined: { label: 'Decline to Submit' },
 }
 
@@ -320,118 +320,123 @@ export default function RFPDetailPage() {
       {/* Phase Progress Indicator */}
       <Card className="border-[#E5E7EB] bg-white">
         <CardContent className="p-6">
-          <div className="flex items-start gap-6">
-            {/* Main phases */}
-            <div className="flex items-center flex-1">
-              {PHASE_ORDER.map((phase, idx) => {
-                const isCompleted = !isTerminalPhase && currentPhaseIndex > idx
-                const isCurrent = currentPhase === phase
-                const isFuture = !isTerminalPhase && currentPhaseIndex < idx
-                const isDeclined = currentPhase === 'declined'
-                
-                return (
-                  <div key={phase} className="flex items-center flex-1">
-                    <div
-                      className={cn(
-                        'px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all',
-                        isCompleted && 'bg-[#15803D] text-white',
-                        isCurrent && !isDeclined && 'bg-[#BBF7D0] text-[#15803D] border border-[#16A34A]',
-                        isFuture && 'bg-gray-100 text-gray-400',
-                        isDeclined && 'bg-gray-100 text-gray-400'
-                      )}
-                    >
-                      {PHASE_CONFIG[phase].label}
-                    </div>
-                    {idx < PHASE_ORDER.length - 1 && (
-                      <div
-                        className={cn(
-                          'flex-1 h-0.5 mx-1 min-w-[8px]',
-                          currentPhaseIndex > idx ? 'bg-[#15803D]' : 'bg-gray-200'
-                        )}
-                      />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-            
-            {/* Decline to Submit - Disconnected */}
-            <div className="flex flex-col items-end ml-6 pl-6 border-l border-gray-200 min-w-[140px]">
-              <div
-                className={cn(
-                  'px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all',
-                  currentPhase === 'declined'
-                    ? 'bg-red-500 text-white'
-                    : 'bg-red-50 text-red-400 border border-red-200'
-                )}
-              >
-                {PHASE_CONFIG.declined.label}
+
+          {/* Declined banner */}
+          {currentPhase === 'declined' && (
+            <div className="flex items-center justify-between mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <XCircle className="h-4 w-4 text-red-500 shrink-0" />
+                <p className="text-sm text-red-700 font-medium">You have declined to submit this proposal.</p>
               </div>
-              {currentPhase === 'declined' ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 text-xs h-7 border-green-300 text-green-700 hover:bg-green-50"
-                  onClick={handleReinstateSubmission}
-                >
-                  Reinstate Submission
-                </Button>
-              ) : !isTerminalPhase && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 text-xs h-7 border-red-300 text-red-600 hover:bg-red-50"
-                  onClick={() => setShowDeclineConfirmModal(true)}
-                >
-                  Decline to Submit
-                </Button>
-              )}
-            </div>
-          </div>
-          
-          {/* Action Button */}
-          {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && (
-            <div className="mt-6 pt-4 border-t border-gray-100">
               <Button
-                onClick={handleContinueResponse}
-                className="bg-[#16A34A] hover:bg-[#15803D]"
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 border-[#16A34A] text-[#16A34A] hover:bg-green-50 shrink-0 ml-4"
+                onClick={handleReinstateSubmission}
               >
-                <ChevronRight className="h-4 w-4 mr-2" />
-                {getPhaseButtonLabel()}
+                Reinstate Submission
               </Button>
             </div>
           )}
-          
-          {/* Terminal state messages */}
-          {currentPhase === 'declined' && (
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <p className="text-sm text-red-600 font-medium">This proposal has been declined. Click &quot;Reinstate Submission&quot; to continue working on it.</p>
+
+          {/* Phase labels row */}
+          <div className="flex items-center">
+            {PHASE_ORDER.map((phase, idx) => {
+              const isFinalOutcomeSlot = idx === PHASE_ORDER.length - 1
+              const isCompleted = currentPhaseIndex > idx && !['declined'].includes(currentPhase)
+              const isCurrent = currentPhase === phase
+              const isRejected = currentPhase === 'rejected' && isFinalOutcomeSlot
+              const isDeclined = currentPhase === 'declined'
+
+              // Determine the label for the last slot
+              const label = isFinalOutcomeSlot
+                ? currentPhase === 'awarded'
+                  ? 'Awarded'
+                  : currentPhase === 'rejected'
+                  ? 'Not Successful'
+                  : 'Final Outcome'
+                : PHASE_CONFIG[phase].label
+
+              return (
+                <div key={phase} className="flex items-center flex-1">
+                  <div
+                    className={cn(
+                      'px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all',
+                      // Completed (dark green)
+                      isCompleted && !isFinalOutcomeSlot && 'bg-[#15803D] text-white',
+                      // Current active phase (light green)
+                      isCurrent && !isDeclined && !isFinalOutcomeSlot && 'bg-[#DCFCE7] text-[#15803D] ring-1 ring-[#16A34A]',
+                      // Awarded final outcome
+                      currentPhase === 'awarded' && isFinalOutcomeSlot && 'bg-[#15803D] text-white',
+                      // Rejected final outcome
+                      isRejected && 'bg-gray-200 text-gray-600',
+                      // Future / unknown final outcome
+                      ((!isCurrent && !isCompleted && !(currentPhase === 'awarded' && isFinalOutcomeSlot) && !isRejected) || isDeclined) && 'bg-gray-100 text-gray-400'
+                    )}
+                  >
+                    {label}
+                  </div>
+                  {idx < PHASE_ORDER.length - 1 && (
+                    <div
+                      className={cn(
+                        'flex-1 h-0.5 mx-1 min-w-[6px]',
+                        isCompleted ? 'bg-[#15803D]' : 'bg-gray-200'
+                      )}
+                    />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Action row */}
+          <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
+            <div>
+              {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && currentPhase !== 'declined' && (
+                <Button
+                  onClick={handleContinueResponse}
+                  className="bg-[#16A34A] hover:bg-[#15803D]"
+                >
+                  <ChevronRight className="h-4 w-4 mr-2" />
+                  {getPhaseButtonLabel()}
+                </Button>
+              )}
+              {currentPhase === 'submitted' && (
+                <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Proposal submitted — awaiting client review.
+                </p>
+              )}
+              {currentPhase === 'client_reviewing' && (
+                <p className="text-sm text-gray-500 flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Client is currently reviewing your proposal.
+                </p>
+              )}
+              {currentPhase === 'awarded' && (
+                <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Congratulations — your proposal has been awarded.
+                </p>
+              )}
+              {currentPhase === 'rejected' && (
+                <p className="text-sm text-gray-500 flex items-center gap-2">
+                  <XCircle className="h-4 w-4" />
+                  This proposal was not successful.
+                </p>
+              )}
             </div>
-          )}
-          {currentPhase === 'submitted' && (
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
-                Proposal submitted successfully. Awaiting client review.
-              </p>
-            </div>
-          )}
-          {currentPhase === 'client_reviewing' && (
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <p className="text-sm text-indigo-600 font-medium flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Client is currently reviewing your proposal.
-              </p>
-            </div>
-          )}
-          {(currentPhase === 'awarded' || currentPhase === 'rejected') && (
-            <div className="mt-6 pt-4 border-t border-gray-100">
-              <p className={cn('text-sm font-medium flex items-center gap-2', currentPhase === 'awarded' ? 'text-[#16A34A]' : 'text-gray-600')}>
-                {currentPhase === 'awarded' ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
-                {currentPhase === 'awarded' ? 'Congratulations! Your proposal has been awarded.' : 'This proposal was not selected.'}
-              </p>
-            </div>
-          )}
+
+            {/* Decline to Submit — single understated link-style button, hidden once terminal */}
+            {!isTerminalPhase && currentPhase !== 'declined' && (
+              <button
+                onClick={() => setShowDeclineConfirmModal(true)}
+                className="text-xs text-gray-400 hover:text-red-500 transition-colors underline underline-offset-2 ml-4"
+              >
+                Decline to Submit
+              </button>
+            )}
+          </div>
         </CardContent>
       </Card>
       
