@@ -17,6 +17,25 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import {
   ArrowLeft,
   Building2,
   Calendar,
@@ -34,8 +53,27 @@ import {
   History,
   StickyNote,
   ChevronRight,
+  ChevronDown,
+  Users,
+  MoreHorizontal,
+  Crown,
+  Trash2,
+  Mail,
+  Phone,
+  Star,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { internalTeamMembers } from '@/lib/mock-rfp'
+import type { RFPTeamMember, RFPTeamRole } from '@/types/rfp'
+
+const ROLE_OPTIONS: RFPTeamRole[] = ['Lead', 'Reviewer', 'Approver', 'Observer']
+
+const roleStyles: Record<RFPTeamRole, string> = {
+  Lead:     'bg-[#DCFCE7] text-[#15803D] border-[#16A34A]/20',
+  Approver: 'bg-blue-50 text-blue-700 border-blue-200',
+  Reviewer: 'bg-amber-50 text-amber-700 border-amber-200',
+  Observer: 'bg-gray-100 text-gray-600 border-gray-200',
+}
 
 // Phase types and configuration
 export type RFPPhase = 'new_rfp' | 'in_progress' | 'under_final_review' | 'submitted' | 'client_reviewing' | 'awarded' | 'rejected' | 'declined'
@@ -163,7 +201,42 @@ export default function RFPDetailPage() {
   const [questionResponses, setQuestionResponses] = useState<Record<string, string>>({})
   const [submissionAttachments, setSubmissionAttachments] = useState<File[]>([])
   const [selectedApprovers, setSelectedApprovers] = useState<string[]>([])
-  
+
+  // Internal team state
+  const [team, setTeam] = useState<RFPTeamMember[]>([
+    { ...internalTeamMembers[0], role: 'Lead', isLead: true },
+    { ...internalTeamMembers[1], role: 'Reviewer', isLead: false },
+  ])
+  const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
+  const [addingTeamMember, setAddingTeamMember] = useState(false)
+  const [selectedMemberId, setSelectedMemberId] = useState('')
+  const [selectedRole, setSelectedRole] = useState<RFPTeamRole>('Reviewer')
+
+  const handleTeamAddMember = () => {
+    if (!selectedMemberId) return
+    const person = internalTeamMembers.find((m) => m.id === selectedMemberId)
+    if (!person) return
+    const updatedTeam = selectedRole === 'Lead'
+      ? team.map((m) => m.isLead ? { ...m, isLead: false, role: 'Reviewer' as RFPTeamRole } : m)
+      : [...team]
+    setTeam([...updatedTeam, { ...person, role: selectedRole, isLead: selectedRole === 'Lead' }])
+    setSelectedMemberId('')
+    setSelectedRole('Reviewer')
+    setAddingTeamMember(false)
+  }
+
+  const handleTeamRemove = (id: string) => setTeam(team.filter((m) => m.id !== id))
+
+  const handleTeamChangeRole = (id: string, role: RFPTeamRole) => {
+    setTeam(team.map((m) => {
+      if (m.id === id) return { ...m, role, isLead: role === 'Lead' }
+      if (role === 'Lead' && m.isLead) return { ...m, isLead: false, role: 'Reviewer' as RFPTeamRole }
+      return m
+    }))
+  }
+
+  const availableTeamMembers = internalTeamMembers.filter((m) => !team.some((t) => t.id === m.id))
+
   const rfp = mockRFPDetail
   
   // Calculate days until deadline
@@ -592,33 +665,198 @@ export default function RFPDetailPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Internal Contact Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Internal Contact</CardTitle>
+          {/* Internal Team Card */}
+          <Card className="border-[#E5E7EB] bg-white">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-medium text-text-primary flex items-center gap-2">
+                  <Users className="h-4 w-4 text-[#16A34A]" />
+                  Internal Team
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAddingTeamMember(true)}
+                  disabled={availableTeamMembers.length === 0}
+                  className="border-[#E5E7EB] text-text-secondary h-8 text-xs"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Add Member
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div>
-                <p className="text-xs text-text-secondary mb-1">Name</p>
-                <p className="text-sm font-medium text-text-primary">{rfp.buyerContact.name}</p>
-              </div>
-              <div>
-                <p className="text-xs text-text-secondary mb-1">Email</p>
-                <button
-                  onClick={() => {
-                    router.push(`/supplier/messages?compose=true&to=${encodeURIComponent(rfp.buyerContact.name)}&email=${encodeURIComponent(rfp.buyerContact.email)}`)
-                  }}
-                  className="text-sm text-[#16A34A] hover:underline"
+              {/* Add member row */}
+              {addingTeamMember && (
+                <div className="flex flex-col gap-2 rounded-lg border border-dashed border-[#16A34A]/40 bg-[#F0FDF4]/50 p-3">
+                  <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
+                    <SelectTrigger className="border-[#E5E7EB] h-8 text-sm">
+                      <SelectValue placeholder="Select team member..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTeamMembers.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>
+                          <span className="font-medium">{m.name}</span>
+                          <span className="ml-2 text-text-secondary text-xs">{m.jobTitle}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="flex gap-2">
+                    <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as RFPTeamRole)}>
+                      <SelectTrigger className="flex-1 border-[#E5E7EB] h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ROLE_OPTIONS.map((r) => (
+                          <SelectItem key={r} value={r}>{r}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      size="sm"
+                      onClick={handleTeamAddMember}
+                      disabled={!selectedMemberId}
+                      className="h-8 bg-[#16A34A] hover:bg-[#15803D] text-white text-xs px-3"
+                    >
+                      Add
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => { setAddingTeamMember(false); setSelectedMemberId('') }}
+                      className="h-8 text-xs text-text-secondary"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Empty state */}
+              {team.length === 0 && !addingTeamMember && (
+                <div className="flex flex-col items-center justify-center py-6 text-center border border-dashed border-[#E5E7EB] rounded-lg">
+                  <Users className="h-7 w-7 text-text-secondary mb-2" />
+                  <p className="text-sm text-text-secondary font-medium">No team members assigned</p>
+                  <p className="text-xs text-text-secondary mt-0.5">Add a Lead to get started</p>
+                </div>
+              )}
+
+              {/* Lead member */}
+              {[...team].sort((a, b) => (b.isLead ? 1 : 0) - (a.isLead ? 1 : 0)).slice(0, 1).map((member) => (
+                <div
+                  key={member.id}
+                  className="flex items-start gap-3 rounded-lg border border-[#16A34A]/25 bg-[#F0FDF4]/40 p-3"
                 >
-                  {rfp.buyerContact.email}
-                </button>
-              </div>
-              <div>
-                <p className="text-xs text-text-secondary mb-1">Phone</p>
-                <a href={`tel:${rfp.buyerContact.phone}`} className="text-sm font-medium text-text-primary">
-                  {rfp.buyerContact.phone}
-                </a>
-              </div>
+                  {/* Avatar */}
+                  <div className="relative shrink-0">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#16A34A] text-white text-sm font-semibold">
+                      {member.avatarInitials}
+                    </div>
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400">
+                      <Crown className="h-2.5 w-2.5 text-white" />
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-text-primary truncate">{member.name}</span>
+                      <Badge className={cn('text-[10px] h-4 px-1.5 border', roleStyles[member.role])}>
+                        {member.role}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-text-secondary truncate">{member.jobTitle} &middot; {member.department}</p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                      <span className="flex items-center gap-1 text-[11px] text-text-secondary">
+                        <Mail className="h-3 w-3" />{member.email}
+                      </span>
+                      {member.phone && (
+                        <span className="flex items-center gap-1 text-[11px] text-text-secondary">
+                          <Phone className="h-3 w-3" />{member.phone}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-text-secondary hover:text-text-primary shrink-0">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-44">
+                      {ROLE_OPTIONS.filter((r) => r !== member.role).map((role) => (
+                        <DropdownMenuItem key={role} onClick={() => handleTeamChangeRole(member.id, role)} className="text-sm">
+                          Change role to {role}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => handleTeamRemove(member.id)} className="text-sm text-red-600 focus:text-red-600">
+                        <Trash2 className="h-3.5 w-3.5 mr-2" />
+                        Remove
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ))}
+
+              {/* Other members — collapsible */}
+              {team.length > 1 && (
+                <Collapsible open={teamDropdownOpen} onOpenChange={setTeamDropdownOpen}>
+                  <CollapsibleTrigger className="flex items-center gap-2 text-xs text-text-secondary hover:text-text-primary w-full py-1">
+                    <ChevronDown className={cn('h-3 w-3 transition-transform', teamDropdownOpen && 'rotate-180')} />
+                    <span>{team.length - 1} other team {team.length - 1 === 1 ? 'member' : 'members'}</span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-2 pt-1">
+                    {[...team].sort((a, b) => (b.isLead ? 1 : 0) - (a.isLead ? 1 : 0)).slice(1).map((member) => (
+                      <div key={member.id} className="flex items-start gap-3 rounded-lg border border-[#E5E7EB] bg-white p-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 text-xs font-semibold shrink-0">
+                          {member.avatarInitials}
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium text-text-primary truncate">{member.name}</span>
+                            <Badge className={cn('text-[10px] h-4 px-1.5 border', roleStyles[member.role])}>
+                              {member.role}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-text-secondary truncate">{member.jobTitle}</p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-text-secondary hover:text-text-primary shrink-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            <DropdownMenuItem onClick={() => handleTeamChangeRole(member.id, 'Lead')} className="text-sm">
+                              <Crown className="h-3.5 w-3.5 mr-2 text-amber-400" />
+                              Set as Lead
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            {ROLE_OPTIONS.filter((r) => r !== member.role && r !== 'Lead').map((role) => (
+                              <DropdownMenuItem key={role} onClick={() => handleTeamChangeRole(member.id, role)} className="text-sm">
+                                Change role to {role}
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleTeamRemove(member.id)} className="text-sm text-red-600 focus:text-red-600">
+                              <Trash2 className="h-3.5 w-3.5 mr-2" />
+                              Remove
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              {/* No lead warning */}
+              {team.length > 0 && !team.some((m) => m.isLead) && (
+                <p className="text-xs text-amber-600 flex items-center gap-1.5 pt-1">
+                  <Star className="h-3.5 w-3.5" />
+                  No Lead assigned. Set a Lead to define the primary contact.
+                </p>
+              )}
             </CardContent>
           </Card>
 

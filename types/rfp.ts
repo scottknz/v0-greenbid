@@ -5,6 +5,21 @@ export type { RFPInterest } from './supplier'
 
 export type RFPStatus = 'draft' | 'in_review' | 'approved' | 'published' | 'closed';
 
+// Team member role on an RFP
+export type RFPTeamRole = 'Lead' | 'Reviewer' | 'Approver' | 'Observer';
+
+export interface RFPTeamMember {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  jobTitle: string;
+  department: string;
+  avatarInitials: string;
+  role: RFPTeamRole;
+  isLead: boolean;
+}
+
 export type RFPSectionType = 
   | 'cover'
   | 'toc'
