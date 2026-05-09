@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Search, Filter, Star, Award, CheckCircle, TrendingUp } from 'lucide-react'
+import { Search, Filter, Star, Award, CheckCircle, TrendingUp, Plus, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface SupplierDirectoryProps {
@@ -309,105 +309,130 @@ export function SupplierDirectory({ suppliers, onAddToSuppliers }: SupplierDirec
       <div className="flex-1 overflow-y-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredSuppliers.map(supplier => (
-            <Card key={supplier.id} className="flex flex-col hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-2">
+            <Card key={supplier.id} className="flex flex-col overflow-hidden group hover:shadow-lg hover:border-[#16A34A]/30 transition-all duration-200">
+              {/* Header */}
+              <CardHeader className="pb-3 border-b border-border/50">
+                <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <CardTitle className="text-sm font-semibold text-text-primary truncate">{supplier.name}</CardTitle>
-                    <p className="text-xs text-text-muted mt-1">{supplier.country} · {supplier.companySize}</p>
+                    <CardTitle className="text-base font-semibold text-text-primary truncate">{supplier.name}</CardTitle>
+                    <p className="text-xs text-text-muted mt-1.5">{supplier.country} · {supplier.companySize}</p>
                   </div>
                   {supplier.verified && (
-                    <Badge className="bg-[#F0FDF4] text-[#166534] border border-[#16A34A]/20 text-[10px] shrink-0">
-                      <CheckCircle className="h-2.5 w-2.5 mr-0.5" />
+                    <Badge className="bg-[#F0FDF4] text-[#166534] border border-[#16A34A]/20 text-[11px] shrink-0 font-medium">
+                      <CheckCircle className="h-3 w-3 mr-1" />
                       Verified
                     </Badge>
                   )}
                 </div>
               </CardHeader>
 
-              <CardContent className="flex-1 flex flex-col gap-3 pb-3">
+              {/* Main Content */}
+              <CardContent className="flex-1 flex flex-col gap-4 py-4">
                 {/* Description */}
-                <p className="text-xs text-text-secondary line-clamp-2">{supplier.description}</p>
+                <p className="text-sm text-text-secondary line-clamp-2 leading-relaxed">{supplier.description}</p>
 
-                {/* Credentials Strip */}
-                <div className="flex flex-wrap gap-1.5">
+                {/* Credentials Strip - Increased font size and padding */}
+                <div className="flex flex-wrap gap-2">
                   {supplier.sustainabilityCredentials.ecovadisRating && (
-                    <Badge className={cn('text-[10px] py-0.5 px-1.5 border', getEcoVadisColor(supplier.sustainabilityCredentials.ecovadisRating))}>
-                      <Award className="h-2.5 w-2.5 mr-0.5" />
+                    <Badge className={cn('text-[11px] py-1 px-2 border font-medium', getEcoVadisColor(supplier.sustainabilityCredentials.ecovadisRating))}>
+                      <Award className="h-3 w-3 mr-1" />
                       EcoVadis {supplier.sustainabilityCredentials.ecovadisRating}
                     </Badge>
                   )}
                   {supplier.sustainabilityCredentials.bCorp && (
-                    <Badge className="bg-brand-green-light text-brand-green border border-brand-green/30 text-[10px] py-0.5 px-1.5">
+                    <Badge className="bg-brand-green-light text-brand-green border border-brand-green/30 text-[11px] py-1 px-2 font-medium">
                       B Corp
                     </Badge>
                   )}
                   {supplier.sustainabilityCredentials.sbtiStatus && (
-                    <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] py-0.5 px-1.5">
+                    <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-[11px] py-1 px-2 font-medium">
                       SBTi {supplier.sustainabilityCredentials.sbtiStatus === 'validated' ? 'Validated' : 'Committed'}
                     </Badge>
                   )}
                   {supplier.sustainabilityCredentials.iso14001 && (
-                    <Badge className="bg-gray-100 text-gray-700 border border-gray-300 text-[10px] py-0.5 px-1.5">
+                    <Badge className="bg-gray-100 text-gray-700 border border-gray-300 text-[11px] py-1 px-2 font-medium">
                       ISO 14001
                     </Badge>
                   )}
                   {supplier.sustainabilityCredentials.carbonNeutral && (
-                    <Badge className="bg-green-50 text-green-700 border border-green-200 text-[10px] py-0.5 px-1.5">
+                    <Badge className="bg-green-50 text-green-700 border border-green-200 text-[11px] py-1 px-2 font-medium">
                       Carbon Neutral
                     </Badge>
                   )}
                 </div>
 
-                {/* Emissions & Performance */}
-                <div className="flex items-center gap-2 text-xs text-text-secondary">
+                {/* Emissions & Performance row */}
+                <div className="grid grid-cols-2 gap-3 bg-surface-hover/50 rounded-lg p-3">
                   {supplier.sustainabilityCredentials.emissionsIntensity && (
-                    <span className={cn('font-medium', getEmissionsColor(supplier.sustainabilityCredentials.emissionsIntensityLabel))}>
-                      <TrendingUp className="h-3 w-3 inline mr-1" />
-                      {supplier.sustainabilityCredentials.emissionsIntensity} tCO2e/£M
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className={cn('h-4 w-4', getEmissionsColor(supplier.sustainabilityCredentials.emissionsIntensityLabel))} />
+                      <div>
+                        <p className="text-[10px] text-text-muted uppercase tracking-wide font-medium">Emissions</p>
+                        <p className={cn('text-sm font-semibold', getEmissionsColor(supplier.sustainabilityCredentials.emissionsIntensityLabel))}>
+                          {supplier.sustainabilityCredentials.emissionsIntensity} tCO2e/£M
+                        </p>
+                      </div>
+                    </div>
                   )}
                   {supplier.sustainabilityCredentials.netZeroYear && (
-                    <span className="font-medium">Net Zero {supplier.sustainabilityCredentials.netZeroYear}</span>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <div>
+                        <p className="text-[10px] text-text-muted uppercase tracking-wide font-medium">Target</p>
+                        <p className="text-sm font-semibold text-green-700">Net Zero {supplier.sustainabilityCredentials.netZeroYear}</p>
+                      </div>
+                    </div>
                   )}
                 </div>
 
-                {/* Stats */}
-                <div className="flex items-center gap-2 text-xs border-t border-border pt-2">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-3 w-3 text-amber-500" />
-                    <span className="font-medium">{supplier.rating.toFixed(1)}</span>
-                    <span className="text-text-muted">({supplier.reviewCount} reviews)</span>
+                {/* Stats - improved layout with icon-led design */}
+                <div className="grid grid-cols-3 gap-3 text-xs">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-surface rounded border border-border/50">
+                    <Star className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-text-muted font-medium uppercase tracking-wide">Rating</p>
+                      <p className="font-bold text-text-primary">{supplier.rating.toFixed(1)}</p>
+                    </div>
                   </div>
-                  <span className="text-text-muted">·</span>
-                  <span className="text-text-muted">{supplier.rfpsCompleted} RFPs</span>
-                  <span className="text-text-muted">·</span>
-                  <span className="text-text-muted">{supplier.responseRate}% response</span>
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-surface rounded border border-border/50">
+                    <CheckCircle className="h-3.5 w-3.5 text-[#16A34A] flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-text-muted font-medium uppercase tracking-wide">RFPs</p>
+                      <p className="font-bold text-text-primary">{supplier.rfpsCompleted}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 bg-surface rounded border border-border/50">
+                    <TrendingUp className="h-3.5 w-3.5 text-blue-600 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-text-muted font-medium uppercase tracking-wide">Response</p>
+                      <p className="font-bold text-text-primary">{supplier.responseRate}%</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 border-t border-border pt-3">
+              {/* Action Footer */}
+              <div className="px-4 py-3 border-t border-border bg-background flex gap-2 group-hover:bg-green-50/30 transition-colors">
                 <Button
-                  size="sm"
                   onClick={() => handleAddToSuppliers(supplier)}
                   disabled={addedSuppliers.has(supplier.id)}
                   className={cn(
-                    'flex-1 text-xs',
+                    'flex-1 text-sm font-semibold gap-2 transition-all',
                     addedSuppliers.has(supplier.id)
                       ? 'bg-gray-100 text-gray-600 cursor-not-allowed'
-                      : 'bg-brand-green hover:bg-brand-green/90'
+                      : 'bg-[#16A34A] hover:bg-[#15803D] text-white shadow-sm hover:shadow-md'
                   )}
                 >
-                  {addedSuppliers.has(supplier.id) ? 'Added' : 'Add to Suppliers'}
+                  <Plus className="h-4 w-4" />
+                  {addedSuppliers.has(supplier.id) ? 'Added' : 'Add to Our Suppliers'}
                 </Button>
                 <Button
-                  size="sm"
                   variant="outline"
-                  className="flex-1 text-xs"
+                  className="flex-1 text-sm font-semibold gap-2 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                   title="Invite to RFP - functionality coming soon"
                 >
-                  Invite to RFP
+                  <Send className="h-4 w-4" />
+                  Invite
                 </Button>
               </div>
             </Card>
