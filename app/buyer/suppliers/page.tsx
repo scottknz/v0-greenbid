@@ -2,22 +2,27 @@
 
 import React, { useState } from 'react'
 import { mockSuppliers } from '@/lib/mock-suppliers'
-import { Supplier, TeamMember } from '@/types/supplier'
+import { mockDirectorySuppliers } from '@/lib/mock-directory-suppliers'
+import { Supplier, DirectorySupplier, TeamMember } from '@/types/supplier'
 import { SuppliersList } from '@/components/suppliers/SuppliersList'
 import { SupplierDetailPanel } from '@/components/suppliers/SupplierDetailPanel'
 import { AddSupplierForm } from '@/components/suppliers/AddSupplierForm'
 import { CSVImportDialog } from '@/components/suppliers/CSVImportDialog'
 import { SupplierContactModal } from '@/components/suppliers/SupplierContactModal'
+import { SupplierDirectory } from '@/components/suppliers/SupplierDirectory'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers)
+  const [directorySuppliers] = useState<DirectorySupplier[]>(mockDirectorySuppliers)
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [showImportDialog, setShowImportDialog] = useState(false)
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
   const [deletingSupplier, setDeletingSupplier] = useState<Supplier | null>(null)
   const [contactModalData, setContactModalData] = useState<{ supplier: Supplier; member: TeamMember } | null>(null)
+  const [activeTab, setActiveTab] = useState('our-suppliers')
 
   const handleAddSupplier = (newSupplier: Supplier) => {
     setSuppliers([...suppliers, newSupplier])
@@ -51,26 +56,69 @@ export default function SuppliersPage() {
     }
   }
 
+  const handleAddToSuppliers = (dirSupplier: DirectorySupplier) => {
+    // Convert DirectorySupplier to Supplier and add to our suppliers
+    const newSupplier: Supplier = {
+      id: `sup-${Date.now()}`,
+      name: dirSupplier.name,
+      tier: 'standard',
+      expertise: dirSupplier.category,
+      totalContractValue: 0,
+      contractsWon: 0,
+      contractsLost: 0,
+      lastContacted: null,
+      companyContact: {
+        email: '',
+        phone: '',
+        address: '',
+      },
+      teamMembers: [],
+      engagementHistory: [],
+      sustainabilityCredentials: dirSupplier.sustainabilityCredentials,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    setSuppliers([...suppliers, newSupplier])
+  }
+
   return (
-    <div className="flex h-full bg-background">
-      {/* Main list view */}
-      <div className="flex-1 flex flex-col">
-        <SuppliersList
-          suppliers={suppliers}
-          onAddSupplier={() => {
-            setEditingSupplier(null)
-            setShowAddForm(true)
-          }}
-          onImportCSV={() => setShowImportDialog(true)}
-          onViewDetails={setSelectedSupplier}
-          onEdit={(supplier) => {
-            setEditingSupplier(supplier)
-            setShowAddForm(true)
-          }}
-          onDelete={handleDeleteSupplier}
-          onContactClick={(supplier, member) => setContactModalData({ supplier, member })}
-        />
-      </div>
+    <div className="flex h-full bg-background flex-col">
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <TabsList className="bg-background border border-border m-6 mb-0 rounded-b-none">
+          <TabsTrigger value="our-suppliers">Our Suppliers</TabsTrigger>
+          <TabsTrigger value="directory">Supplier Directory</TabsTrigger>
+        </TabsList>
+
+        {/* Our Suppliers Tab */}
+        <TabsContent value="our-suppliers" className="flex-1 flex flex-col m-0">
+          <div className="flex-1 flex flex-col">
+            <SuppliersList
+              suppliers={suppliers}
+              onAddSupplier={() => {
+                setEditingSupplier(null)
+                setShowAddForm(true)
+              }}
+              onImportCSV={() => setShowImportDialog(true)}
+              onViewDetails={setSelectedSupplier}
+              onEdit={(supplier) => {
+                setEditingSupplier(supplier)
+                setShowAddForm(true)
+              }}
+              onDelete={handleDeleteSupplier}
+              onContactClick={(supplier, member) => setContactModalData({ supplier, member })}
+            />
+          </div>
+        </TabsContent>
+
+        {/* Supplier Directory Tab */}
+        <TabsContent value="directory" className="flex-1 flex flex-col m-0 overflow-hidden">
+          <SupplierDirectory
+            suppliers={directorySuppliers}
+            onAddToSuppliers={handleAddToSuppliers}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* Details modal */}
       {selectedSupplier && !showAddForm && !editingSupplier && (

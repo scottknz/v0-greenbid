@@ -1,5 +1,17 @@
 export type SupplierTier = 'preferred' | 'standard' | 'new'
 
+export interface SustainabilityCredentials {
+  ecovadisScore?: number
+  ecovadisRating?: 'gold' | 'silver' | 'bronze'
+  bCorp?: boolean
+  sbtiStatus?: 'committed' | 'validated'
+  iso14001?: boolean
+  carbonNeutral?: boolean
+  emissionsIntensity?: number // tCO2e per £M revenue
+  emissionsIntensityLabel?: 'low' | 'medium' | 'high'
+  netZeroYear?: number
+}
+
 export interface CompanyContact {
   email: string
   phone: string
@@ -39,8 +51,31 @@ export interface Supplier {
   companyContact: CompanyContact
   teamMembers: TeamMember[]
   engagementHistory: EngagementRecord[]
+  sustainabilityCredentials?: SustainabilityCredentials
   createdAt: string
   updatedAt: string
+}
+
+export interface DirectorySupplier {
+  id: string
+  name: string
+  description: string
+  category: string[]
+  region: string
+  country: string
+  companySize: 'sme' | 'mid-market' | 'enterprise'
+  sector: string[]
+  languages: string[]
+  verified: boolean
+  platformActive: string
+  responseRate: number
+  avgResponseDays: number
+  rfpsCompleted: number
+  rating: number
+  reviewCount: number
+  sustainabilityCredentials: SustainabilityCredentials
+  website?: string
+  logo?: string
 }
 
 export const EXPERTISE_KEYWORDS = {
