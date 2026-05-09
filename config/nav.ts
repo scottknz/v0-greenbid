@@ -12,7 +12,6 @@ export const buyerNav: NavItem[] = [
   { label: 'Dashboard', href: '/buyer', icon: 'LayoutDashboard', section: 'main' },
   { label: 'Team', href: '/buyer/team', icon: 'UsersRound', section: 'main' },
   { label: 'RFPs', href: '/buyer/tenders', icon: 'FileText', section: 'main' },
-  { label: 'Templates', href: '/buyer/templates', icon: 'ClipboardList', section: 'main' },
   { label: 'Library', href: '/buyer/library', icon: 'BookOpen', section: 'main' },
   { label: 'Suppliers', href: '/buyer/suppliers', icon: 'Users', section: 'main' },
   { label: 'Messages', href: '/buyer/messages', icon: 'Mail', section: 'main', badgeCount: 2 },

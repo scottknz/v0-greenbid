@@ -757,7 +757,7 @@ export default function SubmissionDetailPage() {
           <p className="text-[#6B7280] mt-2">The requested submission does not exist.</p>
           <Button 
             className="mt-4 bg-[#16A34A] hover:bg-[#15803D] text-white"
-            onClick={() => router.push(`/tenders/${tenderId}`)}
+            onClick={() => router.push(`/buyer/tenders/${tenderId}`)}
           >
             Back to Tender
           </Button>
@@ -855,7 +855,7 @@ export default function SubmissionDetailPage() {
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => router.push(`/tenders/${tenderId}?tab=submissions`)}
+              onClick={() => router.push(`/buyer/tenders/${tenderId}?tab=submissions`)}
               className="text-[#6B7280] hover:text-[#111827]"
             >
               <ArrowLeft className="size-4 mr-2" />

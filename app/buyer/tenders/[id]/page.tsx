@@ -2430,7 +2430,7 @@ export default function TenderDetailPage() {
                             variant="outline" 
                             size="sm" 
                             className="h-7 px-3 text-xs border-[#E5E7EB]"
-                            onClick={() => router.push(`/tenders/${tenderData.id}/submissions/${submission.id}`)}
+                            onClick={() => router.push(`/buyer/tenders/${tenderData.id}/submissions/${submission.id}`)}
                           >
                             <ExternalLink className="size-3 mr-1" />
                             Open
@@ -2777,7 +2777,7 @@ export default function TenderDetailPage() {
                                 variant="outline" 
                                 size="sm" 
                                 className="h-7 text-xs border-[#E5E7EB]"
-                                onClick={() => router.push(`/tenders/${params.id}/submissions/${submission.id}?tab=results`)}
+                                onClick={() => router.push(`/buyer/tenders/${params.id}/submissions/${submission.id}?tab=results`)}
                               >
                                 <Pencil className="size-3 mr-1" />
                                 Edit

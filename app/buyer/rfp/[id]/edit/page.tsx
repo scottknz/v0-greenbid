@@ -85,7 +85,7 @@ export default function RFPEditPage() {
       <div className="flex items-center justify-center h-screen bg-background">
         <div className="text-center">
           <div className="text-lg font-medium text-text-primary mb-4">RFP not found</div>
-          <Link href="/tenders">
+          <Link href="/buyer/tenders">
             <Button variant="outline" className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               Back to RFPs

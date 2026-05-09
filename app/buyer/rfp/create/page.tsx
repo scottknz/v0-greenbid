@@ -85,7 +85,7 @@ export default function CreateRFPPage() {
       sessionStorage.setItem('interview-data', JSON.stringify(interviewAnswers));
       
       // Navigate to the editor
-      router.push(`/rfp/${rfpDocument.id}/edit`);
+      router.push(`/buyer/rfp/${rfpDocument.id}/edit`);
     }
   };
 
@@ -107,7 +107,7 @@ export default function CreateRFPPage() {
         <div className="mx-auto max-w-4xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/tenders">
+              <Link href="/buyer/tenders">
                 <Button variant="ghost" size="sm" className="text-text-secondary">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to RFPs

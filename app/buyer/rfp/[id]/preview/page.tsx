@@ -49,7 +49,7 @@ export default function RFPPreviewPage() {
     <div className="bg-background min-h-screen">
       {/* Top Action Bar */}
       <div className="sticky top-0 z-50 bg-background border-b border-border px-6 py-4 flex items-center justify-between">
-        <Link href={`/rfp/${rfpId}/edit`} className="flex items-center gap-2">
+        <Link href={`/buyer/rfp/${rfpId}/edit`} className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-2">
             <ArrowLeft className="w-4 h-4" />
             Back to Editor

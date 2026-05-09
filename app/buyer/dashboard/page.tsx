@@ -73,7 +73,7 @@ export default function BuyerDashboardPage() {
     <div className="flex flex-col min-h-full">
       <div className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-6">
         <h1 className="text-lg font-semibold text-text-primary">Dashboard</h1>
-        <Link href="/rfp/create">
+        <Link href="/buyer/rfp/create">
           <Button className="bg-brand-green hover:bg-brand-green-mid text-white h-9 px-4 rounded-md">
             + Create RFP
           </Button>
