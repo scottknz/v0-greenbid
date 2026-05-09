@@ -224,16 +224,35 @@ export const mockDirectorySuppliers: DirectorySupplier[] = [
   },
 ]
 
+export type DirectoryFilters = {
+  search?: string
+  category?: string
+  region?: string
+  companySize?: string
+  // sustainability
+  certifications?: Set<string>
+  emissionsIntensity?: string
+  netZeroOnly?: boolean
+}
+
+function certMatchesDirectory(supplier: DirectorySupplier, cert: string): boolean {
+  const c = supplier.sustainabilityCredentials
+  switch (cert) {
+    case 'bcorp':          return !!c.bCorp
+    case 'sbti-val':       return c.sbtiStatus === 'validated'
+    case 'sbti-com':       return c.sbtiStatus === 'committed'
+    case 'iso14001':       return !!c.iso14001
+    case 'carbonneutral':  return !!c.carbonNeutral
+    case 'ecovadis-gold':  return c.ecovadisRating === 'gold'
+    case 'ecovadis-silver':return c.ecovadisRating === 'silver'
+    case 'ecovadis-bronze':return c.ecovadisRating === 'bronze'
+    default:               return false
+  }
+}
+
 export function filterDirectorySuppliers(
   suppliers: DirectorySupplier[],
-  filters: {
-    category?: string
-    region?: string
-    companySize?: string
-    ecovadisRating?: string
-    emissionsIntensity?: string
-    search?: string
-  }
+  filters: DirectoryFilters
 ): DirectorySupplier[] {
   return suppliers.filter(supplier => {
     if (filters.search) {
@@ -255,11 +274,16 @@ export function filterDirectorySuppliers(
       return false
     }
 
-    if (filters.ecovadisRating && supplier.sustainabilityCredentials.ecovadisRating !== filters.ecovadisRating) {
-      return false
+    if (filters.certifications && filters.certifications.size > 0) {
+      const allMatch = [...filters.certifications].every(cert => certMatchesDirectory(supplier, cert))
+      if (!allMatch) return false
     }
 
     if (filters.emissionsIntensity && supplier.sustainabilityCredentials.emissionsIntensityLabel !== filters.emissionsIntensity) {
+      return false
+    }
+
+    if (filters.netZeroOnly && !supplier.sustainabilityCredentials.netZeroYear) {
       return false
     }
 
