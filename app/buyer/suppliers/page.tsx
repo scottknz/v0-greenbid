@@ -12,6 +12,8 @@ import { SupplierContactModal } from '@/components/suppliers/SupplierContactModa
 import { SupplierDirectory } from '@/components/suppliers/SupplierDirectory'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Library } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>(mockSuppliers)
@@ -85,10 +87,31 @@ export default function SuppliersPage() {
     <div className="flex h-full bg-background flex-col">
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="bg-background border border-border m-6 mb-0 rounded-b-none">
-          <TabsTrigger value="our-suppliers">Our Suppliers</TabsTrigger>
-          <TabsTrigger value="directory">Supplier Directory</TabsTrigger>
-        </TabsList>
+        <div className="flex items-center gap-1 mx-6 mt-6 mb-0 p-1 bg-gray-100 rounded-lg w-fit border border-border">
+          <button
+            onClick={() => setActiveTab('our-suppliers')}
+            className={cn(
+              'relative flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-150',
+              activeTab === 'our-suppliers'
+                ? 'bg-[#16A34A] text-white shadow-sm'
+                : 'text-text-secondary hover:text-text-primary hover:bg-white/60'
+            )}
+          >
+            Our Suppliers
+          </button>
+          <button
+            onClick={() => setActiveTab('directory')}
+            className={cn(
+              'relative flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-150',
+              activeTab === 'directory'
+                ? 'bg-[#16A34A] text-white shadow-sm'
+                : 'text-text-secondary hover:text-text-primary hover:bg-white/60'
+            )}
+          >
+            <Library className={cn('h-3.5 w-3.5 shrink-0', activeTab === 'directory' ? 'text-white' : 'text-text-muted')} />
+            Supplier Directory
+          </button>
+        </div>
 
         {/* Our Suppliers Tab */}
         <TabsContent value="our-suppliers" className="flex-1 flex flex-col m-0">
