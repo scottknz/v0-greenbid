@@ -58,6 +58,8 @@ import {
   Tag,
   PanelLeftClose,
   PanelLeftOpen,
+  User,
+  Users,
 } from "lucide-react"
 import {
   supplierRfpsData,
@@ -76,9 +78,14 @@ interface ThreadMessage {
   senderName: string;
   senderCompany?: string;
   senderType: "buyer" | "supplier";
+  recipientType?: "all_suppliers" | "specific_suppliers" | "buyer_team" | "individual";
+  recipientNames?: string[];
+  recipientCompanies?: string[];
   content: string;
   attachments: { name: string; size: string; url: string }[];
   timestamp: string;
+  isRead?: boolean;
+  readAt?: string;
 }
 
 interface Thread {
@@ -1041,42 +1048,101 @@ function MessagesPageContent() {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                  {selectedThread.messages.map((message, idx) => (
-                    <div key={message.id} className="flex gap-4">
-                      <Avatar className="size-10 shrink-0">
-                        <AvatarFallback className={`text-sm ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#4B5563]"}`}>
-                          {message.senderName.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-[#111827]">{message.senderName}</span>
-                          {message.senderType === "supplier" && message.senderCompany && (
-                            <span className="text-sm text-[#6B7280]">{message.senderCompany}</span>
-                          )}
-                          <span className="text-xs text-[#9CA3AF]">
-                            {new Date(message.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                        <div className="text-sm text-[#374151] whitespace-pre-wrap">{message.content}</div>
-                        {message.attachments.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {message.attachments.map((att, i) => (
-                              <a
-                                key={i}
-                                href={att.url}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] text-sm"
-                              >
-                                <Paperclip className="size-4 text-[#6B7280]" />
-                                <span className="text-[#111827]">{att.name}</span>
-                                <span className="text-xs text-[#9CA3AF]">{att.size}</span>
-                              </a>
-                            ))}
+                  {selectedThread.messages.map((message) => {
+                    // Helper to format recipient display
+                    const getRecipientDisplay = () => {
+                      if (message.recipientType === 'all_suppliers') {
+                        return { label: 'All Suppliers', icon: Globe, color: 'text-blue-600 bg-blue-50' }
+                      }
+                      if (message.recipientType === 'buyer_team') {
+                        return { label: 'Buyer Team', icon: Users, color: 'text-[#16A34A] bg-[#DCFCE7]' }
+                      }
+                      if (message.recipientType === 'specific_suppliers' && message.recipientCompanies?.length) {
+                        return { label: message.recipientCompanies.join(', '), icon: Lock, color: 'text-gray-600 bg-gray-100' }
+                      }
+                      if (message.recipientType === 'individual' && message.recipientNames?.length) {
+                        return { label: message.recipientNames.join(', '), icon: User, color: 'text-purple-600 bg-purple-50' }
+                      }
+                      return { label: 'Unknown', icon: Mail, color: 'text-gray-400 bg-gray-50' }
+                    }
+                    const recipient = getRecipientDisplay()
+                    const RecipientIcon = recipient.icon
+
+                    return (
+                      <div key={message.id} className="rounded-lg border border-[#E5E7EB] bg-white overflow-hidden">
+                        {/* Message Header with From/To */}
+                        <div className="px-4 py-3 bg-[#FAFAFA] border-b border-[#E5E7EB]">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-4">
+                              {/* From */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">From:</span>
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="size-6">
+                                    <AvatarFallback className={`text-[10px] ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#4B5563]"}`}>
+                                      {message.senderName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm font-medium text-[#111827]">{message.senderName}</span>
+                                  {message.senderType === "supplier" && message.senderCompany && (
+                                    <span className="text-xs text-[#6B7280]">({message.senderCompany})</span>
+                                  )}
+                                  {message.senderType === "buyer" && (
+                                    <Badge variant="outline" className="text-[10px] h-5 bg-[#DCFCE7] text-[#16A34A] border-[#16A34A]/20">Buyer</Badge>
+                                  )}
+                                  {message.senderType === "supplier" && (
+                                    <Badge variant="outline" className="text-[10px] h-5 bg-gray-100 text-gray-600 border-gray-300">You</Badge>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* To */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">To:</span>
+                                <Badge className={`text-xs ${recipient.color} border-0`}>
+                                  <RecipientIcon className="size-3 mr-1" />
+                                  {recipient.label}
+                                </Badge>
+                              </div>
+                            </div>
+
+                            {/* Timestamp and read status */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-[#9CA3AF]">
+                                {new Date(message.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                              </span>
+                              {message.isRead && message.senderType === "supplier" && (
+                                <span className="flex items-center gap-1 text-[10px] text-[#16A34A]">
+                                  <CheckCircle className="size-3" />
+                                  Read
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        )}
+                        </div>
+
+                        {/* Message Content */}
+                        <div className="p-4">
+                          <div className="text-sm text-[#374151] whitespace-pre-wrap leading-relaxed">{message.content}</div>
+                          {message.attachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[#E5E7EB]">
+                              {message.attachments.map((att, i) => (
+                                <a
+                                  key={i}
+                                  href={att.url}
+                                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] hover:border-[#16A34A] text-sm transition-colors"
+                                >
+                                  <Paperclip className="size-4 text-[#6B7280]" />
+                                  <span className="text-[#111827]">{att.name}</span>
+                                  <span className="text-xs text-[#9CA3AF]">{att.size}</span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
 
                 {/* Reply Composer */}
