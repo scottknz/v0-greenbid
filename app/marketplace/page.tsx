@@ -17,8 +17,13 @@ import {
   Award,
   Star,
   ChevronDown,
-  Lock,
   Building2,
+  FileText,
+  MessageSquare,
+  Users,
+  Settings,
+  ExternalLink,
+  Clock,
 } from 'lucide-react'
 import {
   mockMarketplaceRFPs,
@@ -197,51 +202,64 @@ function MarketplaceCard({
   )
 }
 
-// Mock data for private/invited RFPs
-const mockPrivateRFPs = [
+// Internal RFPs - buyer's own submitted RFPs
+const internalRFPs = [
   {
-    id: 'priv-1',
-    title: 'Exclusive Solar Panel Supply Agreement',
-    buyerCompany: 'GreenCorp Industries',
-    buyerInitials: 'GC',
-    buyerColor: 'bg-emerald-600',
-    summary: 'Direct invitation to supply high-efficiency solar panels for our new manufacturing facility expansion.',
-    deadline: '2025-02-28',
-    budget: '$2.5M - $3.5M',
-    status: 'open' as const,
-    invitedAt: '2025-01-15',
-    responseDeadline: '2025-02-20',
+    id: '1',
+    referenceId: 'RFP-2026-001',
+    title: 'Sustainable Office Furniture Supply',
+    summary: 'Seeking suppliers for eco-friendly office furniture for our new headquarters.',
+    status: 'accepting_bids' as const,
+    deadline: '2026-06-15',
+    budget: 250000,
+    submissions: 8,
+    pendingQA: 3,
+    publishedAt: '2026-05-01',
+    category: 'Office Supplies',
   },
   {
-    id: 'priv-2',
-    title: 'Sustainable Packaging Partnership',
-    buyerCompany: 'EcoRetail Group',
-    buyerInitials: 'ER',
-    buyerColor: 'bg-blue-600',
-    summary: 'You have been selected as a preferred vendor for our sustainable packaging initiative across 200+ stores.',
-    deadline: '2025-03-15',
-    budget: '$800K - $1.2M',
-    status: 'open' as const,
-    invitedAt: '2025-01-20',
-    responseDeadline: '2025-03-01',
+    id: '2',
+    referenceId: 'RFP-2026-002',
+    title: 'Green Energy Consulting Services',
+    summary: 'Professional consulting for transitioning to 100% renewable energy sources.',
+    status: 'published' as const,
+    deadline: '2026-07-01',
+    budget: 175000,
+    submissions: 5,
+    pendingQA: 1,
+    publishedAt: '2026-05-10',
+    category: 'Consulting',
   },
   {
-    id: 'priv-3',
-    title: 'Carbon Offset Program - Phase 2',
-    buyerCompany: 'TechVentures Inc',
-    buyerInitials: 'TV',
-    buyerColor: 'bg-purple-600',
-    summary: 'Continuation of our successful carbon offset partnership. Invitation extended based on Phase 1 performance.',
-    deadline: '2025-04-01',
-    budget: '$500K - $750K',
-    status: 'open' as const,
-    invitedAt: '2025-01-22',
-    responseDeadline: '2025-03-15',
+    id: '3',
+    referenceId: 'RFP-2026-003',
+    title: 'Electric Vehicle Fleet Procurement',
+    summary: 'Procurement of 50 electric vehicles for company fleet replacement program.',
+    status: 'accepting_bids' as const,
+    deadline: '2026-06-30',
+    budget: 2500000,
+    submissions: 12,
+    pendingQA: 5,
+    publishedAt: '2026-04-20',
+    category: 'Transportation',
+  },
+  {
+    id: '4',
+    referenceId: 'RFP-2026-004',
+    title: 'Waste Management & Recycling Services',
+    summary: 'Comprehensive waste management and recycling services for all office locations.',
+    status: 'evaluation' as const,
+    deadline: '2026-05-30',
+    budget: 120000,
+    submissions: 6,
+    pendingQA: 0,
+    publishedAt: '2026-04-01',
+    category: 'Facilities',
   },
 ]
 
 export default function MarketplacePage() {
-  const [marketView, setMarketView] = useState<'public' | 'private'>('public')
+  const [marketView, setMarketView] = useState<'internal' | 'public'>('internal')
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<MarketplaceCategory>('all')
   const [activeRegion, setActiveRegion] = useState<MarketplaceRegion>('all')
@@ -288,15 +306,35 @@ export default function MarketplacePage() {
               <div>
                 <h1 className="text-xl font-bold text-text-primary">RFP Marketplace</h1>
                 <p className="text-xs text-text-muted mt-0.5">
-                  {marketView === 'public' 
-                    ? `${filtered.length} open opportunit${filtered.length === 1 ? 'y' : 'ies'}`
-                    : `${mockPrivateRFPs.length} private invitation${mockPrivateRFPs.length === 1 ? '' : 's'}`
+                  {marketView === 'internal' 
+                    ? `${internalRFPs.length} internal RFP${internalRFPs.length === 1 ? '' : 's'}`
+                    : `${filtered.length} open opportunit${filtered.length === 1 ? 'y' : 'ies'}`
                   }
                 </p>
               </div>
               
-              {/* Public / Private toggle */}
+              {/* Internal / Public toggle */}
               <div className="flex items-center bg-surface border border-border rounded-lg p-1 gap-1">
+                <button
+                  onClick={() => setMarketView('internal')}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                    marketView === 'internal'
+                      ? 'bg-[#16A34A] text-white shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                  )}
+                >
+                  <FileText className="h-4 w-4" />
+                  Internal RFPs
+                  {internalRFPs.length > 0 && (
+                    <span className={cn(
+                      'inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-semibold',
+                      marketView === 'internal' ? 'bg-white/20 text-white' : 'bg-[#F0FDF4] text-[#16A34A]'
+                    )}>
+                      {internalRFPs.length}
+                    </span>
+                  )}
+                </button>
                 <button
                   onClick={() => setMarketView('public')}
                   className={cn(
@@ -308,26 +346,6 @@ export default function MarketplacePage() {
                 >
                   <Globe className="h-4 w-4" />
                   Public Marketplace
-                </button>
-                <button
-                  onClick={() => setMarketView('private')}
-                  className={cn(
-                    'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-                    marketView === 'private'
-                      ? 'bg-[#16A34A] text-white shadow-sm'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
-                  )}
-                >
-                  <Lock className="h-4 w-4" />
-                  Private / Invited
-                  {mockPrivateRFPs.length > 0 && (
-                    <span className={cn(
-                      'inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-semibold',
-                      marketView === 'private' ? 'bg-white/20 text-white' : 'bg-[#F0FDF4] text-[#16A34A]'
-                    )}>
-                      {mockPrivateRFPs.length}
-                    </span>
-                  )}
                 </button>
               </div>
             </div>
@@ -434,18 +452,23 @@ export default function MarketplacePage() {
         </div>
       )}
 
-      {/* Private / Invited View */}
-      {marketView === 'private' && (
+      {/* Internal RFPs View */}
+      {marketView === 'internal' && (
         <div className="px-6 py-8">
-          {mockPrivateRFPs.length === 0 ? (
+          {internalRFPs.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
-              <Lock className="h-10 w-10 text-text-muted" />
-              <p className="text-sm font-medium text-text-primary">No private invitations</p>
-              <p className="text-xs text-text-muted">You haven&apos;t received any private RFP invitations yet</p>
+              <FileText className="h-10 w-10 text-text-muted" />
+              <p className="text-sm font-medium text-text-primary">No internal RFPs</p>
+              <p className="text-xs text-text-muted">You haven&apos;t created any RFPs yet</p>
+              <Link href="/buyer/rfp/create">
+                <Button size="sm" className="bg-[#16A34A] hover:bg-[#15803d] text-white mt-2">
+                  Create New RFP
+                </Button>
+              </Link>
             </div>
           ) : (
             <div className="space-y-4">
-              {mockPrivateRFPs.map(rfp => {
+              {internalRFPs.map(rfp => {
                 const days = Math.ceil((new Date(rfp.deadline).getTime() - Date.now()) / 86400000)
                 const urgent = days <= 14
                 const critical = days <= 7
@@ -455,60 +478,87 @@ export default function MarketplacePage() {
                     key={rfp.id}
                     className="bg-white border border-border rounded-xl p-5 hover:shadow-md transition-shadow"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className={cn('h-12 w-12 rounded-lg shrink-0 flex items-center justify-center text-white text-sm font-bold', rfp.buyerColor)}>
-                        {rfp.buyerInitials}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0 space-y-2">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0 space-y-3">
+                        {/* Header with reference and status */}
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-xs text-text-muted font-medium">{rfp.buyerCompany}</p>
-                            <h3 className="font-semibold text-text-primary hover:text-[#16A34A] transition-colors cursor-pointer">
-                              {rfp.title}
-                            </h3>
+                            <p className="text-xs text-text-muted font-medium">{rfp.referenceId}</p>
+                            <Link href={`/buyer/tenders/${rfp.id}`}>
+                              <h3 className="font-semibold text-text-primary hover:text-[#16A34A] transition-colors">
+                                {rfp.title}
+                              </h3>
+                            </Link>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            <Badge className="bg-purple-50 text-purple-700 border border-purple-200 text-[10px]">
-                              Private Invitation
-                            </Badge>
-                            <Badge className={cn(
-                              'text-[10px] border',
-                              rfp.status === 'open' ? 'bg-[#F0FDF4] text-[#166534] border-[#16A34A]/20' : 'bg-gray-100 text-text-muted border-border'
-                            )}>
-                              {rfp.status === 'open' ? 'Open' : 'Closed'}
-                            </Badge>
-                          </div>
+                          <Badge className={cn(
+                            'text-[10px] border shrink-0',
+                            rfp.status === 'accepting_bids' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                            rfp.status === 'published' ? 'bg-[#F0FDF4] text-[#166534] border-[#16A34A]/20' :
+                            rfp.status === 'evaluation' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            'bg-gray-100 text-text-muted border-border'
+                          )}>
+                            {rfp.status === 'accepting_bids' ? 'Accepting Bids' : 
+                             rfp.status === 'published' ? 'Published' :
+                             rfp.status === 'evaluation' ? 'In Evaluation' : rfp.status}
+                          </Badge>
                         </div>
                         
                         <p className="text-sm text-text-secondary">{rfp.summary}</p>
                         
-                        <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted pt-1">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5" />
-                            Invited: {new Date(rfp.invitedAt).toLocaleDateString()}
+                        {/* Stats row */}
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted">
+                          <span className="flex items-center gap-1.5">
+                            <Users className="h-3.5 w-3.5 text-[#16A34A]" />
+                            <span className="font-medium text-text-primary">{rfp.submissions}</span> responses
                           </span>
-                          <span className="flex items-center gap-1">
+                          {rfp.pendingQA > 0 && (
+                            <Link 
+                              href={`/buyer/tenders/${rfp.id}/manage?tab=responses`}
+                              className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors"
+                            >
+                              <MessageSquare className="h-3.5 w-3.5 text-amber-600" />
+                              <span className="font-medium text-amber-700">{rfp.pendingQA} pending Q&A</span>
+                            </Link>
+                          )}
+                          <span className="flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5" />
                             <span className={cn(critical ? 'text-red-600 font-medium' : urgent ? 'text-amber-600 font-medium' : '')}>
-                              Response due: {new Date(rfp.responseDeadline).toLocaleDateString()}
+                              {days > 0 ? `${days} days left` : 'Deadline passed'}
                             </span>
                           </span>
-                          {rfp.budget && (
-                            <span className="flex items-center gap-1">
-                              <TrendingUp className="h-3.5 w-3.5 text-[#16A34A]" />
-                              <span className="font-medium text-text-primary">{rfp.budget}</span>
+                          <span className="flex items-center gap-1.5">
+                            <TrendingUp className="h-3.5 w-3.5 text-[#16A34A]" />
+                            <span className="font-medium text-text-primary">
+                              {rfp.budget >= 1000000 
+                                ? `$${(rfp.budget / 1000000).toFixed(1)}M` 
+                                : `$${(rfp.budget / 1000).toFixed(0)}K`}
                             </span>
-                          )}
+                          </span>
+                          <span className="text-text-muted">{rfp.category}</span>
                         </div>
                         
+                        {/* Action buttons */}
                         <div className="flex items-center gap-2 pt-2">
-                          <Button size="sm" className="bg-[#16A34A] hover:bg-[#15803d] text-white">
-                            View Invitation
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            Respond
-                          </Button>
+                          <Link href={`/buyer/tenders/${rfp.id}/manage`}>
+                            <Button size="sm" className="bg-[#16A34A] hover:bg-[#15803d] text-white gap-1.5">
+                              <Settings className="h-3.5 w-3.5" />
+                              RFP Manager
+                            </Button>
+                          </Link>
+                          <Link href={`/buyer/tenders/${rfp.id}`}>
+                            <Button size="sm" variant="outline" className="gap-1.5">
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              View Details
+                            </Button>
+                          </Link>
+                          {rfp.submissions > 0 && (
+                            <Link href={`/buyer/tenders/${rfp.id}/manage?tab=responses`}>
+                              <Button size="sm" variant="outline" className="gap-1.5">
+                                <Users className="h-3.5 w-3.5" />
+                                View Responses
+                              </Button>
+                            </Link>
+                          )}
                         </div>
                       </div>
                     </div>
