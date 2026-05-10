@@ -839,6 +839,7 @@ export default function MessagesPage() {
           
           {/* Filter Pills */}
           <div className="flex items-center gap-2 flex-wrap">
+            <Select value={rfpFilter || "all"} onValueChange={(v) => setRfpFilter(v === "all" ? null : v)}>
               <SelectTrigger className="h-8 text-xs w-auto min-w-[140px] border-[#E5E7EB] bg-white">
                 <SelectValue placeholder="All RFPs" />
               </SelectTrigger>
