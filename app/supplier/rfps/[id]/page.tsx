@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
   DialogContent,
@@ -426,127 +425,86 @@ export default function RFPDetailPage() {
   }, [activitySearch, activityTypeFilter])
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Breadcrumb and Header */}
-      <div className="border-b border-border bg-white sticky top-0 z-10">
-        <div className="px-6 py-3">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs text-text-secondary mb-3">
-            <Link href="/supplier" className="hover:text-text-primary">Supplier Portal</Link>
-            <ChevronRight className="h-3 w-3" />
-            <Link href="/supplier/rfps" className="hover:text-text-primary">RFPs</Link>
-            <ChevronRight className="h-3 w-3" />
-            <span className="text-text-primary font-medium truncate max-w-[200px]">{rfp.title}</span>
-          </nav>
-          
-          {/* Header */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3 min-w-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => router.back()}
-                className="h-9 w-9 shrink-0"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="min-w-0">
-                <h1 className="text-xl font-semibold tracking-tight text-text-primary truncate">{rfp.title}</h1>
-                <div className="flex items-center gap-3 mt-1 text-sm text-text-secondary">
-                  <span className="flex items-center gap-1">
-                    <Building2 className="h-3.5 w-3.5" />
-                    {rfp.buyerCompany}
-                  </span>
-                  {rfp.onlineRFPUrl && (
-                    <a
-                      href={rfp.onlineRFPUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#16A34A] hover:underline flex items-center gap-1"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      View Online RFP
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2 shrink-0">
-              <Button variant="outline" size="sm" onClick={handlePrintProposal} className="gap-1.5">
-                <Printer className="h-4 w-4" />
-                Print
-              </Button>
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <Download className="h-4 w-4" />
-                Export
-              </Button>
-            </div>
+    <div className="flex flex-col min-h-screen bg-[#F9FAFB]">
+
+      {/* Top bar — breadcrumb + actions, matches buyer style */}
+      <div className="border-b border-[#E5E7EB] bg-white sticky top-0 z-20">
+        <div className="px-6 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-8 w-8 shrink-0 text-[#6B7280]">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <nav className="flex items-center gap-1.5 text-xs text-[#6B7280]">
+              <Link href="/supplier" className="hover:text-[#111827]">Supplier Portal</Link>
+              <ChevronRight className="h-3 w-3" />
+              <Link href="/supplier/rfps" className="hover:text-[#111827]">RFPs</Link>
+              <ChevronRight className="h-3 w-3" />
+              <span className="text-[#111827] font-medium truncate max-w-[260px]">{rfp.title}</span>
+            </nav>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="outline" size="sm" onClick={handlePrintProposal} className="gap-1.5 text-xs h-8">
+              <Printer className="h-3.5 w-3.5" />
+              Print
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8">
+              <Download className="h-3.5 w-3.5" />
+              Export
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Quick Stats Bar */}
-      <div className="border-b border-border bg-surface">
-        <div className="px-6 py-3">
+      <div className="border-b border-[#E5E7EB] bg-white">
+        <div className="px-6 py-2.5">
           <div className="flex items-center justify-between gap-4">
-            {/* Stats */}
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-text-secondary" />
-                <span className="text-xs text-text-secondary">Category:</span>
-                <span className="text-xs font-medium">{rfp.category}</span>
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-1.5">
+                <Tag className="h-3.5 w-3.5 text-[#6B7280]" />
+                <span className="text-xs text-[#6B7280]">Category:</span>
+                <span className="text-xs font-medium text-[#111827]">{rfp.category}</span>
               </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-text-secondary" />
-                <span className="text-xs text-text-secondary">Budget:</span>
-                <span className="text-xs font-medium">{rfp.budget}</span>
+              <div className="h-3.5 w-px bg-[#E5E7EB]" />
+              <div className="flex items-center gap-1.5">
+                <DollarSign className="h-3.5 w-3.5 text-[#6B7280]" />
+                <span className="text-xs text-[#6B7280]">Budget:</span>
+                <span className="text-xs font-medium text-[#111827]">{rfp.budget}</span>
               </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-text-secondary" />
-                <span className="text-xs text-text-secondary">Est. Value:</span>
-                <span className="text-xs font-medium">${rfp.estimatedValue.toLocaleString()}</span>
+              <div className="h-3.5 w-px bg-[#E5E7EB]" />
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-[#6B7280]" />
+                <span className="text-xs text-[#6B7280]">Est. Value:</span>
+                <span className="text-xs font-medium text-[#111827]">${rfp.estimatedValue.toLocaleString()}</span>
               </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-2">
-                <FileCheck className="h-4 w-4 text-text-secondary" />
-                <span className="text-xs text-text-secondary">Completion:</span>
-                <span className="text-xs font-medium">{completionPercent}%</span>
-                <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-3.5 w-px bg-[#E5E7EB]" />
+              <div className="flex items-center gap-1.5">
+                <FileCheck className="h-3.5 w-3.5 text-[#6B7280]" />
+                <span className="text-xs text-[#6B7280]">Completion:</span>
+                <span className="text-xs font-medium text-[#111827]">{completionPercent}%</span>
+                <div className="w-14 h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden">
                   <div className="h-full bg-[#16A34A] rounded-full" style={{ width: `${completionPercent}%` }} />
                 </div>
               </div>
             </div>
-            
-            {/* Deadline Countdown */}
             <div className={cn(
-              'flex items-center gap-2 px-3 py-1.5 rounded-lg',
-              isOverdue ? 'bg-red-50 text-red-700' : isDeadlineSoon ? 'bg-amber-50 text-amber-700' : 'bg-gray-50 text-text-secondary'
+              'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium',
+              isOverdue ? 'bg-red-50 text-red-700' : isDeadlineSoon ? 'bg-amber-50 text-amber-700' : 'bg-[#F3F4F6] text-[#6B7280]'
             )}>
-              <Clock className="h-4 w-4" />
-              {isOverdue ? (
-                <span className="text-xs font-medium">Deadline passed ({Math.abs(daysDue)} days ago)</span>
-              ) : daysDue === 0 ? (
-                <span className="text-xs font-medium">Due today ({hoursDue}h remaining)</span>
-              ) : (
-                <span className="text-xs font-medium">
-                  {daysDue} day{daysDue !== 1 ? 's' : ''} remaining
-                  <span className="text-text-muted font-normal ml-1">
-                    ({new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })})
-                  </span>
-                </span>
-              )}
+              <Clock className="h-3.5 w-3.5" />
+              {isOverdue
+                ? `Deadline passed (${Math.abs(daysDue)}d ago)`
+                : daysDue === 0
+                ? `Due today (${hoursDue}h remaining)`
+                : `${daysDue} day${daysDue !== 1 ? 's' : ''} remaining · ${new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Progress Bar - New Design with Icons */}
-      <div className="border-b border-border bg-white">
+      {/* Progress Bar */}
+      <div className="border-b border-[#E5E7EB] bg-white">
         <div className="px-6 py-5">
-          {/* Declined banner */}
           {currentPhase === 'declined' && (
             <div className="flex items-center justify-between mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2">
@@ -556,7 +514,7 @@ export default function RFPDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-8 border-[#16A34A] text-[#16A34A] hover:bg-green-50 shrink-0"
+                className="text-xs h-8 border-[#16A34A] text-[#16A34A] hover:bg-[#F0FDF4] shrink-0"
                 onClick={handleReinstateSubmission}
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
@@ -564,189 +522,256 @@ export default function RFPDetailPage() {
               </Button>
             </div>
           )}
-
-          {/* Progress Steps with Icons */}
-          <div className="flex items-start justify-between">
+          {/* Steps */}
+          <nav className="flex items-start justify-center gap-0">
             {SUPPLIER_PHASE_ORDER.map((phase, idx) => {
               const isFinalOutcomeSlot = idx === SUPPLIER_PHASE_ORDER.length - 1
               const isCompleted = currentPhaseIndex > idx && !['declined'].includes(currentPhase)
               const isCurrent = currentPhase === phase || (isFinalOutcomeSlot && (currentPhase === 'awarded' || currentPhase === 'rejected'))
               const isDeclined = currentPhase === 'declined'
-              
               const config = SUPPLIER_PHASE_CONFIG[phase]
               const label = isFinalOutcomeSlot
-                ? currentPhase === 'awarded'
-                  ? 'Awarded'
-                  : currentPhase === 'rejected'
-                  ? 'Not Successful'
-                  : 'Final Outcome'
+                ? currentPhase === 'awarded' ? 'Awarded' : currentPhase === 'rejected' ? 'Not Successful' : 'Final Outcome'
                 : config.label
-
               return (
-                <div key={phase} className="flex flex-col items-center flex-1 relative">
-                  {/* Connector line */}
-                  {idx < SUPPLIER_PHASE_ORDER.length - 1 && (
-                    <div
-                      className={cn(
-                        'absolute top-5 left-[calc(50%+20px)] right-[calc(-50%+20px)] h-0.5',
-                        isCompleted ? 'bg-[#16A34A]' : 'bg-gray-200'
+                <div key={phase} className="flex items-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className={cn(
+                      'flex h-8 w-8 items-center justify-center rounded-full transition-all',
+                      isCompleted ? 'bg-[#16A34A] text-white'
+                      : isCurrent && currentPhase === 'awarded' ? 'bg-[#16A34A] text-white'
+                      : isCurrent && currentPhase === 'rejected' ? 'bg-[#6B7280] text-white'
+                      : isCurrent && !isDeclined ? 'bg-[#DCFCE7] text-[#16A34A] ring-2 ring-[#16A34A] ring-offset-2'
+                      : 'bg-[#F3F4F6] text-[#9CA3AF]'
+                    )}>
+                      {isCompleted ? (
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <PhaseIcon
+                          phase={isFinalOutcomeSlot
+                            ? (currentPhase === 'awarded' ? 'awarded' : currentPhase === 'rejected' ? 'rejected' : phase)
+                            : phase}
+                          className="h-4 w-4"
+                        />
                       )}
-                    />
-                  )}
-                  
-                  {/* Icon Circle */}
-                  <div
-                    className={cn(
-                      'relative z-10 flex h-10 w-10 items-center justify-center rounded-full transition-all',
-                      isCompleted && 'bg-[#16A34A] text-white',
-                      isCurrent && !isCompleted && !isDeclined && 'bg-[#DCFCE7] text-[#16A34A] ring-2 ring-[#16A34A] ring-offset-2',
-                      isCurrent && currentPhase === 'awarded' && 'bg-[#16A34A] text-white',
-                      isCurrent && currentPhase === 'rejected' && 'bg-gray-400 text-white',
-                      !isCurrent && !isCompleted && !isDeclined && 'bg-gray-100 text-gray-400',
-                      isDeclined && 'bg-gray-100 text-gray-400'
-                    )}
-                  >
-                    {isCompleted ? (
-                      <CheckCircle2 className="h-5 w-5" />
-                    ) : (
-                      <PhaseIcon phase={isFinalOutcomeSlot ? (currentPhase === 'awarded' ? 'awarded' : currentPhase === 'rejected' ? 'rejected' : phase) : phase} className="h-5 w-5" />
-                    )}
+                    </div>
+                    <p className={cn(
+                      'text-xs font-medium text-center w-[80px] leading-tight',
+                      (isCompleted || isCurrent) && !isDeclined ? 'text-[#111827]' : 'text-[#9CA3AF]'
+                    )}>
+                      {label}
+                    </p>
                   </div>
-                  
-                  {/* Label */}
-                  <p className={cn(
-                    'mt-2 text-xs font-medium text-center max-w-[80px]',
-                    (isCompleted || isCurrent) && !isDeclined ? 'text-text-primary' : 'text-text-secondary'
-                  )}>
-                    {label}
-                  </p>
+                  {idx < SUPPLIER_PHASE_ORDER.length - 1 && (
+                    <div className={cn(
+                      'mx-3 h-px w-10 sm:w-14 mb-4 transition-colors',
+                      isCompleted ? 'bg-[#16A34A]' : 'bg-[#E5E7EB]'
+                    )} />
+                  )}
                 </div>
               )
             })}
-          </div>
+          </nav>
         </div>
       </div>
 
-      {/* Sticky Progress Button */}
-      {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && currentPhase !== 'declined' && (
-        <div className="border-b border-border bg-white px-6 py-3 flex items-center justify-between sticky top-[108px] z-10">
-          <div className="flex items-center gap-3">
-            {currentPhase === 'new_rfp' && !interestRegistered && (
+      {/* Main layout — left action panel + right content */}
+      <div className="flex-1 flex gap-0">
+
+        {/* Left action panel */}
+        <div className="w-56 shrink-0 border-r border-[#E5E7EB] bg-white p-5 flex flex-col gap-4 sticky top-[93px] self-start">
+          {/* Progress Proposal button or status */}
+          {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && currentPhase !== 'declined' ? (
+            <div className="flex flex-col gap-2">
               <Button
-                onClick={handleRegisterInterest}
-                variant="outline"
-                size="sm"
-                className="text-xs gap-1.5"
+                onClick={handleProgressProposal}
+                disabled={getProgressButtonDisabled()}
+                className="w-full bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50 gap-2 justify-center"
               >
-                <Send className="h-3.5 w-3.5" />
-                Register Interest
+                <ChevronRight className="h-4 w-4" />
+                {getProgressButtonLabel()}
               </Button>
-            )}
-            {interestRegistered && (
-              <Badge className="bg-[#F0FDF4] text-[#166534] border border-[#16A34A]/20 text-xs">
-                <CheckCircle className="h-3 w-3 mr-1" />
-                Interest Registered
-              </Badge>
-            )}
-            
-            {/* Decline link */}
-            <button
-              onClick={() => setShowDeclineConfirmModal(true)}
-              className="text-xs text-gray-400 hover:text-red-500 transition-colors underline underline-offset-2"
-            >
-              Decline to Submit
-            </button>
-          </div>
-          
-          <Button
-            onClick={handleProgressProposal}
-            disabled={getProgressButtonDisabled()}
-            className="bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50 gap-2"
-          >
-            <ChevronRight className="h-4 w-4" />
-            {getProgressButtonLabel()}
-          </Button>
-        </div>
-      )}
-
-      {/* Status messages for terminal/submitted phases */}
-      {(currentPhase === 'submitted' || currentPhase === 'client_reviewing' || isTerminalPhase) && currentPhase !== 'declined' && (
-        <div className="border-b border-border bg-white px-6 py-3">
-          {currentPhase === 'submitted' && (
-            <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
-              Proposal submitted — awaiting client review.
-            </p>
-          )}
-          {currentPhase === 'client_reviewing' && (
-            <p className="text-sm text-text-secondary flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Client is currently reviewing your proposal.
-            </p>
-          )}
-          {currentPhase === 'awarded' && (
-            <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
-              <Trophy className="h-4 w-4" />
-              Congratulations — your proposal has been awarded!
-            </p>
-          )}
-          {currentPhase === 'rejected' && (
-            <p className="text-sm text-text-secondary flex items-center gap-2">
-              <XCircle className="h-4 w-4" />
-              This proposal was not successful.
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Main Content with Tabs */}
-      <div className="flex-1 px-6 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-surface border border-border p-1 h-auto">
-            <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-white">
-              <Eye className="h-4 w-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="gap-2 data-[state=active]:bg-white">
-              <Folder className="h-4 w-4" />
-              Documents
-            </TabsTrigger>
-            <TabsTrigger value="questionnaire" className="gap-2 data-[state=active]:bg-white">
-              <HelpCircle className="h-4 w-4" />
-              Questionnaire
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="gap-2 data-[state=active]:bg-white">
-              <MessageSquare className="h-4 w-4" />
-              Message Centre
-              {mockMessages.some(m => m.unread) && (
-                <span className="ml-1 h-2 w-2 rounded-full bg-red-500" />
+              {currentPhase === 'new_rfp' && !interestRegistered && (
+                <Button
+                  onClick={handleRegisterInterest}
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-1.5 text-xs"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  Register Interest
+                </Button>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="team" className="gap-2 data-[state=active]:bg-white">
-              <Users className="h-4 w-4" />
-              Team
-            </TabsTrigger>
-            <TabsTrigger value="notes" className="gap-2 data-[state=active]:bg-white">
-              <StickyNote className="h-4 w-4" />
-              Notes
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="gap-2 data-[state=active]:bg-white">
-              <Activity className="h-4 w-4" />
-              Activity
-            </TabsTrigger>
-          </TabsList>
+              {interestRegistered && (
+                <div className="flex items-center gap-1.5 justify-center py-1">
+                  <CheckCircle className="h-3.5 w-3.5 text-[#16A34A]" />
+                  <span className="text-xs text-[#16A34A] font-medium">Interest Registered</span>
+                </div>
+              )}
+              <button
+                onClick={() => setShowDeclineConfirmModal(true)}
+                className="text-xs text-[#9CA3AF] hover:text-red-500 transition-colors text-center mt-1 underline underline-offset-2"
+              >
+                Decline to Submit
+              </button>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-[#E5E7EB] p-3 text-center">
+              {currentPhase === 'submitted' && (
+                <>
+                  <CheckCircle className="h-5 w-5 text-[#16A34A] mx-auto mb-1" />
+                  <p className="text-xs font-medium text-[#16A34A]">Submitted</p>
+                  <p className="text-[10px] text-[#6B7280] mt-0.5">Awaiting client review</p>
+                </>
+              )}
+              {currentPhase === 'client_reviewing' && (
+                <>
+                  <Clock className="h-5 w-5 text-[#6B7280] mx-auto mb-1" />
+                  <p className="text-xs font-medium text-[#111827]">Under Review</p>
+                  <p className="text-[10px] text-[#6B7280] mt-0.5">Client is evaluating</p>
+                </>
+              )}
+              {currentPhase === 'awarded' && (
+                <>
+                  <Trophy className="h-5 w-5 text-[#16A34A] mx-auto mb-1" />
+                  <p className="text-xs font-medium text-[#16A34A]">Awarded</p>
+                  <p className="text-[10px] text-[#6B7280] mt-0.5">Congratulations!</p>
+                </>
+              )}
+              {currentPhase === 'rejected' && (
+                <>
+                  <XCircle className="h-5 w-5 text-[#6B7280] mx-auto mb-1" />
+                  <p className="text-xs font-medium text-[#111827]">Not Successful</p>
+                  <p className="text-[10px] text-[#6B7280] mt-0.5">This submission has closed</p>
+                </>
+              )}
+              {currentPhase === 'declined' && (
+                <>
+                  <Ban className="h-5 w-5 text-[#6B7280] mx-auto mb-1" />
+                  <p className="text-xs font-medium text-[#111827]">Declined</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-2 text-xs border-[#16A34A] text-[#16A34A] hover:bg-[#F0FDF4]"
+                    onClick={handleReinstateSubmission}
+                  >
+                    <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                    Reinstate
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6 mt-0">
+          {/* Divider */}
+          <div className="h-px bg-[#E5E7EB]" />
+
+          {/* Phase badge */}
+          <div>
+            <p className="text-[10px] text-[#6B7280] uppercase tracking-wide font-medium mb-1.5">Current Phase</p>
+            <Badge className={cn('text-xs w-full justify-center', SUPPLIER_PHASE_CONFIG[currentPhase].color)}>
+              {SUPPLIER_PHASE_CONFIG[currentPhase].label}
+            </Badge>
+          </div>
+
+          {/* Deadline mini */}
+          <div>
+            <p className="text-[10px] text-[#6B7280] uppercase tracking-wide font-medium mb-1.5">Submission Deadline</p>
+            <p className="text-xs font-medium text-[#111827]">
+              {new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </p>
+            <p className={cn('text-[10px] mt-0.5', isOverdue ? 'text-red-500' : isDeadlineSoon ? 'text-amber-600' : 'text-[#6B7280]')}>
+              {isOverdue ? `${Math.abs(daysDue)} days overdue` : daysDue === 0 ? 'Due today' : `${daysDue} days remaining`}
+            </p>
+          </div>
+
+          {/* Reference */}
+          <div>
+            <p className="text-[10px] text-[#6B7280] uppercase tracking-wide font-medium mb-1.5">Reference</p>
+            <p className="text-xs font-mono text-[#111827]">{rfp.id}</p>
+          </div>
+        </div>
+
+        {/* Right content area */}
+        <div className="flex-1 min-w-0">
+
+          {/* Tab bar — matches buyer border-bottom style */}
+          <div className="border-b border-[#E5E7EB] bg-[#FAFAFA] sticky top-[93px] z-10">
+            <nav className="flex gap-0 px-6" aria-label="RFP tabs">
+              {[
+                { key: 'overview', label: 'Overview', icon: Eye },
+                { key: 'documents', label: 'Documents', icon: Folder },
+                { key: 'questionnaire', label: 'Questionnaire', icon: HelpCircle },
+                { key: 'messages', label: 'Message Centre', icon: MessageSquare, badge: mockMessages.some(m => m.unread) },
+                { key: 'team', label: 'Team', icon: Users },
+                { key: 'notes', label: 'Notes', icon: StickyNote },
+                { key: 'activity', label: 'Activity', icon: Activity },
+              ].map(({ key, label, icon: Icon, badge }) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={cn(
+                    'flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 whitespace-nowrap',
+                    activeTab === key
+                      ? 'text-[#16A34A] border-[#16A34A] bg-white'
+                      : 'text-[#6B7280] border-transparent hover:text-[#111827] hover:border-[#D1D5DB]'
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                  {badge && <span className="h-2 w-2 rounded-full bg-red-500 ml-0.5" />}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Tab content */}
+          <div className="p-6">
+            {activeTab === 'overview' && (
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2 space-y-6">
-                {/* About */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">About This RFP</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-text-primary leading-relaxed">{rfp.description}</p>
+
+                {/* Summary Card — replaces the old header */}
+                <Card className="border-[#E5E7EB] bg-white">
+                  <CardContent className="pt-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <h1 className="text-lg font-semibold text-[#111827] leading-snug">{rfp.title}</h1>
+                        <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-[#6B7280]">
+                          <span className="flex items-center gap-1.5">
+                            <Building2 className="h-3.5 w-3.5" />
+                            {rfp.buyerCompany}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <Tag className="h-3.5 w-3.5" />
+                            {rfp.category}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5" />
+                            Deadline {new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                          {rfp.onlineRFPUrl && (
+                            <a
+                              href={rfp.onlineRFPUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#16A34A] hover:underline flex items-center gap-1"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              View Online RFP
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      <Badge className={cn('shrink-0 text-xs', SUPPLIER_PHASE_CONFIG[currentPhase].color)}>
+                        {SUPPLIER_PHASE_CONFIG[currentPhase].label}
+                      </Badge>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-[#F3F4F6]">
+                      <p className="text-sm text-[#374151] leading-relaxed">{rfp.description}</p>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -920,10 +945,9 @@ export default function RFPDetailPage() {
                 </Card>
               </div>
             </div>
-          </TabsContent>
+          )}
 
-          {/* Documents Tab */}
-          <TabsContent value="documents" className="space-y-6 mt-0">
+          {activeTab === 'documents' && (
             <div className="grid gap-6 lg:grid-cols-2">
               {/* RFP Documents (Buyer's) */}
               <Card>
@@ -1016,10 +1040,9 @@ export default function RFPDetailPage() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
+          )}
 
-          {/* Questionnaire Tab */}
-          <TabsContent value="questionnaire" className="space-y-6 mt-0">
+          {activeTab === 'questionnaire' && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -1056,10 +1079,9 @@ export default function RFPDetailPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
-          {/* Message Centre Tab */}
-          <TabsContent value="messages" className="space-y-6 mt-0">
+          {activeTab === 'messages' && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-base">Message Centre</CardTitle>
@@ -1097,10 +1119,9 @@ export default function RFPDetailPage() {
                 ))}
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
-          {/* Team Tab */}
-          <TabsContent value="team" className="space-y-6 mt-0">
+          {activeTab === 'team' && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -1255,10 +1276,9 @@ export default function RFPDetailPage() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
-          {/* Notes Tab */}
-          <TabsContent value="notes" className="space-y-6 mt-0">
+          {activeTab === 'notes' && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
@@ -1296,10 +1316,9 @@ export default function RFPDetailPage() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          )}
 
-          {/* Activity Tab */}
-          <TabsContent value="activity" className="space-y-6 mt-0">
+          {activeTab === 'activity' && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-base">Activity Log</CardTitle>
@@ -1379,9 +1398,10 @@ export default function RFPDetailPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+          )}
+          </div>{/* /tab content */}
+        </div>{/* /right content */}
+      </div>{/* /main flex */}
 
       {/* Modals */}
       
