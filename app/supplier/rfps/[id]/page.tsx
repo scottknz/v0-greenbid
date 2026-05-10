@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Dialog,
   DialogContent,
@@ -65,6 +66,22 @@ import {
   TrendingUp,
   MessageSquare,
   X,
+  Eye,
+  Pencil,
+  Trophy,
+  Ban,
+  Printer,
+  Archive,
+  RotateCcw,
+  Filter,
+  Search,
+  CheckCircle2,
+  Circle,
+  Folder,
+  HelpCircle,
+  Activity,
+  FileCheck,
+  Link2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { internalTeamMembers } from '@/lib/mock-rfp'
@@ -80,7 +97,6 @@ import {
 import type { RFPTeamMember, RFPTeamRole } from '@/types/rfp'
 import { ApprovalRequestModal } from '@/components/approval/ApprovalRequestModal'
 import { ApprovalStatus } from '@/components/approval/ApprovalStatus'
-import { SupplierCopilot } from '@/components/proposal/SupplierCopilot'
 import { mockSupplierApprovalRequests } from '@/lib/mock-approvals'
 import type { ApprovalRequest } from '@/types/approval'
 
@@ -93,9 +109,58 @@ const roleStyles: Record<RFPTeamRole, string> = {
   Observer: 'bg-gray-100 text-gray-600 border-gray-200',
 }
 
+// Phase icon mapping
+const PhaseIcon = ({ phase, className }: { phase: string; className?: string }) => {
+  const icons: Record<string, React.ReactNode> = {
+    new_rfp: <Eye className={className} />,
+    in_progress: <Pencil className={className} />,
+    under_final_review: <Users className={className} />,
+    submitted: <Send className={className} />,
+    client_reviewing: <Clock className={className} />,
+    awarded: <Trophy className={className} />,
+    rejected: <XCircle className={className} />,
+    declined: <Ban className={className} />,
+  }
+  return icons[phase] || <Circle className={className} />
+}
+
+// Mock related RFPs
+const relatedRFPs = [
+  { id: 'rfp-002', title: 'Q3 Sustainable Packaging Supply', status: 'submitted', deadline: '2026-05-15' },
+  { id: 'rfp-003', title: 'Carbon Neutral Logistics RFP', status: 'in_progress', deadline: '2026-06-01' },
+]
+
+// Mock proposal documents (supplier uploads)
+const mockProposalDocuments = [
+  { id: 'pd-1', name: 'Technical Proposal v2.pdf', size: '4.2 MB', uploadedAt: '2026-05-08', version: 2, status: 'active' },
+  { id: 'pd-2', name: 'Pricing Schedule.xlsx', size: '156 KB', uploadedAt: '2026-05-07', version: 1, status: 'active' },
+  { id: 'pd-3', name: 'Company Certifications.pdf', size: '2.1 MB', uploadedAt: '2026-05-06', version: 1, status: 'active' },
+  { id: 'pd-4', name: 'Technical Proposal v1.pdf', size: '3.8 MB', uploadedAt: '2026-05-05', version: 1, status: 'archived' },
+]
+
+// Mock messages/comms
+const mockMessages = [
+  { id: 'm-1', type: 'public', subject: 'Clarification on delivery timeline', sender: 'Jane Smith (Buyer)', date: '2026-05-08', unread: true },
+  { id: 'm-2', type: 'private', subject: 'Re: Pricing adjustments', sender: 'You', date: '2026-05-07', unread: false },
+  { id: 'm-3', type: 'public', subject: 'Updated specifications', sender: 'Jane Smith (Buyer)', date: '2026-05-05', unread: false },
+]
+
+// Mock activity for the RFP
+const mockRFPActivity = [
+  { id: 'a-1', type: 'phase_change', description: 'Phase changed to Preparation', user: 'John Smith', date: '2026-05-08T14:30:00Z' },
+  { id: 'a-2', type: 'document_upload', description: 'Uploaded Technical Proposal v2.pdf', user: 'John Smith', date: '2026-05-08T11:15:00Z' },
+  { id: 'a-3', type: 'team_added', description: 'Added Sarah Johnson to team', user: 'John Smith', date: '2026-05-07T16:45:00Z' },
+  { id: 'a-4', type: 'note_added', description: 'Added internal note', user: 'Emily Chen', date: '2026-05-07T10:20:00Z' },
+  { id: 'a-5', type: 'message_received', description: 'New message from buyer', user: 'System', date: '2026-05-06T09:00:00Z' },
+  { id: 'a-6', type: 'interest_registered', description: 'Registered interest in RFP', user: 'John Smith', date: '2026-05-05T08:30:00Z' },
+]
+
 export default function RFPDetailPage() {
   const router = useRouter()
   const params = useParams()
+  
+  // Tab state
+  const [activeTab, setActiveTab] = useState('overview')
   
   // Phase and submission state
   const [currentPhase, setCurrentPhase] = useState<SupplierRFPPhase>(mockRFPDetail.currentPhase)
@@ -105,11 +170,11 @@ export default function RFPDetailPage() {
   
   // Modal states
   const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false)
-  const [showSubmissionModal, setShowSubmissionModal] = useState(false)
-  const [showFinalReviewModal, setShowFinalReviewModal] = useState(false)
+  const [showInitialReviewModal, setShowInitialReviewModal] = useState(false)
   const [showPhaseHistoryModal, setShowPhaseHistoryModal] = useState(false)
   const [showAddNoteModal, setShowAddNoteModal] = useState(false)
   const [showApprovalModal, setShowApprovalModal] = useState(false)
+  const [showUploadModal, setShowUploadModal] = useState(false)
   
   // Form states
   const [transitionNotes, setTransitionNotes] = useState('')
@@ -117,6 +182,10 @@ export default function RFPDetailPage() {
   const [questionResponses, setQuestionResponses] = useState<Record<string, string>>({})
   const [submissionAttachments, setSubmissionAttachments] = useState<File[]>([])
   const [selectedApprovers, setSelectedApprovers] = useState<string[]>([])
+
+  // Filter states for Activity tab
+  const [activitySearch, setActivitySearch] = useState('')
+  const [activityTypeFilter, setActivityTypeFilter] = useState('all')
 
   // Internal team state
   const [team, setTeam] = useState<RFPTeamMember[]>([
@@ -128,16 +197,13 @@ export default function RFPDetailPage() {
   const [selectedMemberId, setSelectedMemberId] = useState('')
   const [selectedRole, setSelectedRole] = useState<RFPTeamRole>('Reviewer')
 
-  const [approvalCardOpen, setApprovalCardOpen] = useState(true)
-  const [isCopilotOpen, setIsCopilotOpen] = useState(false)
   const [interestRegistered, setInterestRegistered] = useState(false)
 
-  // Approval workflow states - use mockRFPDetail directly since rfp is defined later
+  // Approval workflow states
   const [currentApproval, setCurrentApproval] = useState<ApprovalRequest | null>(
     mockSupplierApprovalRequests.find(a => a.itemId === mockRFPDetail.id) || null
   )
 
-  const internalTeamAsApprovers = team.filter(m => ['Lead', 'Approver'].includes(m.role))
   const availableTeamApprovers = team.map(m => ({
     id: m.id,
     name: m.name,
@@ -172,23 +238,6 @@ export default function RFPDetailPage() {
 
   const rfp = mockRFPDetail
 
-  const handleResubmitForApproval = () => {
-    if (!currentApproval) return
-    // Reset all approvers to pending and update the approval request
-    const updatedApproval: ApprovalRequest = {
-      ...currentApproval,
-      status: 'pending',
-      requestedAt: new Date().toISOString(),
-      approvers: currentApproval.approvers.map(a => ({
-        ...a,
-        status: 'pending' as const,
-        comment: undefined,
-        respondedAt: undefined,
-      })),
-    }
-    setCurrentApproval(updatedApproval)
-  }
-
   const handleSendForApproval = (data: { approverIds: string[]; message: string; approvalMode: 'any' | 'all' }) => {
     const newApproval: ApprovalRequest = {
       id: `apr-${Date.now()}`,
@@ -212,16 +261,23 @@ export default function RFPDetailPage() {
       status: 'pending',
     }
     setCurrentApproval(newApproval)
+    setShowApprovalModal(false)
   }
   
   // Calculate days until deadline
   const daysDue = Math.ceil((new Date(rfp.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+  const hoursDue = Math.ceil((new Date(rfp.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60))
   const isDeadlineSoon = daysDue <= 7 && daysDue > 0
   const isOverdue = daysDue < 0
   
   // Get phase index for progress indicator
   const currentPhaseIndex = SUPPLIER_PHASE_ORDER.indexOf(currentPhase)
   const isTerminalPhase = ['awarded', 'rejected', 'declined'].includes(currentPhase)
+  
+  // Calculate requirements completion
+  const totalRequirements = rfp.requirements.length + rfp.deliverables.length + rfp.buyerQuestions.length
+  const completedRequirements = Object.keys(questionResponses).length + mockProposalDocuments.filter(d => d.status === 'active').length
+  const completionPercent = Math.min(100, Math.round((completedRequirements / totalRequirements) * 100))
   
   // Phase transition handlers
   const handleMoveForward = () => {
@@ -278,8 +334,6 @@ export default function RFPDetailPage() {
     }
     setPhaseHistory([...phaseHistory, submitTransition])
     setCurrentPhase('submitted')
-    setShowFinalReviewModal(false)
-    setShowSubmissionModal(false)
   }
   
   const handleAddNote = () => {
@@ -295,96 +349,206 @@ export default function RFPDetailPage() {
     setShowAddNoteModal(false)
   }
   
-  const handleContinueResponse = () => {
+  const handleProgressProposal = () => {
     if (currentPhase === 'new_rfp') {
-      handleMoveForward()
+      setShowInitialReviewModal(true)
     } else if (currentPhase === 'in_progress') {
-      setShowSubmissionModal(true)
+      setActiveTab('questionnaire')
     } else if (currentPhase === 'under_final_review') {
-      // If changes were requested, trigger resubmit; if no approval exists, open modal
-      if (currentApproval?.status === 'changes_requested') {
-        handleResubmitForApproval()
-      } else if (!currentApproval) {
+      if (!currentApproval) {
         setShowApprovalModal(true)
       }
-      // If pending, button should be disabled (handled in getPhaseButtonDisabled)
     }
   }
   
-  const getPhaseButtonLabel = () => {
+  const handleConfirmProceed = () => {
+    setShowInitialReviewModal(false)
+    handleMoveForward()
+  }
+  
+  const getProgressButtonLabel = () => {
     switch (currentPhase) {
-      case 'new_rfp': return 'Start Working on Response'
-      case 'in_progress': return 'Continue Submission'
+      case 'new_rfp': return 'Progress Proposal'
+      case 'in_progress': return 'Progress Proposal'
       case 'under_final_review': 
         if (currentApproval?.status === 'pending') return 'Awaiting Approval'
-        if (currentApproval?.status === 'changes_requested') return 'Resubmit for Approval'
-        if (currentApproval?.status === 'approved') return 'Approved - Ready to Submit'
-        return 'Send for Approval'
+        if (currentApproval?.status === 'approved') return 'Submit to Client'
+        return 'Progress Proposal'
       default: return 'View Status'
     }
   }
 
-  const getPhaseButtonDisabled = () => {
+  const getProgressButtonDisabled = () => {
     if (currentPhase === 'under_final_review' && currentApproval?.status === 'pending') {
+      return true
+    }
+    if (isTerminalPhase || currentPhase === 'submitted' || currentPhase === 'client_reviewing') {
       return true
     }
     return false
   }
 
-  const handleCopilotMessage = (message: string) => {
-    // Handle copilot messages - in production, this would interact with AI
-    console.log('[v0] Copilot message:', message)
-  }
-
   const handleRegisterInterest = () => {
     setInterestRegistered(true)
-    console.log('[v0] Interest registered for RFP:', rfp.id)
   }
 
+  const handleExportActivity = () => {
+    const headers = ['Date', 'Type', 'Description', 'User']
+    const rows = mockRFPActivity.map((a) => [
+      new Date(a.date).toLocaleString('en-GB'),
+      a.type,
+      a.description,
+      a.user,
+    ])
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `rfp-activity-${rfp.id}-${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handlePrintProposal = () => {
+    window.print()
+  }
+
+  const filteredActivity = useMemo(() => {
+    return mockRFPActivity.filter((activity) => {
+      const matchesSearch = activity.description.toLowerCase().includes(activitySearch.toLowerCase()) ||
+        activity.user.toLowerCase().includes(activitySearch.toLowerCase())
+      const matchesType = activityTypeFilter === 'all' || activity.type === activityTypeFilter
+      return matchesSearch && matchesType
+    })
+  }, [activitySearch, activityTypeFilter])
+
   return (
-    <div className={cn('flex h-screen bg-background', isCopilotOpen && 'overflow-hidden')}>
-      <div className={cn('flex-1 flex flex-col overflow-hidden', isCopilotOpen ? 'mr-80' : '')}>
-        <div className="space-y-6 p-6 overflow-y-auto flex-1">
-      {/* Header with back button */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-          className="h-9 w-9"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">{rfp.title}</h1>
-          <div className="flex items-center gap-2 mt-2">
-            <Building2 className="h-4 w-4 text-text-secondary" />
-            <span className="text-sm text-text-secondary">{rfp.buyerCompany}</span>
-            {rfp.onlineRFPUrl && (
-              <>
-                <span className="text-text-secondary">•</span>
-                <a
-                  href={rfp.onlineRFPUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-[#16A34A] hover:underline flex items-center gap-1"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  View Online RFP
-                </a>
-              </>
-            )}
+    <div className="flex flex-col min-h-screen bg-background">
+      {/* Breadcrumb and Header */}
+      <div className="border-b border-border bg-white sticky top-0 z-10">
+        <div className="px-6 py-3">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-xs text-text-secondary mb-3">
+            <Link href="/supplier" className="hover:text-text-primary">Supplier Portal</Link>
+            <ChevronRight className="h-3 w-3" />
+            <Link href="/supplier/rfps" className="hover:text-text-primary">RFPs</Link>
+            <ChevronRight className="h-3 w-3" />
+            <span className="text-text-primary font-medium truncate max-w-[200px]">{rfp.title}</span>
+          </nav>
+          
+          {/* Header */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3 min-w-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+                className="h-9 w-9 shrink-0"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="min-w-0">
+                <h1 className="text-xl font-semibold tracking-tight text-text-primary truncate">{rfp.title}</h1>
+                <div className="flex items-center gap-3 mt-1 text-sm text-text-secondary">
+                  <span className="flex items-center gap-1">
+                    <Building2 className="h-3.5 w-3.5" />
+                    {rfp.buyerCompany}
+                  </span>
+                  {rfp.onlineRFPUrl && (
+                    <a
+                      href={rfp.onlineRFPUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#16A34A] hover:underline flex items-center gap-1"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      View Online RFP
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 shrink-0">
+              <Button variant="outline" size="sm" onClick={handlePrintProposal} className="gap-1.5">
+                <Printer className="h-4 w-4" />
+                Print
+              </Button>
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Download className="h-4 w-4" />
+                Export
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Phase Progress Indicator */}
-      <Card className="border-[#E5E7EB] bg-white">
-        <CardContent className="p-6">
+      {/* Quick Stats Bar */}
+      <div className="border-b border-border bg-surface">
+        <div className="px-6 py-3">
+          <div className="flex items-center justify-between gap-4">
+            {/* Stats */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-text-secondary" />
+                <span className="text-xs text-text-secondary">Category:</span>
+                <span className="text-xs font-medium">{rfp.category}</span>
+              </div>
+              <div className="h-4 w-px bg-border" />
+              <div className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-text-secondary" />
+                <span className="text-xs text-text-secondary">Budget:</span>
+                <span className="text-xs font-medium">{rfp.budget}</span>
+              </div>
+              <div className="h-4 w-px bg-border" />
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-text-secondary" />
+                <span className="text-xs text-text-secondary">Est. Value:</span>
+                <span className="text-xs font-medium">${rfp.estimatedValue.toLocaleString()}</span>
+              </div>
+              <div className="h-4 w-px bg-border" />
+              <div className="flex items-center gap-2">
+                <FileCheck className="h-4 w-4 text-text-secondary" />
+                <span className="text-xs text-text-secondary">Completion:</span>
+                <span className="text-xs font-medium">{completionPercent}%</span>
+                <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-[#16A34A] rounded-full" style={{ width: `${completionPercent}%` }} />
+                </div>
+              </div>
+            </div>
+            
+            {/* Deadline Countdown */}
+            <div className={cn(
+              'flex items-center gap-2 px-3 py-1.5 rounded-lg',
+              isOverdue ? 'bg-red-50 text-red-700' : isDeadlineSoon ? 'bg-amber-50 text-amber-700' : 'bg-gray-50 text-text-secondary'
+            )}>
+              <Clock className="h-4 w-4" />
+              {isOverdue ? (
+                <span className="text-xs font-medium">Deadline passed ({Math.abs(daysDue)} days ago)</span>
+              ) : daysDue === 0 ? (
+                <span className="text-xs font-medium">Due today ({hoursDue}h remaining)</span>
+              ) : (
+                <span className="text-xs font-medium">
+                  {daysDue} day{daysDue !== 1 ? 's' : ''} remaining
+                  <span className="text-text-muted font-normal ml-1">
+                    ({new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })})
+                  </span>
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
+      {/* Progress Bar - New Design with Icons */}
+      <div className="border-b border-border bg-white">
+        <div className="px-6 py-5">
           {/* Declined banner */}
           {currentPhase === 'declined' && (
-            <div className="flex items-center justify-between mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center justify-between mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2">
                 <XCircle className="h-4 w-4 text-red-500 shrink-0" />
                 <p className="text-sm text-red-700 font-medium">You have declined to submit this proposal.</p>
@@ -392,630 +556,882 @@ export default function RFPDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs h-8 border-[#16A34A] text-[#16A34A] hover:bg-green-50 shrink-0 ml-4"
+                className="text-xs h-8 border-[#16A34A] text-[#16A34A] hover:bg-green-50 shrink-0"
                 onClick={handleReinstateSubmission}
               >
+                <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
                 Reinstate Submission
               </Button>
             </div>
           )}
 
-          {/* Phase labels row */}
-          <div className="flex items-center">
+          {/* Progress Steps with Icons */}
+          <div className="flex items-start justify-between">
             {SUPPLIER_PHASE_ORDER.map((phase, idx) => {
               const isFinalOutcomeSlot = idx === SUPPLIER_PHASE_ORDER.length - 1
               const isCompleted = currentPhaseIndex > idx && !['declined'].includes(currentPhase)
-              const isCurrent = currentPhase === phase
-              const isRejected = currentPhase === 'rejected' && isFinalOutcomeSlot
+              const isCurrent = currentPhase === phase || (isFinalOutcomeSlot && (currentPhase === 'awarded' || currentPhase === 'rejected'))
               const isDeclined = currentPhase === 'declined'
-
-              // Determine the label for the last slot
+              
+              const config = SUPPLIER_PHASE_CONFIG[phase]
               const label = isFinalOutcomeSlot
                 ? currentPhase === 'awarded'
                   ? 'Awarded'
                   : currentPhase === 'rejected'
                   ? 'Not Successful'
                   : 'Final Outcome'
-                : SUPPLIER_PHASE_CONFIG[phase].label
+                : config.label
 
               return (
-                <div key={phase} className="flex items-center flex-1">
-                  <div
-                    className={cn(
-                      'px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all',
-                      // Completed (dark green)
-                      isCompleted && !isFinalOutcomeSlot && 'bg-[#15803D] text-white',
-                      // Current active phase (light green)
-                      isCurrent && !isDeclined && !isFinalOutcomeSlot && 'bg-[#DCFCE7] text-[#15803D] ring-1 ring-[#16A34A]',
-                      // Awarded final outcome
-                      currentPhase === 'awarded' && isFinalOutcomeSlot && 'bg-[#15803D] text-white',
-                      // Rejected final outcome
-                      isRejected && 'bg-gray-200 text-gray-600',
-                      // Future / unknown final outcome
-                      ((!isCurrent && !isCompleted && !(currentPhase === 'awarded' && isFinalOutcomeSlot) && !isRejected) || isDeclined) && 'bg-gray-100 text-gray-400'
-                    )}
-                  >
-                    {label}
-                  </div>
+                <div key={phase} className="flex flex-col items-center flex-1 relative">
+                  {/* Connector line */}
                   {idx < SUPPLIER_PHASE_ORDER.length - 1 && (
                     <div
                       className={cn(
-                        'flex-1 h-0.5 mx-1 min-w-[6px]',
-                        isCompleted ? 'bg-[#15803D]' : 'bg-gray-200'
+                        'absolute top-5 left-[calc(50%+20px)] right-[calc(-50%+20px)] h-0.5',
+                        isCompleted ? 'bg-[#16A34A]' : 'bg-gray-200'
                       )}
                     />
                   )}
+                  
+                  {/* Icon Circle */}
+                  <div
+                    className={cn(
+                      'relative z-10 flex h-10 w-10 items-center justify-center rounded-full transition-all',
+                      isCompleted && 'bg-[#16A34A] text-white',
+                      isCurrent && !isCompleted && !isDeclined && 'bg-[#DCFCE7] text-[#16A34A] ring-2 ring-[#16A34A] ring-offset-2',
+                      isCurrent && currentPhase === 'awarded' && 'bg-[#16A34A] text-white',
+                      isCurrent && currentPhase === 'rejected' && 'bg-gray-400 text-white',
+                      !isCurrent && !isCompleted && !isDeclined && 'bg-gray-100 text-gray-400',
+                      isDeclined && 'bg-gray-100 text-gray-400'
+                    )}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle2 className="h-5 w-5" />
+                    ) : (
+                      <PhaseIcon phase={isFinalOutcomeSlot ? (currentPhase === 'awarded' ? 'awarded' : currentPhase === 'rejected' ? 'rejected' : phase) : phase} className="h-5 w-5" />
+                    )}
+                  </div>
+                  
+                  {/* Label */}
+                  <p className={cn(
+                    'mt-2 text-xs font-medium text-center max-w-[80px]',
+                    (isCompleted || isCurrent) && !isDeclined ? 'text-text-primary' : 'text-text-secondary'
+                  )}>
+                    {label}
+                  </p>
                 </div>
               )
             })}
           </div>
-
-          {/* Action row */}
-          <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-2">
-              {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && currentPhase !== 'declined' && (
-                <Button
-                  onClick={handleContinueResponse}
-                  disabled={getPhaseButtonDisabled()}
-                  className="bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50"
-                >
-                  <ChevronRight className="h-4 w-4 mr-2" />
-                  {getPhaseButtonLabel()}
-                </Button>
-              )}
-              {currentPhase === 'submitted' && (
-                <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" />
-                  Proposal submitted — awaiting client review.
-                </p>
-              )}
-              {currentPhase === 'client_reviewing' && (
-                <p className="text-sm text-gray-500 flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Client is currently reviewing your proposal.
-                </p>
-              )}
-              {currentPhase === 'awarded' && (
-                <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" />
-                  Congratulations — your proposal has been awarded.
-                </p>
-              )}
-              {currentPhase === 'rejected' && (
-                <p className="text-sm text-gray-500 flex items-center gap-2">
-                  <XCircle className="h-4 w-4" />
-                  This proposal was not successful.
-                </p>
-              )}
-            </div>
-
-            {/* Register Interest & Decline buttons */}
-            <div className="flex items-center gap-2">
-              {/* Register Interest button */}
-              {currentPhase === 'new_rfp' && !interestRegistered && (
-                <Button
-                  onClick={handleRegisterInterest}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs gap-1.5"
-                >
-                  <Send className="h-3.5 w-3.5" />
-                  Register Interest
-                </Button>
-              )}
-              {interestRegistered && (
-                <Badge className="bg-[#F0FDF4] text-[#166534] border border-[#16A34A]/20 text-[10px]">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Interest Registered
-                </Badge>
-              )}
-
-              {/* Decline to Submit — single understated link-style button, hidden once terminal */}
-              {!isTerminalPhase && currentPhase !== 'declined' && (
-                <button
-                  onClick={() => setShowDeclineConfirmModal(true)}
-                  className="text-xs text-gray-400 hover:text-red-500 transition-colors underline underline-offset-2"
-                >
-                  Decline
-                </button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-      
-      {/* Deadline Warning */}
-      {(isDeadlineSoon || isOverdue) && !isTerminalPhase && (
-        <div className={cn('p-4 rounded-lg flex items-center gap-3', isOverdue ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200')}>
-          <AlertCircle className={cn('h-5 w-5', isOverdue ? 'text-red-600' : 'text-amber-600')} />
-          <p className={cn('text-sm font-medium', isOverdue ? 'text-red-800' : 'text-amber-800')}>
-            {isOverdue ? `Deadline has passed (${Math.abs(daysDue)} days ago)` : `Deadline approaching: ${daysDue} day${daysDue === 1 ? '' : 's'} remaining`}
-          </p>
-        </div>
-      )}
-
-      {/* Approval Status — collapsible, near top */}
-      {currentApproval && (
-        <Collapsible open={approvalCardOpen} onOpenChange={setApprovalCardOpen}>
-          <Card className={cn('border', currentApproval.status === 'pending' ? 'border-amber-200' : currentApproval.status === 'approved' ? 'border-[#16A34A]/40' : 'border-blue-200')}>
-            <CollapsibleTrigger asChild>
-              <CardHeader className="cursor-pointer select-none pb-3 hover:bg-gray-50/50 transition-colors rounded-t-lg">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    {currentApproval.status === 'pending' && <Clock className="h-4 w-4 text-amber-500" />}
-                    {currentApproval.status === 'approved' && <CheckCircle className="h-4 w-4 text-[#16A34A]" />}
-                    {currentApproval.status === 'changes_requested' && <AlertCircle className="h-4 w-4 text-blue-500" />}
-                    Approval Status
-                    <Badge className={cn('text-[10px] h-4 px-1.5 ml-1',
-                      currentApproval.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                      currentApproval.status === 'approved' ? 'bg-[#F0FDF4] text-[#166534] border border-[#16A34A]/20' :
-                      'bg-blue-50 text-blue-700 border border-blue-200'
-                    )}>
-                      {currentApproval.status === 'pending' ? `${currentApproval.approvers.filter(a => a.status === 'approved').length}/${currentApproval.approvers.length} approved` :
-                       currentApproval.status === 'approved' ? 'Approved' : 'Changes Requested'}
-                    </Badge>
-                  </CardTitle>
-                  <ChevronDown className={cn('h-4 w-4 text-text-secondary transition-transform', approvalCardOpen && 'rotate-180')} />
-                </div>
-              </CardHeader>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <CardContent className="pt-0">
-                <ApprovalStatus 
-                  approval={currentApproval} 
-                  compact={false} 
-                  onResubmit={currentApproval.status === 'changes_requested' ? handleResubmitForApproval : undefined}
-                />
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
-      )}
-
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
-        {/* Main content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Key Details — single-line pill row */}
-          <Card>
-            <CardContent className="py-3 px-4">
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Building2 className="h-3.5 w-3.5 text-text-secondary" />
-                  <span className="text-xs text-text-secondary">Buyer:</span>
-                  <span className="text-xs font-medium text-text-primary">{rfp.buyerCompany}</span>
-                </div>
-                <div className="w-px h-3.5 bg-border hidden sm:block" />
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Tag className="h-3.5 w-3.5 text-text-secondary" />
-                  <span className="text-xs text-text-secondary">Category:</span>
-                  <span className="text-xs font-medium text-text-primary">{rfp.category}</span>
-                </div>
-                <div className="w-px h-3.5 bg-border hidden sm:block" />
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <DollarSign className="h-3.5 w-3.5 text-text-secondary" />
-                  <span className="text-xs text-text-secondary">Budget:</span>
-                  <span className="text-xs font-medium text-text-primary">{rfp.budget}</span>
-                </div>
-                <div className="w-px h-3.5 bg-border hidden sm:block" />
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <TrendingUp className="h-3.5 w-3.5 text-text-secondary" />
-                  <span className="text-xs text-text-secondary">Est. Value:</span>
-                  <span className="text-xs font-medium text-text-primary">${rfp.estimatedValue.toLocaleString()}</span>
-                </div>
-                <div className="w-px h-3.5 bg-border hidden sm:block" />
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Calendar className="h-3.5 w-3.5 text-text-secondary" />
-                  <span className="text-xs text-text-secondary">Deadline:</span>
-                  <span className={cn('text-xs font-medium', isOverdue ? 'text-red-600' : isDeadlineSoon ? 'text-amber-600' : 'text-text-primary')}>
-                    {new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    {!isTerminalPhase && !isOverdue && daysDue > 0 && (
-                      <span className="ml-1 text-text-secondary font-normal">({daysDue}d)</span>
-                    )}
-                  </span>
-                </div>
-                <div className="w-px h-3.5 bg-border hidden sm:block" />
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Clock className="h-3.5 w-3.5 text-text-secondary" />
-                  <span className="text-xs text-text-secondary">Registered:</span>
-                  <span className="text-xs font-medium text-text-primary">
-                    {new Date(rfp.registeredAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">About This RFP</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-text-primary leading-relaxed">{rfp.description}</p>
-            </CardContent>
-          </Card>
-
-          {/* Requirements */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Requirements</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {rfp.requirements.map((req, idx) => (
-                  <li key={idx} className="flex gap-3 text-sm text-text-primary">
-                    <span className="text-[#16A34A] font-bold">•</span>
-                    {req}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Deliverables */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Deliverables</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {rfp.deliverables.map((deliverable, idx) => (
-                  <li key={idx} className="flex gap-3 text-sm text-text-primary">
-                    <span className="text-[#16A34A] font-bold">•</span>
-                    {deliverable}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Project Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {rfp.timeline.map((item, idx) => (
-                  <div key={idx} className="flex gap-4">
-                    <div className="flex flex-col items-center">
-                      <div className="h-3 w-3 rounded-full bg-[#16A34A]" />
-                      {idx !== rfp.timeline.length - 1 && (
-                        <div className="h-8 w-0.5 bg-border mt-2" />
-                      )}
-                    </div>
-                    <div className="flex-1 pb-3">
-                      <p className="text-sm font-medium text-text-primary">{item.phase}</p>
-                      <p className="text-xs text-text-secondary">
-                        {new Date(item.date).toLocaleDateString('en-GB', {
-                          day: 'numeric',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Documents */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">RFP Documents</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {rfp.documents.map((doc, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-background transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <FileText className="h-4 w-4 text-text-secondary shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">{doc.name}</p>
-                      <p className="text-xs text-text-secondary">{doc.size}</p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Internal Team Card */}
-          <Card className="border-[#E5E7EB] bg-white">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-medium text-text-primary flex items-center gap-2">
-                  <Users className="h-4 w-4 text-[#16A34A]" />
-                  Internal Team
-                </CardTitle>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setAddingTeamMember(true)}
-                  disabled={availableTeamMembers.length === 0}
-                  className="border-[#E5E7EB] text-text-secondary h-8 text-xs"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  Add Member
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Add member row */}
-              {addingTeamMember && (
-                <div className="flex flex-col gap-2 rounded-lg border border-dashed border-[#16A34A]/40 bg-[#F0FDF4]/50 p-3">
-                  <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
-                    <SelectTrigger className="border-[#E5E7EB] h-8 text-sm">
-                      <SelectValue placeholder="Select team member..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableTeamMembers.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>
-                          <span className="font-medium">{m.name}</span>
-                          <span className="ml-2 text-text-secondary text-xs">{m.jobTitle}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex gap-2">
-                    <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as RFPTeamRole)}>
-                      <SelectTrigger className="flex-1 border-[#E5E7EB] h-8 text-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ROLE_OPTIONS.map((r) => (
-                          <SelectItem key={r} value={r}>{r}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      size="sm"
-                      onClick={handleTeamAddMember}
-                      disabled={!selectedMemberId}
-                      className="h-8 bg-[#16A34A] hover:bg-[#15803D] text-white text-xs px-3"
-                    >
-                      Add
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => { setAddingTeamMember(false); setSelectedMemberId('') }}
-                      className="h-8 text-xs text-text-secondary"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Empty state */}
-              {team.length === 0 && !addingTeamMember && (
-                <div className="flex flex-col items-center justify-center py-6 text-center border border-dashed border-[#E5E7EB] rounded-lg">
-                  <Users className="h-7 w-7 text-text-secondary mb-2" />
-                  <p className="text-sm text-text-secondary font-medium">No team members assigned</p>
-                  <p className="text-xs text-text-secondary mt-0.5">Add a Lead to get started</p>
-                </div>
-              )}
-
-              {/* Lead member */}
-              {[...team].sort((a, b) => (b.isLead ? 1 : 0) - (a.isLead ? 1 : 0)).slice(0, 1).map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-start gap-3 rounded-lg border border-[#16A34A]/25 bg-[#F0FDF4]/40 p-3"
-                >
-                  {/* Avatar */}
-                  <div className="relative shrink-0">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#16A34A] text-white text-sm font-semibold">
-                      {member.avatarInitials}
-                    </div>
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400">
-                      <Crown className="h-2.5 w-2.5 text-white" />
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-0.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-text-primary truncate">{member.name}</span>
-                      <Badge className={cn('text-[10px] h-4 px-1.5 border', roleStyles[member.role])}>
-                        {member.role}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-text-secondary truncate">{member.jobTitle} &middot; {member.department}</p>
-                    <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                      <span className="flex items-center gap-1 text-[11px] text-text-secondary">
-                        <Mail className="h-3 w-3" />{member.email}
-                      </span>
-                      {member.phone && (
-                        <span className="flex items-center gap-1 text-[11px] text-text-secondary">
-                          <Phone className="h-3 w-3" />{member.phone}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-text-secondary hover:text-text-primary shrink-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44">
-                      {ROLE_OPTIONS.filter((r) => r !== member.role).map((role) => (
-                        <DropdownMenuItem key={role} onClick={() => handleTeamChangeRole(member.id, role)} className="text-sm">
-                          Change role to {role}
-                        </DropdownMenuItem>
-                      ))}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleTeamRemove(member.id)} className="text-sm text-red-600 focus:text-red-600">
-                        <Trash2 className="h-3.5 w-3.5 mr-2" />
-                        Remove
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              ))}
-
-              {/* Other members — collapsible */}
-              {team.length > 1 && (
-                <Collapsible open={teamDropdownOpen} onOpenChange={setTeamDropdownOpen}>
-                  <CollapsibleTrigger className="flex items-center gap-2 text-xs text-text-secondary hover:text-text-primary w-full py-1">
-                    <ChevronDown className={cn('h-3 w-3 transition-transform', teamDropdownOpen && 'rotate-180')} />
-                    <span>{team.length - 1} other team {team.length - 1 === 1 ? 'member' : 'members'}</span>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-2 pt-1">
-                    {[...team].sort((a, b) => (b.isLead ? 1 : 0) - (a.isLead ? 1 : 0)).slice(1).map((member) => (
-                      <div key={member.id} className="flex items-start gap-3 rounded-lg border border-[#E5E7EB] bg-white p-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 text-xs font-semibold shrink-0">
-                          {member.avatarInitials}
-                        </div>
-                        <div className="flex-1 min-w-0 space-y-0.5">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-medium text-text-primary truncate">{member.name}</span>
-                            <Badge className={cn('text-[10px] h-4 px-1.5 border', roleStyles[member.role])}>
-                              {member.role}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-text-secondary truncate">{member.jobTitle}</p>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-text-secondary hover:text-text-primary shrink-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-44">
-                            <DropdownMenuItem onClick={() => handleTeamChangeRole(member.id, 'Lead')} className="text-sm">
-                              <Crown className="h-3.5 w-3.5 mr-2 text-amber-400" />
-                              Set as Lead
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            {ROLE_OPTIONS.filter((r) => r !== member.role && r !== 'Lead').map((role) => (
-                              <DropdownMenuItem key={role} onClick={() => handleTeamChangeRole(member.id, role)} className="text-sm">
-                                Change role to {role}
-                              </DropdownMenuItem>
-                            ))}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleTeamRemove(member.id)} className="text-sm text-red-600 focus:text-red-600">
-                              <Trash2 className="h-3.5 w-3.5 mr-2" />
-                              Remove
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
-              )}
-
-              {/* No lead warning */}
-              {team.length > 0 && !team.some((m) => m.isLead) && (
-                <p className="text-xs text-amber-600 flex items-center gap-1.5 pt-1">
-                  <Star className="h-3.5 w-3.5" />
-                  No Lead assigned. Set a Lead to define the primary contact.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Phase History */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base">Phase History</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-                onClick={() => setShowPhaseHistoryModal(true)}
-              >
-                <History className="h-4 w-4" />
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {phaseHistory.slice(-3).reverse().map((transition, idx) => (
-                <div key={idx} className="flex gap-3 text-sm">
-                  <div className="flex flex-col items-center">
-                    <div className={cn(
-                      'h-2 w-2 rounded-full mt-1.5',
-                      transition.phase === 'declined' ? 'bg-red-500' : 'bg-[#16A34A]'
-                    )} />
-                    {idx < Math.min(phaseHistory.length - 1, 2) && (
-                      <div className="w-0.5 h-full bg-gray-200 mt-1" />
-                    )}
-                  </div>
-                  <div className="flex-1 pb-3">
-                    <p className="font-medium text-text-primary">{SUPPLIER_PHASE_CONFIG[transition.phase].label}</p>
-                    <p className="text-xs text-text-secondary">
-                      {new Date(transition.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} by {transition.user}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-          
-          {/* Proposal Notes */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-base">Proposal Notes</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2"
-                onClick={() => setShowAddNoteModal(true)}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {proposalNotes.length === 0 ? (
-                <p className="text-sm text-text-secondary">No notes yet</p>
-              ) : (
-                proposalNotes.slice(-3).reverse().map((note) => (
-                  <div key={note.id} className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm text-text-primary">{note.text}</p>
-                    <p className="text-xs text-text-secondary mt-1">
-                      {new Date(note.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} - {note.user}
-                    </p>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Download RFP
-              </Button>
-              <Button variant="outline" className="w-full justify-start" size="sm">
-                <FileText className="h-4 w-4 mr-2" />
-                Share
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </div>
+
+      {/* Sticky Progress Button */}
+      {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && currentPhase !== 'declined' && (
+        <div className="border-b border-border bg-white px-6 py-3 flex items-center justify-between sticky top-[108px] z-10">
+          <div className="flex items-center gap-3">
+            {currentPhase === 'new_rfp' && !interestRegistered && (
+              <Button
+                onClick={handleRegisterInterest}
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5"
+              >
+                <Send className="h-3.5 w-3.5" />
+                Register Interest
+              </Button>
+            )}
+            {interestRegistered && (
+              <Badge className="bg-[#F0FDF4] text-[#166534] border border-[#16A34A]/20 text-xs">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Interest Registered
+              </Badge>
+            )}
+            
+            {/* Decline link */}
+            <button
+              onClick={() => setShowDeclineConfirmModal(true)}
+              className="text-xs text-gray-400 hover:text-red-500 transition-colors underline underline-offset-2"
+            >
+              Decline to Submit
+            </button>
+          </div>
+          
+          <Button
+            onClick={handleProgressProposal}
+            disabled={getProgressButtonDisabled()}
+            className="bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50 gap-2"
+          >
+            <ChevronRight className="h-4 w-4" />
+            {getProgressButtonLabel()}
+          </Button>
+        </div>
+      )}
+
+      {/* Status messages for terminal/submitted phases */}
+      {(currentPhase === 'submitted' || currentPhase === 'client_reviewing' || isTerminalPhase) && currentPhase !== 'declined' && (
+        <div className="border-b border-border bg-white px-6 py-3">
+          {currentPhase === 'submitted' && (
+            <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              Proposal submitted — awaiting client review.
+            </p>
+          )}
+          {currentPhase === 'client_reviewing' && (
+            <p className="text-sm text-text-secondary flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              Client is currently reviewing your proposal.
+            </p>
+          )}
+          {currentPhase === 'awarded' && (
+            <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
+              <Trophy className="h-4 w-4" />
+              Congratulations — your proposal has been awarded!
+            </p>
+          )}
+          {currentPhase === 'rejected' && (
+            <p className="text-sm text-text-secondary flex items-center gap-2">
+              <XCircle className="h-4 w-4" />
+              This proposal was not successful.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Main Content with Tabs */}
+      <div className="flex-1 px-6 py-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="bg-surface border border-border p-1 h-auto">
+            <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-white">
+              <Eye className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="gap-2 data-[state=active]:bg-white">
+              <Folder className="h-4 w-4" />
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value="questionnaire" className="gap-2 data-[state=active]:bg-white">
+              <HelpCircle className="h-4 w-4" />
+              Questionnaire
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="gap-2 data-[state=active]:bg-white">
+              <MessageSquare className="h-4 w-4" />
+              Message Centre
+              {mockMessages.some(m => m.unread) && (
+                <span className="ml-1 h-2 w-2 rounded-full bg-red-500" />
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="team" className="gap-2 data-[state=active]:bg-white">
+              <Users className="h-4 w-4" />
+              Team
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="gap-2 data-[state=active]:bg-white">
+              <StickyNote className="h-4 w-4" />
+              Notes
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="gap-2 data-[state=active]:bg-white">
+              <Activity className="h-4 w-4" />
+              Activity
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6 mt-0">
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2 space-y-6">
+                {/* About */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">About This RFP</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-text-primary leading-relaxed">{rfp.description}</p>
+                  </CardContent>
+                </Card>
+
+                {/* Requirements Checklist */}
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-base">Requirements Checklist</CardTitle>
+                    <Badge variant="outline" className="text-xs">
+                      {completedRequirements}/{totalRequirements} complete
+                    </Badge>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2">
+                      {rfp.requirements.map((req, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-sm">
+                          <CheckCircle2 className={cn("h-4 w-4 mt-0.5 shrink-0", idx < 2 ? "text-[#16A34A]" : "text-gray-300")} />
+                          <span className={cn(idx < 2 ? "text-text-primary" : "text-text-secondary")}>{req}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                {/* Deliverables */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Deliverables</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-2">
+                      {rfp.deliverables.map((deliverable, idx) => (
+                        <li key={idx} className="flex gap-3 text-sm text-text-primary">
+                          <span className="text-[#16A34A] font-bold">•</span>
+                          {deliverable}
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                {/* Timeline */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Project Timeline</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {rfp.timeline.map((item, idx) => (
+                        <div key={idx} className="flex gap-4">
+                          <div className="flex flex-col items-center">
+                            <div className="h-3 w-3 rounded-full bg-[#16A34A]" />
+                            {idx !== rfp.timeline.length - 1 && (
+                              <div className="h-8 w-0.5 bg-border mt-2" />
+                            )}
+                          </div>
+                          <div className="flex-1 pb-3">
+                            <p className="text-sm font-medium text-text-primary">{item.phase}</p>
+                            <p className="text-xs text-text-secondary">
+                              {new Date(item.date).toLocaleDateString('en-GB', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-6">
+                {/* Approval Status */}
+                {currentApproval && (
+                  <Card className={cn('border', currentApproval.status === 'pending' ? 'border-amber-200' : currentApproval.status === 'approved' ? 'border-[#16A34A]/40' : 'border-blue-200')}>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        {currentApproval.status === 'pending' && <Clock className="h-4 w-4 text-amber-500" />}
+                        {currentApproval.status === 'approved' && <CheckCircle className="h-4 w-4 text-[#16A34A]" />}
+                        {currentApproval.status === 'changes_requested' && <AlertCircle className="h-4 w-4 text-blue-500" />}
+                        Approval Status
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ApprovalStatus approval={currentApproval} compact={true} />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Related RFPs */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Related RFPs</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {relatedRFPs.length === 0 ? (
+                      <p className="text-sm text-text-secondary">No related RFPs</p>
+                    ) : (
+                      relatedRFPs.map((related) => (
+                        <Link
+                          key={related.id}
+                          href={`/supplier/rfps/${related.id}`}
+                          className="flex items-start gap-3 p-3 rounded-lg border border-border hover:bg-surface transition-colors"
+                        >
+                          <Link2 className="h-4 w-4 text-text-secondary mt-0.5 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-text-primary truncate">{related.title}</p>
+                            <p className="text-xs text-text-secondary">
+                              Due {new Date(related.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                            </p>
+                          </div>
+                        </Link>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Phase History */}
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <CardTitle className="text-base">Phase History</CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2"
+                      onClick={() => setShowPhaseHistoryModal(true)}
+                    >
+                      <History className="h-4 w-4" />
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {phaseHistory.slice(-3).reverse().map((transition, idx) => (
+                      <div key={idx} className="flex gap-3 text-sm">
+                        <div className="flex flex-col items-center">
+                          <div className={cn(
+                            'h-2 w-2 rounded-full mt-1.5',
+                            transition.phase === 'declined' ? 'bg-red-500' : 'bg-[#16A34A]'
+                          )} />
+                          {idx < Math.min(phaseHistory.length - 1, 2) && (
+                            <div className="w-0.5 h-full bg-gray-200 mt-1" />
+                          )}
+                        </div>
+                        <div className="flex-1 pb-3">
+                          <p className="font-medium text-text-primary">{SUPPLIER_PHASE_CONFIG[transition.phase].label}</p>
+                          <p className="text-xs text-text-secondary">
+                            {new Date(transition.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} by {transition.user}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+
+                {/* Buyer Contact */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Buyer Contact</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-4 w-4 text-text-secondary" />
+                      <span>{rfp.buyerContact?.email || 'contact@buyer.com'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-4 w-4 text-text-secondary" />
+                      <span>{rfp.buyerContact?.phone || '+1 (555) 123-4567'}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Documents Tab */}
+          <TabsContent value="documents" className="space-y-6 mt-0">
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* RFP Documents (Buyer's) */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-base">RFP Documents</CardTitle>
+                  <Badge variant="outline" className="text-xs">From Buyer</Badge>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {rfp.documents.map((doc, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-surface transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <FileText className="h-4 w-4 text-text-secondary shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-text-primary truncate">{doc.name}</p>
+                          <p className="text-xs text-text-secondary">{doc.size}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Proposal Documents (Supplier's) */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-base">Proposal Documents</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowUploadModal(true)}
+                    className="gap-1.5"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Upload
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {mockProposalDocuments.filter(d => d.status === 'active').map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-surface transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <FileText className="h-4 w-4 text-[#16A34A] shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-text-primary truncate">{doc.name}</p>
+                          <p className="text-xs text-text-secondary">{doc.size} • v{doc.version} • {new Date(doc.uploadedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</p>
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem><Download className="h-4 w-4 mr-2" />Download</DropdownMenuItem>
+                          <DropdownMenuItem><History className="h-4 w-4 mr-2" />Version History</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem><Archive className="h-4 w-4 mr-2" />Archive</DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-600"><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  ))}
+
+                  {/* Archived Documents */}
+                  {mockProposalDocuments.some(d => d.status === 'archived') && (
+                    <Collapsible className="mt-4">
+                      <CollapsibleTrigger className="flex items-center gap-2 text-xs text-text-secondary hover:text-text-primary w-full py-2">
+                        <ChevronDown className="h-3 w-3" />
+                        <span>Archived documents ({mockProposalDocuments.filter(d => d.status === 'archived').length})</span>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-2 pt-2">
+                        {mockProposalDocuments.filter(d => d.status === 'archived').map((doc) => (
+                          <div key={doc.id} className="flex items-center justify-between p-3 rounded-lg border border-dashed border-border bg-surface/50">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <Archive className="h-4 w-4 text-text-secondary shrink-0" />
+                              <div className="min-w-0">
+                                <p className="text-sm text-text-secondary truncate">{doc.name}</p>
+                                <p className="text-xs text-text-muted">{doc.size} • v{doc.version}</p>
+                              </div>
+                            </div>
+                            <Button variant="ghost" size="sm" className="text-xs">Restore</Button>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Questionnaire Tab */}
+          <TabsContent value="questionnaire" className="space-y-6 mt-0">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Buyer Questionnaire</CardTitle>
+                  <p className="text-sm text-text-secondary mt-1">Complete all required questions to proceed with your submission.</p>
+                </div>
+                <Badge variant="outline" className="text-xs">
+                  {Object.keys(questionResponses).length}/{rfp.buyerQuestions.length} answered
+                </Badge>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {rfp.buyerQuestions.map((q, idx) => (
+                  <div key={q.id} className="space-y-2">
+                    <Label htmlFor={q.id} className="flex items-center gap-2">
+                      <span className="text-text-secondary text-sm">{idx + 1}.</span>
+                      {q.question}
+                      {q.required && <span className="text-red-500">*</span>}
+                    </Label>
+                    <Textarea
+                      id={q.id}
+                      value={questionResponses[q.id] || ''}
+                      onChange={(e) => setQuestionResponses({ ...questionResponses, [q.id]: e.target.value })}
+                      placeholder="Enter your response..."
+                      className="min-h-[100px]"
+                    />
+                  </div>
+                ))}
+
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button variant="outline">Save Draft</Button>
+                  <Button className="bg-[#16A34A] hover:bg-[#15803D]">
+                    Save & Continue
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Message Centre Tab */}
+          <TabsContent value="messages" className="space-y-6 mt-0">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-base">Message Centre</CardTitle>
+                <Button className="bg-[#16A34A] hover:bg-[#15803D] gap-1.5">
+                  <Plus className="h-4 w-4" />
+                  New Message
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {mockMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={cn(
+                      "flex items-start gap-4 p-4 rounded-lg border transition-colors cursor-pointer",
+                      msg.unread ? "bg-[#F0FDF4] border-[#16A34A]/20" : "border-border hover:bg-surface"
+                    )}
+                  >
+                    <div className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-full shrink-0 text-xs font-medium",
+                      msg.type === 'public' ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
+                    )}>
+                      {msg.type === 'public' ? 'P' : 'PR'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-text-primary truncate">{msg.subject}</p>
+                        {msg.unread && <span className="h-2 w-2 rounded-full bg-[#16A34A]" />}
+                      </div>
+                      <p className="text-xs text-text-secondary mt-0.5">{msg.sender} • {msg.date}</p>
+                    </div>
+                    <Badge variant="outline" className="text-xs shrink-0">
+                      {msg.type === 'public' ? 'Public' : 'Private'}
+                    </Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Team Tab */}
+          <TabsContent value="team" className="space-y-6 mt-0">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Internal Team</CardTitle>
+                  <p className="text-sm text-text-secondary mt-1">Manage team members working on this proposal.</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setAddingTeamMember(true)}
+                  disabled={availableTeamMembers.length === 0}
+                  className="gap-1.5"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Member
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Add member form */}
+                {addingTeamMember && (
+                  <div className="flex flex-col gap-3 rounded-lg border border-dashed border-[#16A34A]/40 bg-[#F0FDF4]/50 p-4">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Select value={selectedMemberId} onValueChange={setSelectedMemberId}>
+                        <SelectTrigger className="border-[#E5E7EB]">
+                          <SelectValue placeholder="Select team member..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableTeamMembers.map((m) => (
+                            <SelectItem key={m.id} value={m.id}>
+                              <span className="font-medium">{m.name}</span>
+                              <span className="ml-2 text-text-secondary text-xs">{m.jobTitle}</span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as RFPTeamRole)}>
+                        <SelectTrigger className="border-[#E5E7EB]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ROLE_OPTIONS.map((r) => (
+                            <SelectItem key={r} value={r}>{r}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => { setAddingTeamMember(false); setSelectedMemberId('') }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleTeamAddMember}
+                        disabled={!selectedMemberId}
+                        className="bg-[#16A34A] hover:bg-[#15803D]"
+                      >
+                        Add to Team
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Team members list */}
+                <div className="space-y-3">
+                  {team.map((member) => (
+                    <div
+                      key={member.id}
+                      className={cn(
+                        "flex items-start gap-4 p-4 rounded-lg border",
+                        member.isLead ? "border-[#16A34A]/25 bg-[#F0FDF4]/40" : "border-border"
+                      )}
+                    >
+                      <div className="relative shrink-0">
+                        <div className={cn(
+                          "flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold",
+                          member.isLead ? "bg-[#16A34A] text-white" : "bg-gray-100 text-gray-600"
+                        )}>
+                          {member.avatarInitials}
+                        </div>
+                        {member.isLead && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400">
+                            <Crown className="h-2.5 w-2.5 text-white" />
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium text-text-primary">{member.name}</span>
+                          <Badge className={cn('text-[10px] h-5 px-2 border', roleStyles[member.role])}>
+                            {member.role}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-text-secondary mt-0.5">{member.jobTitle} • {member.department}</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+                          <span className="flex items-center gap-1.5 text-xs text-text-secondary">
+                            <Mail className="h-3 w-3" />{member.email}
+                          </span>
+                          {member.phone && (
+                            <span className="flex items-center gap-1.5 text-xs text-text-secondary">
+                              <Phone className="h-3 w-3" />{member.phone}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          {!member.isLead && (
+                            <DropdownMenuItem onClick={() => handleTeamChangeRole(member.id, 'Lead')}>
+                              <Crown className="h-4 w-4 mr-2 text-amber-400" />
+                              Set as Lead
+                            </DropdownMenuItem>
+                          )}
+                          {ROLE_OPTIONS.filter((r) => r !== member.role).map((role) => (
+                            <DropdownMenuItem key={role} onClick={() => handleTeamChangeRole(member.id, role)}>
+                              Change role to {role}
+                            </DropdownMenuItem>
+                          ))}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleTeamRemove(member.id)} className="text-red-600">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Remove from Team
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  ))}
+                </div>
+
+                {team.length === 0 && !addingTeamMember && (
+                  <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-border rounded-lg">
+                    <Users className="h-10 w-10 text-text-secondary mb-3" />
+                    <p className="text-sm font-medium text-text-secondary">No team members assigned</p>
+                    <p className="text-xs text-text-muted mt-1">Add a Lead to get started</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAddingTeamMember(true)}
+                      className="mt-4"
+                    >
+                      <Plus className="h-4 w-4 mr-1.5" />
+                      Add Team Member
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Notes Tab */}
+          <TabsContent value="notes" className="space-y-6 mt-0">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Internal Notes</CardTitle>
+                  <p className="text-sm text-text-secondary mt-1">Private notes visible only to your team.</p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAddNoteModal(true)}
+                  className="gap-1.5"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Note
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {proposalNotes.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-border rounded-lg">
+                    <StickyNote className="h-10 w-10 text-text-secondary mb-3" />
+                    <p className="text-sm font-medium text-text-secondary">No notes yet</p>
+                    <p className="text-xs text-text-muted mt-1">Add internal notes to keep your team aligned</p>
+                  </div>
+                ) : (
+                  proposalNotes.slice().reverse().map((note) => (
+                    <div key={note.id} className="p-4 bg-surface rounded-lg border border-border">
+                      <p className="text-sm text-text-primary whitespace-pre-wrap">{note.text}</p>
+                      <p className="text-xs text-text-secondary mt-3 flex items-center gap-2">
+                        <Calendar className="h-3 w-3" />
+                        {new Date(note.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        <span className="text-text-muted">•</span>
+                        {note.user}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Activity Tab */}
+          <TabsContent value="activity" className="space-y-6 mt-0">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="text-base">Activity Log</CardTitle>
+                <Button onClick={handleExportActivity} variant="outline" className="gap-2">
+                  <Download className="h-4 w-4" />
+                  Export
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {/* Filters */}
+                <div className="flex items-center gap-4 mb-6 p-4 bg-surface rounded-lg border border-border">
+                  <div className="flex flex-1 items-center gap-2 bg-background rounded-md border border-border px-3 py-2">
+                    <Search className="h-4 w-4 text-text-secondary" />
+                    <Input
+                      placeholder="Search activities..."
+                      value={activitySearch}
+                      onChange={(e) => setActivitySearch(e.target.value)}
+                      className="border-0 bg-transparent focus-visible:ring-0 h-auto p-0"
+                    />
+                  </div>
+                  <Select value={activityTypeFilter} onValueChange={setActivityTypeFilter}>
+                    <SelectTrigger className="w-48">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Filter by type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="phase_change">Phase Changes</SelectItem>
+                      <SelectItem value="document_upload">Documents</SelectItem>
+                      <SelectItem value="team_added">Team</SelectItem>
+                      <SelectItem value="note_added">Notes</SelectItem>
+                      <SelectItem value="message_received">Messages</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Activity List */}
+                <div className="space-y-4">
+                  {filteredActivity.map((activity, idx) => (
+                    <div key={activity.id} className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className={cn(
+                          "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
+                          activity.type === 'phase_change' ? "bg-[#DCFCE7] text-[#16A34A]" :
+                          activity.type === 'document_upload' ? "bg-blue-100 text-blue-600" :
+                          activity.type === 'team_added' ? "bg-purple-100 text-purple-600" :
+                          activity.type === 'note_added' ? "bg-amber-100 text-amber-600" :
+                          "bg-gray-100 text-gray-600"
+                        )}>
+                          {activity.type === 'phase_change' && <ChevronRight className="h-4 w-4" />}
+                          {activity.type === 'document_upload' && <Upload className="h-4 w-4" />}
+                          {activity.type === 'team_added' && <Users className="h-4 w-4" />}
+                          {activity.type === 'note_added' && <StickyNote className="h-4 w-4" />}
+                          {activity.type === 'message_received' && <MessageSquare className="h-4 w-4" />}
+                          {activity.type === 'interest_registered' && <Send className="h-4 w-4" />}
+                        </div>
+                        {idx < filteredActivity.length - 1 && (
+                          <div className="w-0.5 flex-1 bg-border mt-2" />
+                        )}
+                      </div>
+                      <div className="flex-1 pb-6">
+                        <p className="text-sm font-medium text-text-primary">{activity.description}</p>
+                        <p className="text-xs text-text-secondary mt-1">
+                          {new Date(activity.date).toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                          <span className="mx-1.5">•</span>
+                          {activity.user}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Modals */}
+      
+      {/* Initial Review Modal */}
+      <Dialog open={showInitialReviewModal} onOpenChange={setShowInitialReviewModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Begin Proposal Preparation</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-text-secondary">
+              Are you ready to proceed with preparing a proposal for this RFP? By confirming, you are committing to working on this submission.
+            </p>
+            <div className="bg-surface p-4 rounded-lg border border-border">
+              <p className="text-sm font-medium text-text-primary">{rfp.title}</p>
+              <p className="text-xs text-text-secondary mt-1">{rfp.buyerCompany} • Budget: {rfp.budget}</p>
+              <p className="text-xs text-text-secondary mt-1">
+                Deadline: {new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            </div>
+            <p className="text-xs text-text-muted">
+              If you are not able to submit a proposal, you can decline this RFP at any time.
+            </p>
+          </div>
+          <DialogFooter className="gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowInitialReviewModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmProceed}
+              className="bg-[#16A34A] hover:bg-[#15803D]"
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Confirm & Proceed
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Decline Confirmation Modal */}
       <Dialog open={showDeclineConfirmModal} onOpenChange={setShowDeclineConfirmModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-red-600">Confirm Decline to Submit</DialogTitle>
+            <DialogTitle className="text-red-600">Decline to Submit</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-text-secondary mb-4">
             Are you sure you want to decline this RFP? This will pause all work on this proposal. You can reinstate it at any time if you change your mind.
           </p>
           <div className="space-y-3">
-            <Label htmlFor="decline-reason">Reason for declining</Label>
+            <Label htmlFor="decline-reason">Reason for declining (optional)</Label>
             <Textarea
               id="decline-reason"
               value={transitionNotes}
@@ -1038,151 +1454,15 @@ export default function RFPDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      {/* Submission Modal - Questions Page */}
-      <Dialog open={showSubmissionModal} onOpenChange={setShowSubmissionModal}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Develop Proposal Response</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-text-secondary mb-4">
-            Complete the following questions from the buyer to develop your proposal. All required fields must be completed before moving to final review.
-          </p>
-          
-          <div className="space-y-6">
-            {rfp.buyerQuestions.map((q) => (
-              <div key={q.id} className="space-y-2">
-                <Label htmlFor={q.id} className="flex items-center gap-2">
-                  {q.question}
-                  {q.required && <span className="text-red-500">*</span>}
-                </Label>
-                <Textarea
-                  id={q.id}
-                  value={questionResponses[q.id] || ''}
-                  onChange={(e) => setQuestionResponses({ ...questionResponses, [q.id]: e.target.value })}
-                  placeholder="Enter your response..."
-                  className="min-h-[100px]"
-                />
-              </div>
-            ))}
-            
-            {/* Attachment Upload */}
-            <div className="space-y-3 pt-4 border-t border-gray-200">
-              <Label>Attachments</Label>
-              <div className="border-2 border-dashed border-gray-200 rounded-lg p-6">
-                <div className="flex flex-col items-center gap-2">
-                  <Upload className="h-8 w-8 text-gray-400" />
-                  <p className="text-sm text-text-secondary">Drag and drop files or click to upload</p>
-                  <input
-                    type="file"
-                    multiple
-                    onChange={(e) => {
-                      if (e.target.files) {
-                        setSubmissionAttachments([...submissionAttachments, ...Array.from(e.target.files)])
-                      }
-                    }}
-                    className="hidden"
-                    id="file-upload"
-                  />
-                  <Button variant="outline" size="sm" onClick={() => document.getElementById('file-upload')?.click()}>
-                    Choose Files
-                  </Button>
-                </div>
-              </div>
-              {submissionAttachments.length > 0 && (
-                <div className="space-y-2">
-                  {submissionAttachments.map((file, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span className="text-sm truncate">{file.name}</span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSubmissionAttachments(submissionAttachments.filter((_, i) => i !== idx))}
-                      >
-                        <XCircle className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <DialogFooter className="gap-2 mt-6">
-            <Button variant="outline" onClick={() => setShowSubmissionModal(false)}>
-              Save Draft
-            </Button>
-            <Button
-              className="bg-[#16A34A] hover:bg-[#15803D]"
-              onClick={() => {
-                setShowSubmissionModal(false)
-                handleMoveForward()
-              }}
-            >
-              Continue to Final Review
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Final Review Modal */}
-      <Dialog open={showFinalReviewModal} onOpenChange={setShowFinalReviewModal}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Final Review & Submit</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-text-secondary mb-4">
-            Review your responses before submitting. Once submitted, you cannot make further changes.
-          </p>
-          
-          <div className="space-y-4">
-            {rfp.buyerQuestions.map((q) => (
-              <div key={q.id} className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm font-medium text-text-primary mb-2">{q.question}</p>
-                <p className="text-sm text-text-secondary">
-                  {questionResponses[q.id] || <span className="italic">No response provided</span>}
-                </p>
-              </div>
-            ))}
-            
-            {submissionAttachments.length > 0 && (
-              <div className="pt-4 border-t border-gray-200">
-                <p className="text-sm font-medium text-text-primary mb-2">Attachments ({submissionAttachments.length})</p>
-                <div className="space-y-1">
-                  {submissionAttachments.map((file, idx) => (
-                    <p key={idx} className="text-sm text-text-secondary">• {file.name}</p>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          
-          <DialogFooter className="gap-2 mt-6">
-            <Button variant="outline" onClick={() => {
-              setShowFinalReviewModal(false)
-              setShowSubmissionModal(true)
-            }}>
-              Edit Responses
-            </Button>
-            <Button
-              className="bg-[#16A34A] hover:bg-[#15803D]"
-              onClick={handleSubmitProposal}
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Submit Proposal
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
+
       {/* Approval Modal */}
       <Dialog open={showApprovalModal} onOpenChange={setShowApprovalModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Send Proposal for Approval</DialogTitle>
+            <DialogTitle>Send for Internal Review</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-text-secondary mb-4">
-            Select the approvers who need to review this proposal before it can be submitted. They will receive an email with the current proposal status, responses, and attachments.
+            Select team members who need to approve this proposal before it can be submitted to the client.
           </p>
           
           <div className="space-y-3">
@@ -1229,7 +1509,7 @@ export default function RFPDetailPage() {
               disabled={selectedApprovers.length === 0}
             >
               <Send className="h-4 w-4 mr-2" />
-              Send for Approval
+              Send for Review
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1279,7 +1559,7 @@ export default function RFPDetailPage() {
       <Dialog open={showAddNoteModal} onOpenChange={setShowAddNoteModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Proposal Note</DialogTitle>
+            <DialogTitle>Add Internal Note</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <Label htmlFor="new-note">Note</Label>
@@ -1298,66 +1578,55 @@ export default function RFPDetailPage() {
             <Button
               className="bg-[#16A34A] hover:bg-[#15803D]"
               onClick={handleAddNote}
+              disabled={!newNoteText.trim()}
             >
-              <StickyNote className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-2" />
               Add Note
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* New Approval Request Modal */}
-      <ApprovalRequestModal
-        open={showApprovalModal && !currentApproval}
-        onOpenChange={(open) => {
-          if (!open) setShowApprovalModal(false)
-        }}
-        title="Send Proposal for Approval"
-        description="Select team members to review and approve this proposal before submission to the buyer. Approvers will receive emails with a direct link to review."
-        type="rfp_submission"
-        itemId={rfp.id}
-        itemTitle={rfp.title}
-        availableApprovers={availableTeamApprovers}
-        onSubmit={handleSendForApproval}
-      />
-        </div>
-      </div>
-
-      {/* Copilot Toggle Button */}
-      {!isCopilotOpen && (
-        <button
-          onClick={() => setIsCopilotOpen(true)}
-          className="fixed right-4 bottom-4 h-12 w-12 rounded-full bg-brand-green hover:bg-brand-green/90 text-white shadow-lg flex items-center justify-center transition-colors z-40"
-          aria-label="Open AI copilot"
-        >
-          <MessageSquare className="w-5 h-5" />
-        </button>
-      )}
-
-      {/* Copilot Panel */}
-      {isCopilotOpen && (
-        <div className="fixed right-0 top-0 bottom-0 w-80 bg-white border-l border-border shadow-lg flex flex-col z-50">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-brand-green" />
-              <h3 className="text-sm font-semibold text-text-primary">Proposal Copilot</h3>
+      {/* Upload Document Modal */}
+      <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Proposal Document</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-gray-200 rounded-lg p-8">
+              <div className="flex flex-col items-center gap-3 text-center">
+                <Upload className="h-10 w-10 text-gray-400" />
+                <div>
+                  <p className="text-sm text-text-primary font-medium">Drag and drop files here</p>
+                  <p className="text-xs text-text-secondary mt-1">or click to browse</p>
+                </div>
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  id="proposal-upload"
+                />
+                <Button variant="outline" size="sm" onClick={() => document.getElementById('proposal-upload')?.click()}>
+                  Choose Files
+                </Button>
+              </div>
             </div>
-            <button
-              onClick={() => setIsCopilotOpen(false)}
-              className="rounded-md text-text-muted hover:bg-surface-hover hover:text-text-primary p-1.5 transition-colors"
-              aria-label="Close copilot"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <p className="text-xs text-text-muted">
+              Supported formats: PDF, DOCX, XLSX, PPT. Maximum file size: 50MB.
+            </p>
           </div>
-          <div className="flex-1 overflow-hidden">
-            <SupplierCopilot
-              rfpTitle={rfp.title}
-              onSendMessage={handleCopilotMessage}
-            />
-          </div>
-        </div>
-      )}
+          <DialogFooter className="gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowUploadModal(false)}>
+              Cancel
+            </Button>
+            <Button className="bg-[#16A34A] hover:bg-[#15803D]">
+              <Upload className="h-4 w-4 mr-2" />
+              Upload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

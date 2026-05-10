@@ -53,59 +53,75 @@ export interface BuyerContact {
   phone: string
 }
 
-// Phase configuration with styling
+// Phase configuration with styling and icons
 export const SUPPLIER_PHASE_CONFIG = {
   new_rfp: { 
-    label: 'New RFP', 
+    label: 'Initial Review', 
+    shortLabel: 'Review',
+    icon: 'eye',
     color: 'bg-blue-100 text-blue-800', 
     bgColor: 'bg-blue-50', 
     borderColor: 'border-blue-200', 
-    progressPercent: 14 
+    progressPercent: 17 
   },
   in_progress: { 
-    label: 'In Progress', 
+    label: 'Preparation', 
+    shortLabel: 'Preparation',
+    icon: 'pencil',
     color: 'bg-amber-100 text-amber-800', 
     bgColor: 'bg-amber-50', 
     borderColor: 'border-amber-200', 
-    progressPercent: 43 
+    progressPercent: 33 
   },
   under_final_review: { 
-    label: 'Under Final Review', 
+    label: 'Internal Review', 
+    shortLabel: 'Internal Review',
+    icon: 'users',
     color: 'bg-orange-100 text-orange-800', 
     bgColor: 'bg-orange-50', 
     borderColor: 'border-orange-200', 
-    progressPercent: 57 
+    progressPercent: 50 
   },
   submitted: { 
     label: 'Submitted', 
+    shortLabel: 'Submitted',
+    icon: 'send',
     color: 'bg-purple-100 text-purple-800', 
     bgColor: 'bg-purple-50', 
     borderColor: 'border-purple-200', 
-    progressPercent: 71 
+    progressPercent: 67 
   },
   client_reviewing: { 
-    label: 'Client Reviewing', 
+    label: 'Client Review', 
+    shortLabel: 'Client Review',
+    icon: 'clock',
     color: 'bg-indigo-100 text-indigo-800', 
     bgColor: 'bg-indigo-50', 
     borderColor: 'border-indigo-200', 
-    progressPercent: 86 
+    progressPercent: 83 
   },
   awarded: { 
-    label: 'Awarded', 
+    label: 'Final Outcome', 
+    shortLabel: 'Awarded',
+    icon: 'trophy',
     color: 'bg-green-100 text-green-800', 
     bgColor: 'bg-green-50', 
     borderColor: 'border-green-200', 
     progressPercent: 100 
   },
   rejected: { 
-    label: 'Not Successful', 
+    label: 'Final Outcome', 
+    shortLabel: 'Not Successful',
+    icon: 'x-circle',
     color: 'bg-red-100 text-red-800', 
     bgColor: 'bg-red-50', 
     borderColor: 'border-red-200', 
     progressPercent: 100 
   },
   declined: { 
-    label: 'Decline to Submit', 
+    label: 'Declined', 
+    shortLabel: 'Declined',
+    icon: 'ban',
     color: 'bg-gray-100 text-gray-800', 
     bgColor: 'bg-gray-50', 
     borderColor: 'border-gray-200', 
