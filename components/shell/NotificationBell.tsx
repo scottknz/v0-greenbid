@@ -93,11 +93,6 @@ export function NotificationBell({ collapsed = false }: NotificationBellProps) {
         >
           <div className="relative shrink-0">
             <Bell className="h-4 w-4" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center h-3.5 w-3.5 rounded-full bg-red-600 text-[9px] font-bold text-white leading-none">
-                {unreadCount}
-              </span>
-            )}
           </div>
           {!collapsed && (
             <>
