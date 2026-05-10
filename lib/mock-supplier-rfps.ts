@@ -25,7 +25,11 @@ export interface SupplierProposalNote {
   id: string
   timestamp: string
   user: string
+  userRole?: string
+  userEmail?: string
   text: string
+  priority: 'low' | 'medium' | 'high'
+  attachments: { name: string; size: string; url: string }[]
 }
 
 export interface BuyerQuestion {
@@ -53,59 +57,75 @@ export interface BuyerContact {
   phone: string
 }
 
-// Phase configuration with styling
+// Phase configuration with styling and icons
 export const SUPPLIER_PHASE_CONFIG = {
   new_rfp: { 
-    label: 'New RFP', 
+    label: 'Initial Review', 
+    shortLabel: 'Review',
+    icon: 'eye',
     color: 'bg-blue-100 text-blue-800', 
     bgColor: 'bg-blue-50', 
     borderColor: 'border-blue-200', 
-    progressPercent: 14 
+    progressPercent: 17 
   },
   in_progress: { 
-    label: 'In Progress', 
+    label: 'Preparation', 
+    shortLabel: 'Preparation',
+    icon: 'pencil',
     color: 'bg-amber-100 text-amber-800', 
     bgColor: 'bg-amber-50', 
     borderColor: 'border-amber-200', 
-    progressPercent: 43 
+    progressPercent: 33 
   },
   under_final_review: { 
-    label: 'Under Final Review', 
+    label: 'Internal Review', 
+    shortLabel: 'Internal Review',
+    icon: 'users',
     color: 'bg-orange-100 text-orange-800', 
     bgColor: 'bg-orange-50', 
     borderColor: 'border-orange-200', 
-    progressPercent: 57 
+    progressPercent: 50 
   },
   submitted: { 
     label: 'Submitted', 
+    shortLabel: 'Submitted',
+    icon: 'send',
     color: 'bg-purple-100 text-purple-800', 
     bgColor: 'bg-purple-50', 
     borderColor: 'border-purple-200', 
-    progressPercent: 71 
+    progressPercent: 67 
   },
   client_reviewing: { 
-    label: 'Client Reviewing', 
+    label: 'Client Review', 
+    shortLabel: 'Client Review',
+    icon: 'clock',
     color: 'bg-indigo-100 text-indigo-800', 
     bgColor: 'bg-indigo-50', 
     borderColor: 'border-indigo-200', 
-    progressPercent: 86 
+    progressPercent: 83 
   },
   awarded: { 
-    label: 'Awarded', 
+    label: 'Final Outcome', 
+    shortLabel: 'Awarded',
+    icon: 'trophy',
     color: 'bg-green-100 text-green-800', 
     bgColor: 'bg-green-50', 
     borderColor: 'border-green-200', 
     progressPercent: 100 
   },
   rejected: { 
-    label: 'Not Successful', 
+    label: 'Final Outcome', 
+    shortLabel: 'Not Successful',
+    icon: 'x-circle',
     color: 'bg-red-100 text-red-800', 
     bgColor: 'bg-red-50', 
     borderColor: 'border-red-200', 
     progressPercent: 100 
   },
   declined: { 
-    label: 'Decline to Submit', 
+    label: 'Declined', 
+    shortLabel: 'Declined',
+    icon: 'ban',
     color: 'bg-gray-100 text-gray-800', 
     bgColor: 'bg-gray-50', 
     borderColor: 'border-gray-200', 
@@ -300,8 +320,51 @@ export const mockRFPDetail: SupplierRFPDetail = {
   ],
   phaseBeforeDecline: null,
   proposalNotes: [
-    { id: 'note-1', timestamp: '2026-03-20T09:00:00Z', user: 'Sarah Chen', text: 'Need to gather additional emissions data from last 3 years' },
-    { id: 'note-2', timestamp: '2026-03-22T15:00:00Z', user: 'James Wilson', text: 'Received all supporting documentation from operations team' }
+    { 
+      id: 'note-1', 
+      timestamp: '2026-03-20T09:00:00Z', 
+      user: 'Sarah Chen', 
+      userRole: 'Sustainability Lead',
+      userEmail: 'sarah.chen@company.com',
+      text: 'Need to gather additional emissions data from last 3 years. This is critical for establishing a proper baseline. I have contacted the operations team and they should have this data available by end of week.',
+      priority: 'high',
+      attachments: [
+        { name: 'Data_Request_Template.xlsx', size: '45 KB', url: '#' }
+      ]
+    },
+    { 
+      id: 'note-2', 
+      timestamp: '2026-03-22T15:00:00Z', 
+      user: 'James Wilson',
+      userRole: 'Commercial Manager',
+      userEmail: 'james.wilson@company.com',
+      text: 'Received all supporting documentation from operations team. Everything looks complete. Ready to proceed with the technical sections.',
+      priority: 'medium',
+      attachments: []
+    },
+    {
+      id: 'note-3',
+      timestamp: '2026-03-25T10:15:00Z',
+      user: 'Lisa Park',
+      userRole: 'Legal Counsel',
+      userEmail: 'lisa.park@company.com',
+      text: 'Reviewed the contract terms in Section 4. There are a few liability clauses that need discussion with our insurance team before we can commit. Flagging this as high priority as it may affect our pricing strategy.',
+      priority: 'high',
+      attachments: []
+    },
+    {
+      id: 'note-4',
+      timestamp: '2026-03-26T14:00:00Z',
+      user: 'Sarah Chen',
+      userRole: 'Sustainability Lead',
+      userEmail: 'sarah.chen@company.com',
+      text: 'Completed initial pricing calculations. Our competitive advantage lies in the software integration capabilities. Recommend emphasising this in the proposal.',
+      priority: 'medium',
+      attachments: [
+        { name: 'Pricing_Model_v2.xlsx', size: '128 KB', url: '#' },
+        { name: 'Competitive_Analysis.pdf', size: '340 KB', url: '#' }
+      ]
+    }
   ],
   registeredAt: '2026-03-15',
   deadline: '2026-04-30',

@@ -275,6 +275,7 @@ export default function SupplierTeamPage() {
           setShowProfile(false)
           setShowModal(true)
         }}
+        variant="supplier"
       />
     </div>
   )

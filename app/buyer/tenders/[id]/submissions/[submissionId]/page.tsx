@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import { useRouter, useParams, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -665,12 +665,10 @@ CEO, Sustainable Solutions Inc`,
   s5: [],
 }
 
-export default function SubmissionDetailPage() {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function SubmissionDetailContent() {
   const router = useRouter()
   const params = useParams()
-  const tenderId = params.id as string
-  const submissionId = params.submissionId as string
-
   const searchParams = useSearchParams()
   const submission = submissionsData[submissionId]
   const communications = communicationsData[submissionId] || []
@@ -1726,5 +1724,14 @@ export default function SubmissionDetailPage() {
         )}
       </div>
     </div>
+  )
+}
+
+// Wrap the component in Suspense to handle useSearchParams
+export default function SubmissionDetailPage() {
+  return (
+    <Suspense fallback={<div>Loading submission...</div>}>
+      <SubmissionDetailContent />
+    </Suspense>
   )
 }

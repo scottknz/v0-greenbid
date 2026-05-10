@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { getRFPById } from '@/lib/mock-rfp';
-import { RFP } from '@/types/rfp';
+import { RFPDocument } from '@/types/rfp';
 import { RFPPreview } from '@/components/rfp/RFPPreview';
 import { Button } from '@/components/ui/button';
 import { X, Download, ArrowLeft } from 'lucide-react';
@@ -12,7 +12,7 @@ import Link from 'next/link';
 export default function RFPPreviewPage() {
   const params = useParams();
   const rfpId = params.id as string;
-  const [rfp, setRfp] = useState<RFP | null>(null);
+  const [rfp, setRfp] = useState<RFPDocument | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -147,7 +147,7 @@ export function SupplierDetailPanel({
               <Mail className="h-4 w-4 text-text-secondary shrink-0" />
               <button
                 onClick={() => {
-                  router.push(`/buyer/messages?compose=true&to=${encodeURIComponent(supplier.companyContact.name)}&email=${encodeURIComponent(supplier.companyContact.email)}`)
+                  router.push(`/buyer/messages?compose=true&to=${encodeURIComponent(supplier.companyContact.name || '')}&email=${encodeURIComponent(supplier.companyContact.email)}`)
                 }}
                 className="text-sm text-brand-green hover:underline truncate"
               >

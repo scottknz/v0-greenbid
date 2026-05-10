@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -58,236 +58,65 @@ import {
   Tag,
   PanelLeftClose,
   PanelLeftOpen,
+  User,
+  Users,
 } from "lucide-react"
+import {
+  buyerRfpsData,
+  buyerTeamMembersData,
+  buyerSuppliersData,
+  globalSuppliersData,
+  threadStatuses as importedThreadStatuses,
+  messageFolders,
+  buyerMessageThreads,
+} from "@/lib/mock-messages"
 
-// Mock RFPs data
-const rfpsData = [
-  { id: "rfp1", title: "Comprehensive Scope 3 Value Chain Emissions Analysis", status: "published" },
-  { id: "rfp2", title: "SBTi Target Setting & Validation Support", status: "published" },
-  { id: "rfp3", title: "Embodied Carbon Life Cycle Assessment (LCA)", status: "closed" },
-  { id: "rfp4", title: "ISSB (IFRS S1 & S2) Integration & Reporting", status: "evaluating" },
-]
+// Data imported from lib/mock-messages.ts
+const rfpsData = buyerRfpsData
+const buyersData = buyerTeamMembersData
+const suppliersData = buyerSuppliersData
 
-// Mock buyers/team members
-const buyersData = [
-  { id: "b1", name: "Emma Thompson", role: "Sustainability Lead" },
-  { id: "b2", name: "David Kumar", role: "Carbon Analyst" },
-  { id: "b3", name: "Lisa Martinez", role: "ESG Manager" },
-]
+// Thread statuses with icons (icons need to be added here since they can't be serialized in the data file)
+const threadStatuses = importedThreadStatuses.map(s => ({
+  ...s,
+  icon: s.key === 'awaiting' ? Clock :
+        s.key === 'action' ? AlertCircle :
+        s.key === 'open' ? Circle : CheckCircle2
+}))
 
-// Mock suppliers
-const suppliersData = [
-  { id: "s1", name: "EcoMetrics Advisory", contact: "Dr. Sarah Chen" },
-  { id: "s2", name: "CarbonClear Solutions", contact: "Emily Rodriguez" },
-  { id: "s3", name: "Transition Risk Partners", contact: "Robert Williams" },
-  { id: "s4", name: "SustainSustain", contact: "David Park" },
-  { id: "s5", name: "Lifecycle Data Labs", contact: "Dr. Patricia Smith" },
-]
+// Folder definitions with icons
+const folders = messageFolders.map(f => ({
+  ...f,
+  icon: f.key === 'inbox' ? Inbox :
+        f.key === 'starred' ? Star :
+        f.key === 'awaiting' ? Clock :
+        f.key === 'action' ? AlertCircle :
+        f.key === 'sent' ? Send :
+        f.key === 'all' ? Mail : Archive
+}))
 
-// Global supplier database
-const globalSuppliersData = [
-  { id: "g1", name: "PCAF Analytics Group", contact: "James Mitchell", email: "james@pcafgroup.com" },
-  { id: "g2", name: "GridShift Energy Advisors", contact: "Nina Patel", email: "nina@gridshift.com" },
-  { id: "g3", name: "Apex Environmental Consulting", contact: "Tom Wilson", email: "tom@apexenv.com" },
-]
+// Mock threads data - imported from lib/mock-messages.ts
+const allThreadsData = buyerMessageThreads
 
-// Thread statuses
-const threadStatuses = [
-  { key: "awaiting", label: "Awaiting Response", color: "bg-amber-100 text-amber-800", icon: Clock },
-  { key: "action", label: "Action Required", color: "bg-red-100 text-red-800", icon: AlertCircle },
-  { key: "open", label: "Open", color: "bg-blue-100 text-blue-800", icon: Circle },
-  { key: "resolved", label: "Resolved", color: "bg-brand-green-light text-brand-green", icon: CheckCircle2 },
-]
-
-// Folder definitions
-const folders = [
-  { key: "inbox", label: "Inbox", icon: Inbox },
-  { key: "starred", label: "Starred", icon: Star },
-  { key: "awaiting", label: "Awaiting Response", icon: Clock },
-  { key: "action", label: "Action Required", icon: AlertCircle },
-  { key: "sent", label: "Sent", icon: Send },
-  { key: "all", label: "All Messages", icon: Mail },
-  { key: "archived", label: "Archived", icon: Archive },
-]
-
-// Mock threads data
-const allThreadsData = [
-  {
-    id: "t1",
-    rfpId: "rfp1",
-    rfpTitle: "Sustainable Office Supplies 2026",
-    subject: "Clarification on recycled content requirements",
-    visibility: "all" as const,
-    status: "awaiting",
-    isRead: false,
-    isStarred: true,
-    isArchived: false,
-    createdAt: "2026-03-10T09:30:00Z",
-    updatedAt: "2026-03-12T14:20:00Z",
-    lastSender: "John Smith",
-    lastSenderType: "supplier" as const,
-    lastSenderCompany: "EcoSupply Co.",
-    participants: ["s1", "s2", "s3"],
-    messages: [
-      {
-        id: "m1",
-        senderId: "buyer",
-        senderName: "Sarah Chen",
-        senderType: "buyer" as const,
-        content: "Please note that all paper products must contain a minimum of 80% post-consumer recycled content. This is a mandatory requirement.",
-        attachments: [{ name: "Recycling_Standards.pdf", size: "245 KB", url: "#" }],
-        timestamp: "2026-03-10T09:30:00Z",
-      },
-      {
-        id: "m2",
-        senderId: "s1",
-        senderName: "John Smith",
-        senderCompany: "EcoSupply Co.",
-        senderType: "supplier" as const,
-        content: "Thank you for the clarification. Can you confirm if this applies to all paper products or just A4 copy paper?",
-        attachments: [],
-        timestamp: "2026-03-12T14:20:00Z",
-      },
-    ],
-  },
-  {
-    id: "t2",
-    rfpId: "rfp1",
-    rfpTitle: "Sustainable Office Supplies 2026",
-    subject: "Delivery schedule flexibility",
-    visibility: "private" as const,
-    status: "resolved",
-    isRead: true,
-    isStarred: false,
-    isArchived: false,
-    createdAt: "2026-03-11T10:00:00Z",
-    updatedAt: "2026-03-11T16:45:00Z",
-    lastSender: "David Thompson",
-    lastSenderType: "buyer" as const,
-    participants: ["s2"],
-    messages: [
-      {
-        id: "m3",
-        senderId: "s2",
-        senderName: "Emma Davis",
-        senderCompany: "GreenOffice Ltd",
-        senderType: "supplier" as const,
-        content: "We wanted to discuss the delivery schedule privately. Our logistics partner has capacity constraints in June.",
-        attachments: [{ name: "Delivery_Capacity_Analysis.xlsx", size: "128 KB", url: "#" }],
-        timestamp: "2026-03-11T10:00:00Z",
-      },
-      {
-        id: "m4",
-        senderId: "buyer",
-        senderName: "David Thompson",
-        senderType: "buyer" as const,
-        content: "Thank you for flagging this early. We have some flexibility on timing. Please include your preferred delivery schedule in your proposal.",
-        attachments: [],
-        timestamp: "2026-03-11T16:45:00Z",
-      },
-    ],
-  },
-  {
-    id: "t3",
-    rfpId: "rfp2",
-    rfpTitle: "IT Infrastructure Renewal",
-    subject: "ISO 14001 certification timeline",
-    visibility: "all" as const,
-    status: "action",
-    isRead: false,
-    isStarred: false,
-    isArchived: false,
-    createdAt: "2026-03-13T08:00:00Z",
-    updatedAt: "2026-03-14T10:30:00Z",
-    lastSender: "Michael Brown",
-    lastSenderType: "supplier" as const,
-    lastSenderCompany: "Sustainable Solutions Inc",
-    participants: ["s1", "s2", "s3", "s4", "s5"],
-    messages: [
-      {
-        id: "m5",
-        senderId: "buyer",
-        senderName: "Sarah Chen",
-        senderType: "buyer" as const,
-        content: "Several suppliers have asked about ISO 14001 certification. Please note: if you are currently in the certification process, please provide documentation.",
-        attachments: [{ name: "Certification_Requirements.pdf", size: "312 KB", url: "#" }],
-        timestamp: "2026-03-13T08:00:00Z",
-      },
-      {
-        id: "m6",
-        senderId: "s3",
-        senderName: "Michael Brown",
-        senderCompany: "Sustainable Solutions Inc",
-        senderType: "supplier" as const,
-        content: "We are currently in the final stages of certification. Expected completion date is April 15th. Please see attached status report.",
-        attachments: [{ name: "ISO_Status_Report.pdf", size: "156 KB", url: "#" }],
-        timestamp: "2026-03-14T10:30:00Z",
-      },
-    ],
-  },
-  {
-    id: "t4",
-    rfpId: "rfp4",
-    rfpTitle: "Fleet Management Services",
-    subject: "Question about pricing structure",
-    visibility: "private" as const,
-    status: "open",
-    isRead: true,
-    isStarred: true,
-    isArchived: false,
-    createdAt: "2026-03-14T11:30:00Z",
-    updatedAt: "2026-03-14T11:30:00Z",
-    lastSender: "Lisa Johnson",
-    lastSenderType: "supplier" as const,
-    lastSenderCompany: "EnviroTech Partners",
-    participants: ["s4"],
-    messages: [
-      {
-        id: "m7",
-        senderId: "s4",
-        senderName: "Lisa Johnson",
-        senderCompany: "EnviroTech Partners",
-        senderType: "supplier" as const,
-        content: "Should we provide volume-based pricing tiers in our submission, or a single fixed price per unit? We can offer significant discounts at higher volumes.",
-        attachments: [],
-        timestamp: "2026-03-14T11:30:00Z",
-      },
-    ],
-  },
-  {
-    id: "t5",
-    rfpId: "rfp1",
-    rfpTitle: "Sustainable Office Supplies 2026",
-    subject: "Updated submission deadline",
-    visibility: "all" as const,
-    status: "resolved",
-    isRead: true,
-    isStarred: false,
-    isArchived: false,
-    createdAt: "2026-03-08T14:00:00Z",
-    updatedAt: "2026-03-08T14:00:00Z",
-    lastSender: "Sarah Chen",
-    lastSenderType: "buyer" as const,
-    participants: ["s1", "s2", "s3", "s4", "s5"],
-    messages: [
-      {
-        id: "m8",
-        senderId: "buyer",
-        senderName: "Sarah Chen",
-        senderType: "buyer" as const,
-        content: "Please note the submission deadline has been extended by one week to April 7th, 2026. This is to allow additional time for certification documentation.",
-        attachments: [],
-        timestamp: "2026-03-08T14:00:00Z",
-      },
-    ],
-  },
-]
-
-export default function MessagesPage() {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function MessagesPageContent() {
   const searchParams = useSearchParams()
 
-  // State
-  const [threads, setThreads] = useState(allThreadsData)
+  // State — merge any threads injected from the Award flow via localStorage
+  const [threads, setThreads] = useState(() => {
+    try {
+      const injected = JSON.parse(localStorage.getItem('gb_injected_threads') || '[]')
+      if (injected.length > 0) {
+        // Deduplicate by id, injected threads take precedence
+        const existingIds = new Set(allThreadsData.map((t) => t.id))
+        const newOnly = injected.filter((t: { id: string }) => !existingIds.has(t.id))
+        return [...newOnly, ...allThreadsData]
+      }
+    } catch {
+      // localStorage unavailable
+    }
+    return allThreadsData
+  })
   const [selectedFolder, setSelectedFolder] = useState("inbox")
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(new Set())
@@ -304,6 +133,7 @@ export default function MessagesPage() {
   const [composeTo, setComposeTo] = useState<{ name: string; email: string } | null>(null)
   const [composeVisibility, setComposeVisibility] = useState<"all" | "private">("private")
   const [composeAttachments, setComposeAttachments] = useState<{ name: string; size: string }[]>([])
+  const [showBroadcastConfirm, setShowBroadcastConfirm] = useState(false)
   
   // Reply state
   const [replyMessage, setReplyMessage] = useState("")
@@ -610,41 +440,47 @@ export default function MessagesPage() {
                 {/* Visibility */}
                 <div className="space-y-2">
                   <Label>Visibility</Label>
-                  <div className="flex items-center gap-1 p-1 rounded-lg bg-[#F3F4F6] w-fit">
+                  <div className="flex items-center gap-1 p-1 rounded-lg bg-blue-50 border border-blue-200 w-fit">
                     <button
                       type="button"
                       onClick={() => setComposeVisibility("private")}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                         composeVisibility === "private"
-                          ? "bg-white shadow-sm text-[#111827]"
-                          : "text-[#6B7280] hover:text-[#111827]"
+                          ? "bg-blue-600 text-white shadow-md"
+                          : "text-blue-700 hover:bg-blue-100"
                       }`}
                     >
                       <Lock className="size-3.5" />
-                      Private
+                      Private Only
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setComposeVisibility("all")
-                        setComposeRecipients(suppliersData.map(s => s.id))
-                      }}
+                      onClick={() => setShowBroadcastConfirm(true)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                         composeVisibility === "all"
-                          ? "bg-white shadow-sm text-[#111827]"
-                          : "text-[#6B7280] hover:text-[#111827]"
+                          ? "bg-orange-600 text-white shadow-md"
+                          : "text-orange-700 hover:bg-orange-100"
                       }`}
                     >
                       <Globe className="size-3.5" />
-                      All Suppliers
+                      Broadcast All
                     </button>
                   </div>
 
-                  {composeVisibility === "all" && (
-                    <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-800">
-                      <Globe className="size-4 shrink-0 mt-0.5 text-amber-500" />
+                  {composeVisibility === "private" && (
+                    <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-800">
+                      <Lock className="size-4 shrink-0 mt-0.5 text-blue-600" />
                       <div className="text-xs leading-relaxed">
-                        <span className="font-semibold">This message will be sent to all {suppliersData.length} suppliers</span> registered for this RFP. All recipients will be able to see the message but not each other&apos;s replies.
+                        <span className="font-semibold">Private message:</span> Only selected suppliers will see this message and your responses to their individual replies.
+                      </div>
+                    </div>
+                  )}
+
+                  {composeVisibility === "all" && (
+                    <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-orange-200 bg-orange-50 text-orange-800">
+                      <Globe className="size-4 shrink-0 mt-0.5 text-orange-600" />
+                      <div className="text-xs leading-relaxed">
+                        <span className="font-semibold">Broadcast to all {suppliersData.length} suppliers:</span> All recipients will see this message publicly. Use for announcements, deadline changes, or clarifications. Your replies will also be visible to all.
                       </div>
                     </div>
                   )}
@@ -1004,7 +840,7 @@ export default function MessagesPage() {
                           <span className={`text-sm truncate ${!thread.isRead ? "font-medium text-[#111827]" : "text-[#4B5563]"}`}>
                             {thread.subject}
                           </span>
-                          {thread.messages.some(m => m.attachments.length > 0) && (
+                          {thread.messages.some((m: { attachments: { name: string; size: string; url: string }[] }) => m.attachments.length > 0) && (
                             <Paperclip className="size-3 text-[#9CA3AF] shrink-0" />
                           )}
                         </div>
@@ -1107,42 +943,98 @@ export default function MessagesPage() {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                  {selectedThread.messages.map((message, idx) => (
-                    <div key={message.id} className="flex gap-4">
-                      <Avatar className="size-10 shrink-0">
-                        <AvatarFallback className={`text-sm ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#4B5563]"}`}>
-                          {message.senderName.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-[#111827]">{message.senderName}</span>
-                          {message.senderType === "supplier" && message.senderCompany && (
-                            <span className="text-sm text-[#6B7280]">{message.senderCompany}</span>
-                          )}
-                          <span className="text-xs text-[#9CA3AF]">
-                            {new Date(message.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                        <div className="text-sm text-[#374151] whitespace-pre-wrap">{message.content}</div>
-                        {message.attachments.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {message.attachments.map((att, i) => (
-                              <a
-                                key={i}
-                                href={att.url}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] text-sm"
-                              >
-                                <Paperclip className="size-4 text-[#6B7280]" />
-                                <span className="text-[#111827]">{att.name}</span>
-                                <span className="text-xs text-[#9CA3AF]">{att.size}</span>
-                              </a>
-                            ))}
+                  {selectedThread.messages.map((message: { id: string; senderId: string; senderName: string; senderCompany?: string; senderType: 'buyer' | 'supplier'; recipientType?: 'all_suppliers' | 'specific_suppliers' | 'buyer_team' | 'individual'; recipientNames?: string[]; recipientCompanies?: string[]; content: string; attachments: { name: string; size: string; url: string }[]; timestamp: string; isRead?: boolean; readAt?: string }) => {
+                    // Helper to format recipient display
+                    const getRecipientDisplay = () => {
+                      if (message.recipientType === 'all_suppliers') {
+                        return { label: 'All Suppliers', icon: Globe, color: 'text-blue-600 bg-blue-50' }
+                      }
+                      if (message.recipientType === 'buyer_team') {
+                        return { label: 'Buyer Team', icon: Users, color: 'text-[#16A34A] bg-[#DCFCE7]' }
+                      }
+                      if (message.recipientType === 'specific_suppliers' && message.recipientCompanies?.length) {
+                        return { label: message.recipientCompanies.join(', '), icon: Lock, color: 'text-gray-600 bg-gray-100' }
+                      }
+                      if (message.recipientType === 'individual' && message.recipientNames?.length) {
+                        return { label: message.recipientNames.join(', '), icon: User, color: 'text-purple-600 bg-purple-50' }
+                      }
+                      return { label: 'Unknown', icon: Mail, color: 'text-gray-400 bg-gray-50' }
+                    }
+                    const recipient = getRecipientDisplay()
+                    const RecipientIcon = recipient.icon
+
+                    return (
+                      <div key={message.id} className="rounded-lg border border-[#E5E7EB] bg-white overflow-hidden">
+                        {/* Message Header with From/To */}
+                        <div className="px-4 py-3 bg-[#FAFAFA] border-b border-[#E5E7EB]">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-4">
+                              {/* From */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">From:</span>
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="size-6">
+                                    <AvatarFallback className={`text-[10px] ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#4B5563]"}`}>
+                                      {message.senderName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm font-medium text-[#111827]">{message.senderName}</span>
+                                  {message.senderType === "supplier" && message.senderCompany && (
+                                    <span className="text-xs text-[#6B7280]">({message.senderCompany})</span>
+                                  )}
+                                  {message.senderType === "buyer" && (
+                                    <Badge variant="outline" className="text-[10px] h-5 bg-[#DCFCE7] text-[#16A34A] border-[#16A34A]/20">Buyer</Badge>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* To */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">To:</span>
+                                <Badge className={`text-xs ${recipient.color} border-0`}>
+                                  <RecipientIcon className="size-3 mr-1" />
+                                  {recipient.label}
+                                </Badge>
+                              </div>
+                            </div>
+
+                            {/* Timestamp and read status */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-[#9CA3AF]">
+                                {new Date(message.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                              </span>
+                              {message.isRead && message.senderType !== "buyer" && (
+                                <span className="flex items-center gap-1 text-[10px] text-[#16A34A]">
+                                  <CheckCircle className="size-3" />
+                                  Read
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        )}
+                        </div>
+
+                        {/* Message Content */}
+                        <div className="p-4">
+                          <div className="text-sm text-[#374151] whitespace-pre-wrap leading-relaxed">{message.content}</div>
+                          {message.attachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[#E5E7EB]">
+                              {message.attachments.map((att: { name: string; size: string; url: string }, i: number) => (
+                                <a
+                                  key={i}
+                                  href={att.url}
+                                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] hover:border-[#16A34A] text-sm transition-colors"
+                                >
+                                  <Paperclip className="size-4 text-[#6B7280]" />
+                                  <span className="text-[#111827]">{att.name}</span>
+                                  <span className="text-xs text-[#9CA3AF]">{att.size}</span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
 
                 {/* Reply Composer */}
@@ -1205,6 +1097,57 @@ export default function MessagesPage() {
             )}
           </div>
         </div>
+
+        {/* Broadcast Confirmation Modal */}
+        <Dialog open={showBroadcastConfirm} onOpenChange={setShowBroadcastConfirm}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Broadcast to All Suppliers?</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-orange-200 bg-orange-50">
+                <Globe className="size-5 text-orange-600 shrink-0 mt-0.5" />
+                <div className="text-sm text-orange-800">
+                  <p className="font-semibold mb-1">This will send your message to ALL {suppliersData.length} suppliers</p>
+                  <p className="text-xs">All suppliers will see this message and your responses. This action is recorded in the audit log.</p>
+                </div>
+              </div>
+              <div className="space-y-2 text-sm">
+                <p className="font-medium text-gray-900">Use broadcast for:</p>
+                <ul className="text-xs text-gray-600 space-y-1 ml-3">
+                  <li>• Deadline extensions or changes</li>
+                  <li>• Clarifications to RFP terms</li>
+                  <li>• Announcements relevant to all participants</li>
+                </ul>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowBroadcastConfirm(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+                onClick={() => {
+                  setComposeVisibility("all")
+                  setComposeRecipients(suppliersData.map(s => s.id))
+                  setShowBroadcastConfirm(false)
+                }}
+              >
+                <Globe className="size-4 mr-1" />
+                Broadcast Message
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </div>
+  )
+}
+
+// Wrap the component in Suspense to handle useSearchParams
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MessagesPageContent />
+    </Suspense>
   )
 }

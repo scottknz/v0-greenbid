@@ -90,10 +90,7 @@ export default function RFPEditPage() {
     const updated = { 
       ...rfp, 
       status: 'published' as const,
-      metadata: {
-        ...rfp.metadata,
-        publishedAt: new Date().toISOString(),
-      }
+      updatedAt: new Date().toISOString(),
     };
     updateRFP(rfp.id, updated);
     

@@ -1,6 +1,6 @@
 'use client';
 
-import { RFP } from '@/types/rfp';
+import type { RFPDocument } from '@/types/rfp';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -17,8 +17,8 @@ import {
 } from '@/components/ui/dialog';
 
 interface RFPSettingsProps {
-  rfp: RFP;
-  onUpdate: (updates: Partial<RFP>) => void;
+  rfp: RFPDocument;
+  onUpdate: (updates: Partial<RFPDocument>) => void;
 }
 
 export function RFPSettings({ rfp, onUpdate }: RFPSettingsProps) {
@@ -107,7 +107,10 @@ export function RFPSettings({ rfp, onUpdate }: RFPSettingsProps) {
                     setFormData({
                       ...formData,
                       toneSettings: {
-                        ...(formData.toneSettings || {}),
+                        toneFile: formData.toneSettings?.toneFile || null,
+                        formality: formData.toneSettings?.formality || 'professional',
+                        industry: formData.toneSettings?.industry || '',
+                        customInstructions: formData.toneSettings?.customInstructions || '',
                         tone: e.target.value,
                       },
                     })

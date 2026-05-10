@@ -7,6 +7,8 @@ interface ShellContextType {
   toggleSidebar: () => void;
   isChatPanelOpen: boolean;
   toggleChatPanel: () => void;
+  isSettingsOpen: boolean;
+  setIsSettingsOpen: (open: boolean) => void;
 }
 
 const ShellContext = createContext<ShellContextType | undefined>(undefined);
@@ -14,6 +16,7 @@ const ShellContext = createContext<ShellContextType | undefined>(undefined);
 export function ShellProvider({ children }: { children: ReactNode }) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isChatPanelOpen, setIsChatPanelOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const toggleSidebar = () => setIsSidebarCollapsed((prev) => !prev);
   const toggleChatPanel = () => setIsChatPanelOpen((prev) => !prev);
@@ -25,6 +28,8 @@ export function ShellProvider({ children }: { children: ReactNode }) {
         toggleSidebar,
         isChatPanelOpen,
         toggleChatPanel,
+        isSettingsOpen,
+        setIsSettingsOpen,
       }}
     >
       {children}

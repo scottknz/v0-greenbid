@@ -538,6 +538,8 @@ export function createRFPFromTemplate(
       ...projectInfo,
     },
     sections,
+    assignedTeamMemberIds: [],
+    registeredSuppliers: [],
     aiSummary: '',
     currentVersion: 1,
     versions: [],
@@ -652,6 +654,7 @@ export function createRFPVersion(id: string, rfpOrSummary: RFPDocument | string)
   if (!existing) return null;
   
   const newVersion: RFPVersion = {
+    id: `v${existing.currentVersion}-${Date.now()}`,
     version: existing.currentVersion,
     savedAt: new Date().toISOString(),
     savedBy: 'Current User',

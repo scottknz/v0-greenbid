@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -58,57 +58,78 @@ import {
   Tag,
   PanelLeftClose,
   PanelLeftOpen,
+  User,
+  Users,
 } from "lucide-react"
+import {
+  supplierRfpsData,
+  supplierTeamMembersData as importedBuyersData,
+  buyerSuppliersData,
+  globalSuppliersData as importedGlobalSuppliersData,
+  threadStatuses as importedThreadStatuses,
+  messageFolders,
+  supplierMessageThreads,
+} from "@/lib/mock-messages"
 
-// Mock RFPs data
-const rfpsData = [
-  { id: "rfp1", title: "Comprehensive Scope 3 Value Chain Emissions Analysis", status: "published" },
-  { id: "rfp2", title: "SBTi Target Setting & Validation Support", status: "published" },
-  { id: "rfp3", title: "Embodied Carbon Life Cycle Assessment (LCA)", status: "closed" },
-  { id: "rfp4", title: "ISSB (IFRS S1 & S2) Integration & Reporting", status: "evaluating" },
-]
+// Type definitions
+interface ThreadMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderCompany?: string;
+  senderType: "buyer" | "supplier";
+  recipientType?: "all_suppliers" | "specific_suppliers" | "buyer_team" | "individual";
+  recipientNames?: string[];
+  recipientCompanies?: string[];
+  content: string;
+  attachments: { name: string; size: string; url: string }[];
+  timestamp: string;
+  isRead?: boolean;
+  readAt?: string;
+}
 
-// Mock buyers/team members
-const buyersData = [
-  { id: "b1", name: "Emma Thompson", role: "Sustainability Lead" },
-  { id: "b2", name: "David Kumar", role: "Carbon Analyst" },
-  { id: "b3", name: "Lisa Martinez", role: "ESG Manager" },
-]
+interface Thread {
+  id: string;
+  rfpId: string;
+  rfpTitle: string;
+  subject: string;
+  visibility: "all" | "private";
+  status: string;
+  isRead: boolean;
+  isStarred: boolean;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastSender: string;
+  lastSenderType: "buyer" | "supplier";
+  lastSenderCompany?: string;
+  participants: string[];
+  messages: ThreadMessage[];
+}
 
-// Mock suppliers
-const suppliersData = [
-  { id: "s1", name: "EcoMetrics Advisory", contact: "Dr. Sarah Chen" },
-  { id: "s2", name: "CarbonClear Solutions", contact: "Emily Rodriguez" },
-  { id: "s3", name: "Transition Risk Partners", contact: "Robert Williams" },
-  { id: "s4", name: "SustainSustain", contact: "David Park" },
-  { id: "s5", name: "Lifecycle Data Labs", contact: "Dr. Patricia Smith" },
-]
+// Data imported from lib/mock-messages.ts
+const rfpsData = supplierRfpsData
+const buyersData = importedBuyersData
+const suppliersData = buyerSuppliersData
 
-// Global supplier database
-const globalSuppliersData = [
-  { id: "g1", name: "PCAF Analytics Group", contact: "James Mitchell", email: "james@pcafgroup.com" },
-  { id: "g2", name: "GridShift Energy Advisors", contact: "Nina Patel", email: "nina@gridshift.com" },
-  { id: "g3", name: "Apex Environmental Consulting", contact: "Tom Wilson", email: "tom@apexenv.com" },
-]
+// Thread statuses with icons (icons need to be added here since they can't be serialized in the data file)
+const threadStatuses = importedThreadStatuses.map(s => ({
+  ...s,
+  icon: s.key === 'awaiting' ? Clock :
+        s.key === 'action' ? AlertCircle :
+        s.key === 'open' ? Circle : CheckCircle2
+}))
 
-// Thread statuses
-const threadStatuses = [
-  { key: "awaiting", label: "Awaiting Response", color: "bg-amber-100 text-amber-800", icon: Clock },
-  { key: "action", label: "Action Required", color: "bg-red-100 text-red-800", icon: AlertCircle },
-  { key: "open", label: "Open", color: "bg-blue-100 text-blue-800", icon: Circle },
-  { key: "resolved", label: "Resolved", color: "bg-brand-green-light text-brand-green", icon: CheckCircle2 },
-]
-
-// Folder definitions
-const folders = [
-  { key: "inbox", label: "Inbox", icon: Inbox },
-  { key: "starred", label: "Starred", icon: Star },
-  { key: "awaiting", label: "Awaiting Response", icon: Clock },
-  { key: "action", label: "Action Required", icon: AlertCircle },
-  { key: "sent", label: "Sent", icon: Send },
-  { key: "all", label: "All Messages", icon: Mail },
-  { key: "archived", label: "Archived", icon: Archive },
-]
+// Folder definitions with icons
+const folders = messageFolders.map(f => ({
+  ...f,
+  icon: f.key === 'inbox' ? Inbox :
+        f.key === 'starred' ? Star :
+        f.key === 'awaiting' ? Clock :
+        f.key === 'action' ? AlertCircle :
+        f.key === 'sent' ? Send :
+        f.key === 'all' ? Mail : Archive
+}))
 
 // Mock threads data
 const allThreadsData = [
@@ -283,11 +304,12 @@ const allThreadsData = [
   },
 ]
 
-export default function MessagesPage() {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function MessagesPageContent() {
   const searchParams = useSearchParams()
 
   // State
-  const [threads, setThreads] = useState(allThreadsData)
+  const [threads, setThreads] = useState<Thread[]>(allThreadsData as Thread[])
   const [selectedFolder, setSelectedFolder] = useState("inbox")
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(new Set())
@@ -304,6 +326,7 @@ export default function MessagesPage() {
   const [composeTo, setComposeTo] = useState<{ name: string; email: string } | null>(null)
   const [composeVisibility, setComposeVisibility] = useState<"all" | "private">("private")
   const [composeAttachments, setComposeAttachments] = useState<{ name: string; size: string }[]>([])
+  const [showBroadcastConfirm, setShowBroadcastConfirm] = useState(false)
   
   // Reply state
   const [replyMessage, setReplyMessage] = useState("")
@@ -1025,42 +1048,101 @@ export default function MessagesPage() {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                  {selectedThread.messages.map((message, idx) => (
-                    <div key={message.id} className="flex gap-4">
-                      <Avatar className="size-10 shrink-0">
-                        <AvatarFallback className={`text-sm ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#4B5563]"}`}>
-                          {message.senderName.split(" ").map(n => n[0]).join("").slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-[#111827]">{message.senderName}</span>
-                          {message.senderType === "supplier" && message.senderCompany && (
-                            <span className="text-sm text-[#6B7280]">{message.senderCompany}</span>
-                          )}
-                          <span className="text-xs text-[#9CA3AF]">
-                            {new Date(message.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                        <div className="text-sm text-[#374151] whitespace-pre-wrap">{message.content}</div>
-                        {message.attachments.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {message.attachments.map((att, i) => (
-                              <a
-                                key={i}
-                                href={att.url}
-                                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] text-sm"
-                              >
-                                <Paperclip className="size-4 text-[#6B7280]" />
-                                <span className="text-[#111827]">{att.name}</span>
-                                <span className="text-xs text-[#9CA3AF]">{att.size}</span>
-                              </a>
-                            ))}
+                  {selectedThread.messages.map((message) => {
+                    // Helper to format recipient display
+                    const getRecipientDisplay = () => {
+                      if (message.recipientType === 'all_suppliers') {
+                        return { label: 'All Suppliers', icon: Globe, color: 'text-blue-600 bg-blue-50' }
+                      }
+                      if (message.recipientType === 'buyer_team') {
+                        return { label: 'Buyer Team', icon: Users, color: 'text-[#16A34A] bg-[#DCFCE7]' }
+                      }
+                      if (message.recipientType === 'specific_suppliers' && message.recipientCompanies?.length) {
+                        return { label: message.recipientCompanies.join(', '), icon: Lock, color: 'text-gray-600 bg-gray-100' }
+                      }
+                      if (message.recipientType === 'individual' && message.recipientNames?.length) {
+                        return { label: message.recipientNames.join(', '), icon: User, color: 'text-purple-600 bg-purple-50' }
+                      }
+                      return { label: 'Unknown', icon: Mail, color: 'text-gray-400 bg-gray-50' }
+                    }
+                    const recipient = getRecipientDisplay()
+                    const RecipientIcon = recipient.icon
+
+                    return (
+                      <div key={message.id} className="rounded-lg border border-[#E5E7EB] bg-white overflow-hidden">
+                        {/* Message Header with From/To */}
+                        <div className="px-4 py-3 bg-[#FAFAFA] border-b border-[#E5E7EB]">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-4">
+                              {/* From */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">From:</span>
+                                <div className="flex items-center gap-2">
+                                  <Avatar className="size-6">
+                                    <AvatarFallback className={`text-[10px] ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#4B5563]"}`}>
+                                      {message.senderName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm font-medium text-[#111827]">{message.senderName}</span>
+                                  {message.senderType === "supplier" && message.senderCompany && (
+                                    <span className="text-xs text-[#6B7280]">({message.senderCompany})</span>
+                                  )}
+                                  {message.senderType === "buyer" && (
+                                    <Badge variant="outline" className="text-[10px] h-5 bg-[#DCFCE7] text-[#16A34A] border-[#16A34A]/20">Buyer</Badge>
+                                  )}
+                                  {message.senderType === "supplier" && (
+                                    <Badge variant="outline" className="text-[10px] h-5 bg-gray-100 text-gray-600 border-gray-300">You</Badge>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* To */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">To:</span>
+                                <Badge className={`text-xs ${recipient.color} border-0`}>
+                                  <RecipientIcon className="size-3 mr-1" />
+                                  {recipient.label}
+                                </Badge>
+                              </div>
+                            </div>
+
+                            {/* Timestamp and read status */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-[#9CA3AF]">
+                                {new Date(message.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                              </span>
+                              {message.isRead && message.senderType === "supplier" && (
+                                <span className="flex items-center gap-1 text-[10px] text-[#16A34A]">
+                                  <CheckCircle className="size-3" />
+                                  Read
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        )}
+                        </div>
+
+                        {/* Message Content */}
+                        <div className="p-4">
+                          <div className="text-sm text-[#374151] whitespace-pre-wrap leading-relaxed">{message.content}</div>
+                          {message.attachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[#E5E7EB]">
+                              {message.attachments.map((att, i) => (
+                                <a
+                                  key={i}
+                                  href={att.url}
+                                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] hover:border-[#16A34A] text-sm transition-colors"
+                                >
+                                  <Paperclip className="size-4 text-[#6B7280]" />
+                                  <span className="text-[#111827]">{att.name}</span>
+                                  <span className="text-xs text-[#9CA3AF]">{att.size}</span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
 
                 {/* Reply Composer */}
@@ -1124,5 +1206,14 @@ export default function MessagesPage() {
           </div>
         </div>
     </div>
+  )
+}
+
+// Wrap the component in Suspense to handle useSearchParams
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MessagesPageContent />
+    </Suspense>
   )
 }
