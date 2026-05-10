@@ -64,20 +64,6 @@ export function Sidebar({ variant }: SidebarProps) {
           : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
       );
 
-      // Settings button opens modal
-      if (item.label === 'Settings') {
-        return (
-          <button
-            key={item.label}
-            onClick={() => setIsSettingsOpen(true)}
-            className={cn('w-full', className)}
-            aria-label={item.label}
-          >
-            {content}
-          </button>
-        );
-      }
-
       if (item.isChatTrigger) {
         return (
           <button
