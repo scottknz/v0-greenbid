@@ -15,7 +15,7 @@ export const buyerNav: NavItem[] = [
   { label: 'Library', href: '/buyer/library', icon: 'BookOpen', section: 'main' },
   { label: 'Suppliers', href: '/buyer/suppliers', icon: 'Users', section: 'main' },
   { label: 'Messages', href: '/buyer/messages', icon: 'Mail', section: 'main', badgeCount: 2 },
-  { label: 'Marketplace', href: '/supplier/marketplace', icon: 'Library', section: 'secondary' },
+  { label: 'Marketplace', href: '/buyer/marketplace', icon: 'Library', section: 'secondary' },
   { label: 'AI Copilot', href: '#', icon: 'MessageSquare', section: 'secondary', isChatTrigger: true },
 ];
 
