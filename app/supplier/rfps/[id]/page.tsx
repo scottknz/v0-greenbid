@@ -577,129 +577,135 @@ export default function RFPDetailPage() {
         </div>
       </div>
 
-      {/* Main layout — left action panel + right content */}
-      <div className="flex-1 flex gap-0">
+      {/* Horizontal action bar — full width, sits between progress bar and tabs */}
+      <div className="border-b border-[#E5E7EB] bg-white px-6 py-3">
+        <div className="flex items-center gap-6 justify-between">
 
-        {/* Left action panel */}
-        <div className="w-56 shrink-0 border-r border-[#E5E7EB] bg-white p-5 flex flex-col gap-4 sticky top-[93px] self-start">
-          {/* Progress Proposal button or status */}
-          {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && currentPhase !== 'declined' ? (
-            <div className="flex flex-col gap-2">
-              <Button
-                onClick={handleProgressProposal}
-                disabled={getProgressButtonDisabled()}
-                className="w-full bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50 gap-2 justify-center"
-              >
-                <ChevronRight className="h-4 w-4" />
-                {getProgressButtonLabel()}
-              </Button>
-              {currentPhase === 'new_rfp' && !interestRegistered && (
-                <Button
-                  onClick={handleRegisterInterest}
-                  variant="outline"
-                  size="sm"
-                  className="w-full gap-1.5 text-xs"
-                >
-                  <Send className="h-3.5 w-3.5" />
-                  Register Interest
-                </Button>
-              )}
-              {interestRegistered && (
-                <div className="flex items-center gap-1.5 justify-center py-1">
+          {/* Left: phase meta — Current Phase, Deadline, Reference — displayed horizontally */}
+          <div className="flex items-center gap-6">
+
+            {/* Current Phase */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-[#6B7280] uppercase tracking-wide font-medium whitespace-nowrap">Current Phase</span>
+              <Badge className={cn('text-xs', SUPPLIER_PHASE_CONFIG[currentPhase].color)}>
+                {SUPPLIER_PHASE_CONFIG[currentPhase].label}
+              </Badge>
+            </div>
+
+            <div className="h-4 w-px bg-[#E5E7EB]" />
+
+            {/* Deadline */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-[#6B7280] uppercase tracking-wide font-medium whitespace-nowrap">Deadline</span>
+              <span className="text-xs font-medium text-[#111827]">
+                {new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+              <span className={cn('text-xs', isOverdue ? 'text-red-500' : isDeadlineSoon ? 'text-amber-600' : 'text-[#6B7280]')}>
+                ({isOverdue ? `${Math.abs(daysDue)}d overdue` : daysDue === 0 ? 'today' : `${daysDue}d remaining`})
+              </span>
+            </div>
+
+            <div className="h-4 w-px bg-[#E5E7EB]" />
+
+            {/* Reference */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-[#6B7280] uppercase tracking-wide font-medium whitespace-nowrap">Reference</span>
+              <span className="text-xs font-mono text-[#111827]">{rfp.id}</span>
+            </div>
+
+            {/* Interest registered badge */}
+            {interestRegistered && (
+              <>
+                <div className="h-4 w-px bg-[#E5E7EB]" />
+                <div className="flex items-center gap-1.5">
                   <CheckCircle className="h-3.5 w-3.5 text-[#16A34A]" />
                   <span className="text-xs text-[#16A34A] font-medium">Interest Registered</span>
                 </div>
-              )}
-              <button
-                onClick={() => setShowDeclineConfirmModal(true)}
-                className="text-xs text-[#9CA3AF] hover:text-red-500 transition-colors text-center mt-1 underline underline-offset-2"
+              </>
+            )}
+          </div>
+
+          {/* Right: action — Progress Proposal button + secondary actions */}
+          <div className="flex items-center gap-3 shrink-0">
+            {/* Status pills for terminal/passive phases */}
+            {currentPhase === 'submitted' && (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-[#16A34A]">
+                <CheckCircle className="h-4 w-4" />
+                Submitted — awaiting client review
+              </span>
+            )}
+            {currentPhase === 'client_reviewing' && (
+              <span className="flex items-center gap-1.5 text-xs text-[#6B7280]">
+                <Clock className="h-4 w-4" />
+                Client is evaluating your proposal
+              </span>
+            )}
+            {currentPhase === 'awarded' && (
+              <span className="flex items-center gap-1.5 text-xs font-medium text-[#16A34A]">
+                <Trophy className="h-4 w-4" />
+                Awarded — congratulations!
+              </span>
+            )}
+            {currentPhase === 'rejected' && (
+              <span className="flex items-center gap-1.5 text-xs text-[#6B7280]">
+                <XCircle className="h-4 w-4" />
+                Not successful
+              </span>
+            )}
+            {currentPhase === 'declined' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-8 border-[#16A34A] text-[#16A34A] hover:bg-[#F0FDF4] gap-1.5"
+                onClick={handleReinstateSubmission}
               >
-                Decline to Submit
-              </button>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-[#E5E7EB] p-3 text-center">
-              {currentPhase === 'submitted' && (
-                <>
-                  <CheckCircle className="h-5 w-5 text-[#16A34A] mx-auto mb-1" />
-                  <p className="text-xs font-medium text-[#16A34A]">Submitted</p>
-                  <p className="text-[10px] text-[#6B7280] mt-0.5">Awaiting client review</p>
-                </>
-              )}
-              {currentPhase === 'client_reviewing' && (
-                <>
-                  <Clock className="h-5 w-5 text-[#6B7280] mx-auto mb-1" />
-                  <p className="text-xs font-medium text-[#111827]">Under Review</p>
-                  <p className="text-[10px] text-[#6B7280] mt-0.5">Client is evaluating</p>
-                </>
-              )}
-              {currentPhase === 'awarded' && (
-                <>
-                  <Trophy className="h-5 w-5 text-[#16A34A] mx-auto mb-1" />
-                  <p className="text-xs font-medium text-[#16A34A]">Awarded</p>
-                  <p className="text-[10px] text-[#6B7280] mt-0.5">Congratulations!</p>
-                </>
-              )}
-              {currentPhase === 'rejected' && (
-                <>
-                  <XCircle className="h-5 w-5 text-[#6B7280] mx-auto mb-1" />
-                  <p className="text-xs font-medium text-[#111827]">Not Successful</p>
-                  <p className="text-[10px] text-[#6B7280] mt-0.5">This submission has closed</p>
-                </>
-              )}
-              {currentPhase === 'declined' && (
-                <>
-                  <Ban className="h-5 w-5 text-[#6B7280] mx-auto mb-1" />
-                  <p className="text-xs font-medium text-[#111827]">Declined</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full mt-2 text-xs border-[#16A34A] text-[#16A34A] hover:bg-[#F0FDF4]"
-                    onClick={handleReinstateSubmission}
-                  >
-                    <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                    Reinstate
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reinstate Submission
+              </Button>
+            )}
 
-          {/* Divider */}
-          <div className="h-px bg-[#E5E7EB]" />
+            {/* Register Interest (new_rfp only, before interest registered) */}
+            {currentPhase === 'new_rfp' && !interestRegistered && (
+              <Button
+                onClick={handleRegisterInterest}
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs h-8"
+              >
+                <Send className="h-3.5 w-3.5" />
+                Register Interest
+              </Button>
+            )}
 
-          {/* Phase badge */}
-          <div>
-            <p className="text-[10px] text-[#6B7280] uppercase tracking-wide font-medium mb-1.5">Current Phase</p>
-            <Badge className={cn('text-xs w-full justify-center', SUPPLIER_PHASE_CONFIG[currentPhase].color)}>
-              {SUPPLIER_PHASE_CONFIG[currentPhase].label}
-            </Badge>
-          </div>
-
-          {/* Deadline mini */}
-          <div>
-            <p className="text-[10px] text-[#6B7280] uppercase tracking-wide font-medium mb-1.5">Submission Deadline</p>
-            <p className="text-xs font-medium text-[#111827]">
-              {new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-            </p>
-            <p className={cn('text-[10px] mt-0.5', isOverdue ? 'text-red-500' : isDeadlineSoon ? 'text-amber-600' : 'text-[#6B7280]')}>
-              {isOverdue ? `${Math.abs(daysDue)} days overdue` : daysDue === 0 ? 'Due today' : `${daysDue} days remaining`}
-            </p>
-          </div>
-
-          {/* Reference */}
-          <div>
-            <p className="text-[10px] text-[#6B7280] uppercase tracking-wide font-medium mb-1.5">Reference</p>
-            <p className="text-xs font-mono text-[#111827]">{rfp.id}</p>
+            {/* Progress Proposal — shown for actionable phases */}
+            {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && currentPhase !== 'declined' && (
+              <div className="flex flex-col items-end gap-1">
+                <Button
+                  onClick={handleProgressProposal}
+                  disabled={getProgressButtonDisabled()}
+                  className="bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50 gap-2 h-8 text-sm"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                  {getProgressButtonLabel()}
+                </Button>
+                <button
+                  onClick={() => setShowDeclineConfirmModal(true)}
+                  className="text-[10px] text-[#9CA3AF] hover:text-red-500 transition-colors underline underline-offset-2 leading-none"
+                >
+                  Decline to Submit
+                </button>
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Right content area */}
-        <div className="flex-1 min-w-0">
+      {/* Full-width content area */}
+      <div className="flex-1 min-w-0">
 
-          {/* Tab bar — matches buyer border-bottom style */}
-          <div className="border-b border-[#E5E7EB] bg-[#FAFAFA] sticky top-[93px] z-10">
-            <nav className="flex gap-0 px-6" aria-label="RFP tabs">
+        {/* Tab bar — full width, matches buyer border-bottom style */}
+        <div className="border-b border-[#E5E7EB] bg-[#FAFAFA]">
+          <nav className="flex gap-0 px-6" aria-label="RFP tabs">
               {[
                 { key: 'overview', label: 'Overview', icon: Eye },
                 { key: 'documents', label: 'Documents', icon: Folder },
@@ -1400,8 +1406,7 @@ export default function RFPDetailPage() {
             </Card>
           )}
           </div>{/* /tab content */}
-        </div>{/* /right content */}
-      </div>{/* /main flex */}
+      </div>{/* /full-width content */}
 
       {/* Modals */}
       
