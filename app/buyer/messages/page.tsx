@@ -286,8 +286,21 @@ const allThreadsData = [
 export default function MessagesPage() {
   const searchParams = useSearchParams()
 
-  // State
-  const [threads, setThreads] = useState(allThreadsData)
+  // State — merge any threads injected from the Award flow via localStorage
+  const [threads, setThreads] = useState(() => {
+    try {
+      const injected = JSON.parse(localStorage.getItem('gb_injected_threads') || '[]')
+      if (injected.length > 0) {
+        // Deduplicate by id, injected threads take precedence
+        const existingIds = new Set(allThreadsData.map((t) => t.id))
+        const newOnly = injected.filter((t: { id: string }) => !existingIds.has(t.id))
+        return [...newOnly, ...allThreadsData]
+      }
+    } catch {
+      // localStorage unavailable
+    }
+    return allThreadsData
+  })
   const [selectedFolder, setSelectedFolder] = useState("inbox")
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(new Set())
