@@ -17,6 +17,8 @@ import {
   Award,
   Star,
   ChevronDown,
+  Lock,
+  Building2,
 } from 'lucide-react'
 import {
   mockMarketplaceRFPs,
@@ -195,7 +197,51 @@ function MarketplaceCard({
   )
 }
 
+// Mock data for private/invited RFPs
+const mockPrivateRFPs = [
+  {
+    id: 'priv-1',
+    title: 'Exclusive Solar Panel Supply Agreement',
+    buyerCompany: 'GreenCorp Industries',
+    buyerInitials: 'GC',
+    buyerColor: 'bg-emerald-600',
+    summary: 'Direct invitation to supply high-efficiency solar panels for our new manufacturing facility expansion.',
+    deadline: '2025-02-28',
+    budget: '$2.5M - $3.5M',
+    status: 'open' as const,
+    invitedAt: '2025-01-15',
+    responseDeadline: '2025-02-20',
+  },
+  {
+    id: 'priv-2',
+    title: 'Sustainable Packaging Partnership',
+    buyerCompany: 'EcoRetail Group',
+    buyerInitials: 'ER',
+    buyerColor: 'bg-blue-600',
+    summary: 'You have been selected as a preferred vendor for our sustainable packaging initiative across 200+ stores.',
+    deadline: '2025-03-15',
+    budget: '$800K - $1.2M',
+    status: 'open' as const,
+    invitedAt: '2025-01-20',
+    responseDeadline: '2025-03-01',
+  },
+  {
+    id: 'priv-3',
+    title: 'Carbon Offset Program - Phase 2',
+    buyerCompany: 'TechVentures Inc',
+    buyerInitials: 'TV',
+    buyerColor: 'bg-purple-600',
+    summary: 'Continuation of our successful carbon offset partnership. Invitation extended based on Phase 1 performance.',
+    deadline: '2025-04-01',
+    budget: '$500K - $750K',
+    status: 'open' as const,
+    invitedAt: '2025-01-22',
+    responseDeadline: '2025-03-15',
+  },
+]
+
 export default function MarketplacePage() {
+  const [marketView, setMarketView] = useState<'public' | 'private'>('public')
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState<MarketplaceCategory>('all')
   const [activeRegion, setActiveRegion] = useState<MarketplaceRegion>('all')
@@ -236,107 +282,243 @@ export default function MarketplacePage() {
       {/* Sticky header */}
       <div className="bg-white border-b border-border sticky top-0 z-20">
         <div className="px-6 py-4 space-y-3">
-          {/* Title + sort */}
+          {/* Title + toggle + sort */}
           <div className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="text-xl font-bold text-text-primary">RFP Marketplace</h1>
-              <p className="text-xs text-text-muted mt-0.5">
-                {filtered.length} open opportunit{filtered.length === 1 ? 'y' : 'ies'}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs text-text-muted hidden sm:block">Sort:</span>
-              <div className="relative">
-                <select
-                  value={sortBy}
-                  onChange={e => setSortBy(e.target.value as typeof sortBy)}
-                  className="text-xs bg-white border border-border rounded-lg pl-3 pr-8 py-2 text-text-primary appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#16A34A]/30"
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="deadline">Deadline (Soonest)</option>
-                  <option value="budget">Budget (Highest)</option>
-                </select>
-                <ChevronDown className="absolute right-2.5 top-2.5 h-3 w-3 text-text-muted pointer-events-none" />
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-xl font-bold text-text-primary">RFP Marketplace</h1>
+                <p className="text-xs text-text-muted mt-0.5">
+                  {marketView === 'public' 
+                    ? `${filtered.length} open opportunit${filtered.length === 1 ? 'y' : 'ies'}`
+                    : `${mockPrivateRFPs.length} private invitation${mockPrivateRFPs.length === 1 ? '' : 's'}`
+                  }
+                </p>
               </div>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
-            <Input
-              placeholder="Search by title, company, or keyword..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-9 bg-gray-50 border-border text-sm"
-            />
-          </div>
-
-          {/* Category filters */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
-            {MARKETPLACE_CATEGORIES.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={cn(
-                  'shrink-0 text-xs font-medium px-3.5 py-1.5 rounded-full border transition-colors whitespace-nowrap',
-                  activeCategory === cat.id
-                    ? 'bg-[#16A34A] text-white border-[#16A34A]'
-                    : 'bg-white text-text-secondary border-border hover:border-[#16A34A]/40 hover:text-[#16A34A]'
-                )}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Region filters */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
-            <Globe className="h-3.5 w-3.5 text-text-muted shrink-0" />
-            <div className="flex items-center gap-1.5">
-              {MARKETPLACE_REGIONS.map(reg => (
+              
+              {/* Public / Private toggle */}
+              <div className="flex items-center bg-surface border border-border rounded-lg p-1 gap-1">
                 <button
-                  key={reg.id}
-                  onClick={() => setActiveRegion(reg.id)}
+                  onClick={() => setMarketView('public')}
                   className={cn(
-                    'shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-colors whitespace-nowrap',
-                    activeRegion === reg.id
-                      ? 'bg-text-primary text-white border-text-primary'
-                      : 'bg-white text-text-secondary border-border hover:border-text-secondary hover:text-text-primary'
+                    'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                    marketView === 'public'
+                      ? 'bg-[#16A34A] text-white shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
                   )}
                 >
-                  {reg.label}
+                  <Globe className="h-4 w-4" />
+                  Public Marketplace
                 </button>
-              ))}
+                <button
+                  onClick={() => setMarketView('private')}
+                  className={cn(
+                    'flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                    marketView === 'private'
+                      ? 'bg-[#16A34A] text-white shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                  )}
+                >
+                  <Lock className="h-4 w-4" />
+                  Private / Invited
+                  {mockPrivateRFPs.length > 0 && (
+                    <span className={cn(
+                      'inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-semibold',
+                      marketView === 'private' ? 'bg-white/20 text-white' : 'bg-[#F0FDF4] text-[#16A34A]'
+                    )}>
+                      {mockPrivateRFPs.length}
+                    </span>
+                  )}
+                </button>
+              </div>
             </div>
+            
+            {marketView === 'public' && (
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-text-muted hidden sm:block">Sort:</span>
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={e => setSortBy(e.target.value as typeof sortBy)}
+                    className="text-xs bg-white border border-border rounded-lg pl-3 pr-8 py-2 text-text-primary appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#16A34A]/30"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="deadline">Deadline (Soonest)</option>
+                    <option value="budget">Budget (Highest)</option>
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-2.5 h-3 w-3 text-text-muted pointer-events-none" />
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Search - public view only */}
+          {marketView === 'public' && (
+            <>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+                <Input
+                  placeholder="Search by title, company, or keyword..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="pl-9 bg-gray-50 border-border text-sm"
+                />
+              </div>
+
+              {/* Category filters */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+                {MARKETPLACE_CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={cn(
+                      'shrink-0 text-xs font-medium px-3.5 py-1.5 rounded-full border transition-colors whitespace-nowrap',
+                      activeCategory === cat.id
+                        ? 'bg-[#16A34A] text-white border-[#16A34A]'
+                        : 'bg-white text-text-secondary border-border hover:border-[#16A34A]/40 hover:text-[#16A34A]'
+                    )}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Region filters */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+                <Globe className="h-3.5 w-3.5 text-text-muted shrink-0" />
+                <div className="flex items-center gap-1.5">
+                  {MARKETPLACE_REGIONS.map(reg => (
+                    <button
+                      key={reg.id}
+                      onClick={() => setActiveRegion(reg.id)}
+                      className={cn(
+                        'shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-colors whitespace-nowrap',
+                        activeRegion === reg.id
+                          ? 'bg-text-primary text-white border-text-primary'
+                          : 'bg-white text-text-secondary border-border hover:border-text-secondary hover:text-text-primary'
+                      )}
+                    >
+                      {reg.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="px-6 py-8">
-        {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
-            <Search className="h-10 w-10 text-text-muted" />
-            <p className="text-sm font-medium text-text-primary">No opportunities found</p>
-            <p className="text-xs text-text-muted">Try adjusting your filters or search term</p>
-            <Button variant="outline" size="sm" onClick={() => { setSearch(''); setActiveCategory('all'); setActiveRegion('all') }}>
-              Clear all filters
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filtered.map(rfp => (
-              <MarketplaceCard
-                key={rfp.id}
-                rfp={rfp}
-                saved={savedIds.has(rfp.id)}
-                onSave={handleSave}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Public Marketplace Grid */}
+      {marketView === 'public' && (
+        <div className="px-6 py-8">
+          {filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+              <Search className="h-10 w-10 text-text-muted" />
+              <p className="text-sm font-medium text-text-primary">No opportunities found</p>
+              <p className="text-xs text-text-muted">Try adjusting your filters or search term</p>
+              <Button variant="outline" size="sm" onClick={() => { setSearch(''); setActiveCategory('all'); setActiveRegion('all') }}>
+                Clear all filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {filtered.map(rfp => (
+                <MarketplaceCard
+                  key={rfp.id}
+                  rfp={rfp}
+                  saved={savedIds.has(rfp.id)}
+                  onSave={handleSave}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Private / Invited View */}
+      {marketView === 'private' && (
+        <div className="px-6 py-8">
+          {mockPrivateRFPs.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 text-center gap-3">
+              <Lock className="h-10 w-10 text-text-muted" />
+              <p className="text-sm font-medium text-text-primary">No private invitations</p>
+              <p className="text-xs text-text-muted">You haven&apos;t received any private RFP invitations yet</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {mockPrivateRFPs.map(rfp => {
+                const days = Math.ceil((new Date(rfp.deadline).getTime() - Date.now()) / 86400000)
+                const urgent = days <= 14
+                const critical = days <= 7
+                
+                return (
+                  <div
+                    key={rfp.id}
+                    className="bg-white border border-border rounded-xl p-5 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={cn('h-12 w-12 rounded-lg shrink-0 flex items-center justify-center text-white text-sm font-bold', rfp.buyerColor)}>
+                        {rfp.buyerInitials}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-xs text-text-muted font-medium">{rfp.buyerCompany}</p>
+                            <h3 className="font-semibold text-text-primary hover:text-[#16A34A] transition-colors cursor-pointer">
+                              {rfp.title}
+                            </h3>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Badge className="bg-purple-50 text-purple-700 border border-purple-200 text-[10px]">
+                              Private Invitation
+                            </Badge>
+                            <Badge className={cn(
+                              'text-[10px] border',
+                              rfp.status === 'open' ? 'bg-[#F0FDF4] text-[#166534] border-[#16A34A]/20' : 'bg-gray-100 text-text-muted border-border'
+                            )}>
+                              {rfp.status === 'open' ? 'Open' : 'Closed'}
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-text-secondary">{rfp.summary}</p>
+                        
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted pt-1">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5" />
+                            Invited: {new Date(rfp.invitedAt).toLocaleDateString()}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5" />
+                            <span className={cn(critical ? 'text-red-600 font-medium' : urgent ? 'text-amber-600 font-medium' : '')}>
+                              Response due: {new Date(rfp.responseDeadline).toLocaleDateString()}
+                            </span>
+                          </span>
+                          {rfp.budget && (
+                            <span className="flex items-center gap-1">
+                              <TrendingUp className="h-3.5 w-3.5 text-[#16A34A]" />
+                              <span className="font-medium text-text-primary">{rfp.budget}</span>
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center gap-2 pt-2">
+                          <Button size="sm" className="bg-[#16A34A] hover:bg-[#15803d] text-white">
+                            View Invitation
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            Respond
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Add to My RFPs modal */}
       {addTarget && (
