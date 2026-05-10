@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Send,
 } from 'lucide-react';
 import type { RFPDocument, RFPSectionContent } from '@/types/rfp';
 
@@ -29,9 +30,11 @@ interface RFPEditorProps {
   rfp: RFPDocument;
   onUpdate: (updates: Partial<RFPDocument>) => void;
   onSave: () => void;
+  onPublish?: () => void;
+  isPublishing?: boolean;
 }
 
-export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
+export function RFPEditor({ rfp, onUpdate, onSave, onPublish, isPublishing }: RFPEditorProps) {
   const [activeSectionId, setActiveSectionId] = useState<string | null>(
     rfp.sections[0]?.id || null
   );
@@ -216,12 +219,27 @@ export function RFPEditor({ rfp, onUpdate, onSave }: RFPEditorProps) {
               Generate PDF
             </Button>
             <Button
+              variant="outline"
               onClick={onSave}
-              className="gap-2 bg-brand-green hover:bg-brand-green/90 text-white"
+              className="gap-2"
             >
               <Save className="w-4 h-4" />
-              Save All
+              Save Draft
             </Button>
+            {onPublish && (
+              <Button
+                onClick={onPublish}
+                disabled={isPublishing}
+                className="gap-2 bg-brand-green hover:bg-brand-green/90 text-white"
+              >
+                {isPublishing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                {isPublishing ? 'Publishing...' : 'Publish RFP'}
+              </Button>
+            )}
           </div>
         </div>
 
