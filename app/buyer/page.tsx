@@ -9,96 +9,22 @@ import {
   FileText, AlertCircle, CheckCircle, Clock, MessageSquare, 
   ArrowRight, Eye 
 } from 'lucide-react'
+import {
+  buyerActions,
+  buyerRfps,
+  buyerMetrics,
+  getDaysUntilDeadline,
+  getUrgencyColor,
+  getUrgencyLabel,
+} from '@/lib/mock-buyer-dashboard'
 
-// Mock data
-const mockActions = [
-  {
-    id: 1,
-    type: 'review',
-    title: 'Review supplier submissions',
-    rfpName: 'Scope 3 Analysis',
-    dueDate: '2026-05-08',
-    rfpId: '1',
-    urgency: 'high'
-  },
-  {
-    id: 2,
-    type: 'approve',
-    title: 'Approve evaluation criteria',
-    rfpName: 'Office Supplies 2026',
-    dueDate: '2026-05-10',
-    rfpId: '2',
-    urgency: 'medium'
-  },
-  {
-    id: 3,
-    type: 'finalize',
-    title: 'Finalize contract terms',
-    rfpName: 'Carbon-Neutral Logistics',
-    dueDate: '2026-05-12',
-    rfpId: '3',
-    urgency: 'medium'
-  },
-]
-
-const mockRFPs = [
-  {
-    id: 1,
-    name: 'Comprehensive Scope 3 Value Chain Emissions Analysis',
-    status: 'accepting_bids',
-    submissions: 8,
-    pendingQA: 2,
-    deadline: '2026-05-15',
-    budget: 450000,
-  },
-  {
-    id: 2,
-    name: 'SBTi Target Setting & Validation Support',
-    status: 'evaluating',
-    submissions: 12,
-    pendingQA: 0,
-    deadline: '2026-04-28',
-    budget: 320000,
-  },
-  {
-    id: 3,
-    name: 'Embodied Carbon Life Cycle Assessment (LCA)',
-    status: 'draft',
-    submissions: 0,
-    pendingQA: 0,
-    deadline: '2026-06-01',
-    budget: 280000,
-  },
-]
-
-const mockMetrics = {
-  activeRFPs: 12,
-  pendingQA: 5,
-  inEvaluation: 8,
-  unreadMessages: 3,
-}
+// Data imported from lib/mock-buyer-dashboard.ts
+const mockActions = buyerActions
+const mockRFPs = buyerRfps
+const mockMetrics = buyerMetrics
 
 export default function BuyerDashboard() {
-  const daysUntilDeadline = (dateStr: string) => {
-    const today = new Date('2026-05-10')
-    const deadline = new Date(dateStr)
-    const days = Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-    return days
-  }
-
-  const getUrgencyColor = (days: number) => {
-    if (days < 0) return 'text-red-700 bg-red-50'
-    if (days <= 3) return 'text-red-600 bg-red-50'
-    if (days <= 7) return 'text-amber-600 bg-amber-50'
-    return 'text-green-600 bg-green-50'
-  }
-
-  const getUrgencyLabel = (days: number) => {
-    if (days < 0) return 'Overdue'
-    if (days === 0) return 'Due today'
-    if (days === 1) return 'Due tomorrow'
-    return `Due in ${days} days`
-  }
+  const daysUntilDeadline = (dateStr: string) => getDaysUntilDeadline(dateStr)
 
   return (
     <div className="space-y-6 p-6">

@@ -59,229 +59,42 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react"
+import {
+  buyerRfpsData,
+  buyerTeamMembersData,
+  buyerSuppliersData,
+  globalSuppliersData,
+  threadStatuses as importedThreadStatuses,
+  messageFolders,
+  buyerMessageThreads,
+} from "@/lib/mock-messages"
 
-// Mock RFPs data
-const rfpsData = [
-  { id: "rfp1", title: "Comprehensive Scope 3 Value Chain Emissions Analysis", status: "published" },
-  { id: "rfp2", title: "SBTi Target Setting & Validation Support", status: "published" },
-  { id: "rfp3", title: "Embodied Carbon Life Cycle Assessment (LCA)", status: "closed" },
-  { id: "rfp4", title: "ISSB (IFRS S1 & S2) Integration & Reporting", status: "evaluating" },
-]
+// Data imported from lib/mock-messages.ts
+const rfpsData = buyerRfpsData
+const buyersData = buyerTeamMembersData
+const suppliersData = buyerSuppliersData
 
-// Mock buyers/team members
-const buyersData = [
-  { id: "b1", name: "Emma Thompson", role: "Sustainability Lead" },
-  { id: "b2", name: "David Kumar", role: "Carbon Analyst" },
-  { id: "b3", name: "Lisa Martinez", role: "ESG Manager" },
-]
+// Thread statuses with icons (icons need to be added here since they can't be serialized in the data file)
+const threadStatuses = importedThreadStatuses.map(s => ({
+  ...s,
+  icon: s.key === 'awaiting' ? Clock :
+        s.key === 'action' ? AlertCircle :
+        s.key === 'open' ? Circle : CheckCircle2
+}))
 
-// Mock suppliers
-const suppliersData = [
-  { id: "s1", name: "EcoMetrics Advisory", contact: "Dr. Sarah Chen" },
-  { id: "s2", name: "CarbonClear Solutions", contact: "Emily Rodriguez" },
-  { id: "s3", name: "Transition Risk Partners", contact: "Robert Williams" },
-  { id: "s4", name: "SustainSustain", contact: "David Park" },
-  { id: "s5", name: "Lifecycle Data Labs", contact: "Dr. Patricia Smith" },
-]
+// Folder definitions with icons
+const folders = messageFolders.map(f => ({
+  ...f,
+  icon: f.key === 'inbox' ? Inbox :
+        f.key === 'starred' ? Star :
+        f.key === 'awaiting' ? Clock :
+        f.key === 'action' ? AlertCircle :
+        f.key === 'sent' ? Send :
+        f.key === 'all' ? Mail : Archive
+}))
 
-// Global supplier database
-const globalSuppliersData = [
-  { id: "g1", name: "PCAF Analytics Group", contact: "James Mitchell", email: "james@pcafgroup.com" },
-  { id: "g2", name: "GridShift Energy Advisors", contact: "Nina Patel", email: "nina@gridshift.com" },
-  { id: "g3", name: "Apex Environmental Consulting", contact: "Tom Wilson", email: "tom@apexenv.com" },
-]
-
-// Thread statuses
-const threadStatuses = [
-  { key: "awaiting", label: "Awaiting Response", color: "bg-amber-100 text-amber-800", icon: Clock },
-  { key: "action", label: "Action Required", color: "bg-red-100 text-red-800", icon: AlertCircle },
-  { key: "open", label: "Open", color: "bg-blue-100 text-blue-800", icon: Circle },
-  { key: "resolved", label: "Resolved", color: "bg-brand-green-light text-brand-green", icon: CheckCircle2 },
-]
-
-// Folder definitions
-const folders = [
-  { key: "inbox", label: "Inbox", icon: Inbox },
-  { key: "starred", label: "Starred", icon: Star },
-  { key: "awaiting", label: "Awaiting Response", icon: Clock },
-  { key: "action", label: "Action Required", icon: AlertCircle },
-  { key: "sent", label: "Sent", icon: Send },
-  { key: "all", label: "All Messages", icon: Mail },
-  { key: "archived", label: "Archived", icon: Archive },
-]
-
-// Mock threads data
-const allThreadsData = [
-  {
-    id: "t1",
-    rfpId: "rfp1",
-    rfpTitle: "Sustainable Office Supplies 2026",
-    subject: "Clarification on recycled content requirements",
-    visibility: "all" as const,
-    status: "awaiting",
-    isRead: false,
-    isStarred: true,
-    isArchived: false,
-    createdAt: "2026-03-10T09:30:00Z",
-    updatedAt: "2026-03-12T14:20:00Z",
-    lastSender: "John Smith",
-    lastSenderType: "supplier" as const,
-    lastSenderCompany: "EcoSupply Co.",
-    participants: ["s1", "s2", "s3"],
-    messages: [
-      {
-        id: "m1",
-        senderId: "buyer",
-        senderName: "Sarah Chen",
-        senderType: "buyer" as const,
-        content: "Please note that all paper products must contain a minimum of 80% post-consumer recycled content. This is a mandatory requirement.",
-        attachments: [{ name: "Recycling_Standards.pdf", size: "245 KB", url: "#" }],
-        timestamp: "2026-03-10T09:30:00Z",
-      },
-      {
-        id: "m2",
-        senderId: "s1",
-        senderName: "John Smith",
-        senderCompany: "EcoSupply Co.",
-        senderType: "supplier" as const,
-        content: "Thank you for the clarification. Can you confirm if this applies to all paper products or just A4 copy paper?",
-        attachments: [],
-        timestamp: "2026-03-12T14:20:00Z",
-      },
-    ],
-  },
-  {
-    id: "t2",
-    rfpId: "rfp1",
-    rfpTitle: "Sustainable Office Supplies 2026",
-    subject: "Delivery schedule flexibility",
-    visibility: "private" as const,
-    status: "resolved",
-    isRead: true,
-    isStarred: false,
-    isArchived: false,
-    createdAt: "2026-03-11T10:00:00Z",
-    updatedAt: "2026-03-11T16:45:00Z",
-    lastSender: "David Thompson",
-    lastSenderType: "buyer" as const,
-    participants: ["s2"],
-    messages: [
-      {
-        id: "m3",
-        senderId: "s2",
-        senderName: "Emma Davis",
-        senderCompany: "GreenOffice Ltd",
-        senderType: "supplier" as const,
-        content: "We wanted to discuss the delivery schedule privately. Our logistics partner has capacity constraints in June.",
-        attachments: [{ name: "Delivery_Capacity_Analysis.xlsx", size: "128 KB", url: "#" }],
-        timestamp: "2026-03-11T10:00:00Z",
-      },
-      {
-        id: "m4",
-        senderId: "buyer",
-        senderName: "David Thompson",
-        senderType: "buyer" as const,
-        content: "Thank you for flagging this early. We have some flexibility on timing. Please include your preferred delivery schedule in your proposal.",
-        attachments: [],
-        timestamp: "2026-03-11T16:45:00Z",
-      },
-    ],
-  },
-  {
-    id: "t3",
-    rfpId: "rfp2",
-    rfpTitle: "IT Infrastructure Renewal",
-    subject: "ISO 14001 certification timeline",
-    visibility: "all" as const,
-    status: "action",
-    isRead: false,
-    isStarred: false,
-    isArchived: false,
-    createdAt: "2026-03-13T08:00:00Z",
-    updatedAt: "2026-03-14T10:30:00Z",
-    lastSender: "Michael Brown",
-    lastSenderType: "supplier" as const,
-    lastSenderCompany: "Sustainable Solutions Inc",
-    participants: ["s1", "s2", "s3", "s4", "s5"],
-    messages: [
-      {
-        id: "m5",
-        senderId: "buyer",
-        senderName: "Sarah Chen",
-        senderType: "buyer" as const,
-        content: "Several suppliers have asked about ISO 14001 certification. Please note: if you are currently in the certification process, please provide documentation.",
-        attachments: [{ name: "Certification_Requirements.pdf", size: "312 KB", url: "#" }],
-        timestamp: "2026-03-13T08:00:00Z",
-      },
-      {
-        id: "m6",
-        senderId: "s3",
-        senderName: "Michael Brown",
-        senderCompany: "Sustainable Solutions Inc",
-        senderType: "supplier" as const,
-        content: "We are currently in the final stages of certification. Expected completion date is April 15th. Please see attached status report.",
-        attachments: [{ name: "ISO_Status_Report.pdf", size: "156 KB", url: "#" }],
-        timestamp: "2026-03-14T10:30:00Z",
-      },
-    ],
-  },
-  {
-    id: "t4",
-    rfpId: "rfp4",
-    rfpTitle: "Fleet Management Services",
-    subject: "Question about pricing structure",
-    visibility: "private" as const,
-    status: "open",
-    isRead: true,
-    isStarred: true,
-    isArchived: false,
-    createdAt: "2026-03-14T11:30:00Z",
-    updatedAt: "2026-03-14T11:30:00Z",
-    lastSender: "Lisa Johnson",
-    lastSenderType: "supplier" as const,
-    lastSenderCompany: "EnviroTech Partners",
-    participants: ["s4"],
-    messages: [
-      {
-        id: "m7",
-        senderId: "s4",
-        senderName: "Lisa Johnson",
-        senderCompany: "EnviroTech Partners",
-        senderType: "supplier" as const,
-        content: "Should we provide volume-based pricing tiers in our submission, or a single fixed price per unit? We can offer significant discounts at higher volumes.",
-        attachments: [],
-        timestamp: "2026-03-14T11:30:00Z",
-      },
-    ],
-  },
-  {
-    id: "t5",
-    rfpId: "rfp1",
-    rfpTitle: "Sustainable Office Supplies 2026",
-    subject: "Updated submission deadline",
-    visibility: "all" as const,
-    status: "resolved",
-    isRead: true,
-    isStarred: false,
-    isArchived: false,
-    createdAt: "2026-03-08T14:00:00Z",
-    updatedAt: "2026-03-08T14:00:00Z",
-    lastSender: "Sarah Chen",
-    lastSenderType: "buyer" as const,
-    participants: ["s1", "s2", "s3", "s4", "s5"],
-    messages: [
-      {
-        id: "m8",
-        senderId: "buyer",
-        senderName: "Sarah Chen",
-        senderType: "buyer" as const,
-        content: "Please note the submission deadline has been extended by one week to April 7th, 2026. This is to allow additional time for certification documentation.",
-        attachments: [],
-        timestamp: "2026-03-08T14:00:00Z",
-      },
-    ],
-  },
-]
+// Mock threads data - imported from lib/mock-messages.ts
+const allThreadsData = buyerMessageThreads
 
 // Component that uses useSearchParams - must be wrapped in Suspense
 function MessagesPageContent() {

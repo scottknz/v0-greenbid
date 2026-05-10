@@ -10,6 +10,12 @@ import {
   ArrowRight, Sparkles, MapPin, DollarSign, Tag, Building2,
   Calendar, Users, TrendingUp, CheckCircle2, ChevronUp, ChevronDown,
 } from 'lucide-react'
+import {
+  supplierActiveRfps,
+  supplierAttentionItems,
+  supplierOpportunities,
+  getUrgencyOrder,
+} from '@/lib/mock-supplier-dashboard'
 
 type SortDir = 'asc' | 'desc'
 type RfpSortKey = 'name' | 'buyer' | 'status' | 'daysLeft' | 'completion' | 'pendingQA'
@@ -53,31 +59,12 @@ export default function SupplierDashboard() {
     set({ key: col, dir: current.key === col && current.dir === 'asc' ? 'desc' : 'asc' })
   }, [])
 
-  // ── Data ──
-  const activeRfps = [
-    { id: '1', name: 'Sustainable Packaging RFP',    buyer: 'EcoRetail Inc',       category: 'Packaging',   status: 'drafting',      deadline: '2026-05-12', daysLeft: 2,  pendingQA: 1, completion: 65  },
-    { id: '2', name: 'Supply Chain Audit Services',   buyer: 'GreenLogistics Ltd',  category: 'Consulting',  status: 'submitted',     deadline: '2026-05-15', daysLeft: 5,  pendingQA: 0, completion: 100 },
-    { id: '3', name: 'Carbon Reporting Tools',        buyer: 'NetZero Corp',        category: 'Software',    status: 'under_review',  deadline: '2026-05-20', daysLeft: 10, pendingQA: 0, completion: 100 },
-    { id: '4', name: 'ESG Compliance Audit',          buyer: 'CleanTech Corp',      category: 'Consulting',  status: 'drafting',      deadline: '2026-05-24', daysLeft: 14, pendingQA: 0, completion: 30  },
-    { id: '5', name: 'Renewable Energy Assessment',   buyer: 'GreenPower Inc',      category: 'Energy',      status: 'drafting',      deadline: '2026-05-28', daysLeft: 18, pendingQA: 2, completion: 20  },
-  ]
-
-  const attentionItems = [
-    { id: '1', type: 'question', title: 'Answer buyer question',    detail: 'ISO certifications query',  rfpName: 'Sustainable Packaging RFP',  rfpId: '1', urgency: 'overdue' as const },
-    { id: '2', type: 'deadline', title: 'Submit proposal',          detail: 'Deadline in 2 days',        rfpName: 'Sustainable Packaging RFP',  rfpId: '1', urgency: 'soon'    as const },
-    { id: '3', type: 'approval', title: 'Internal approval needed', detail: 'Pending team sign-off',     rfpName: 'Carbon Reporting Tools',     rfpId: '3', urgency: 'normal'  as const },
-  ]
-
-  const opportunities = [
-    { id: '10', name: 'ESG Data Platform Implementation',       buyer: 'CleanTech Corp',         category: 'Software',     industry: 'Energy & Utilities', deadline: '2026-05-25', daysLeft: 15, budget: '$150K – $250K', budgetNum: 150, location: 'Auckland, NZ',     suppliers: 4 },
-    { id: '11', name: 'Renewable Energy Audit & Certification', buyer: 'GreenPower Inc',         category: 'Consulting',   industry: 'Renewables',         deadline: '2026-05-28', daysLeft: 18, budget: '$75K – $120K',  budgetNum: 75,  location: 'Wellington, NZ',   suppliers: 7 },
-    { id: '12', name: 'Circular Economy Strategy Report',       buyer: 'EcoManufacturing Ltd',   category: 'Strategy',     industry: 'Manufacturing',      deadline: '2026-06-01', daysLeft: 22, budget: '$50K – $80K',   budgetNum: 50,  location: 'Christchurch, NZ', suppliers: 2 },
-    { id: '13', name: 'Carbon Offset Verification & Reporting', buyer: 'NetZero Partners',       category: 'Verification', industry: 'Finance',            deadline: '2026-06-05', daysLeft: 26, budget: '$30K – $60K',   budgetNum: 30,  location: 'Remote',           suppliers: 9 },
-    { id: '14', name: 'Supply Chain Decarbonisation Plan',      buyer: 'Global Retail Group',    category: 'Strategy',     industry: 'Retail',             deadline: '2026-06-10', daysLeft: 31, budget: '$90K – $140K',  budgetNum: 90,  location: 'Auckland, NZ',     suppliers: 3 },
-  ]
+  // ── Data (imported from lib/mock-supplier-dashboard.ts) ──
+  const activeRfps = supplierActiveRfps
+  const attentionItems = supplierAttentionItems
+  const opportunities = supplierOpportunities
 
   // ── Sorted data ──
-  const urgencyOrder = { overdue: 0, soon: 1, normal: 2 }
 
   const sortedRfps = [...activeRfps].sort((a, b) => {
     let v = 0
@@ -94,7 +81,7 @@ export default function SupplierDashboard() {
     let v = 0
     if (attSort.key === 'title')   v = a.title.localeCompare(b.title)
     if (attSort.key === 'rfpName') v = a.rfpName.localeCompare(b.rfpName)
-    if (attSort.key === 'urgency') v = urgencyOrder[a.urgency] - urgencyOrder[b.urgency]
+    if (attSort.key === 'urgency') v = getUrgencyOrder(a.urgency) - getUrgencyOrder(b.urgency)
     return attSort.dir === 'asc' ? v : -v
   })
 

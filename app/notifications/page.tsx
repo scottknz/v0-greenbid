@@ -19,73 +19,13 @@ import {
   Users
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { fullNotifications, type PageNotification } from "@/lib/mock-notifications"
 
-interface Notification {
-  id: string
-  type: "qa" | "approval" | "response" | "deadline" | "team"
-  title: string
-  description: string
-  timestamp: string
-  read: boolean
-  href?: string
-}
+// Use the PageNotification type from the mock data file
+type Notification = PageNotification
 
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "qa",
-    title: "Pending Q&A",
-    description: "Sustainable Office Furniture: 3 unanswered questions from suppliers",
-    timestamp: "2 hours ago",
-    read: false,
-    href: "/buyer/tenders/1?tab=qa",
-  },
-  {
-    id: "2",
-    type: "approval",
-    title: "Approval Needed",
-    description: "Green Energy Consulting proposal awaiting your approval",
-    timestamp: "5 hours ago",
-    read: false,
-    href: "/approvals",
-  },
-  {
-    id: "3",
-    type: "response",
-    title: "New Response",
-    description: "Electric Vehicle Fleet: Response from EcoTransit Solutions",
-    timestamp: "1 day ago",
-    read: false,
-    href: "/buyer/tenders/3",
-  },
-  {
-    id: "4",
-    type: "deadline",
-    title: "Deadline Approaching",
-    description: "IT Hardware Refresh: Submission deadline in 3 days",
-    timestamp: "1 day ago",
-    read: true,
-    href: "/buyer/tenders/4",
-  },
-  {
-    id: "5",
-    type: "team",
-    title: "Team Update",
-    description: "Sarah Chen added you to Sustainable Office Furniture RFP",
-    timestamp: "2 days ago",
-    read: true,
-    href: "/buyer/tenders/1",
-  },
-  {
-    id: "6",
-    type: "qa",
-    title: "Q&A Response",
-    description: "Your question about delivery timeline has been answered",
-    timestamp: "3 days ago",
-    read: true,
-    href: "/supplier/rfps/1",
-  },
-]
+// Data imported from lib/mock-notifications.ts
+const mockNotifications = fullNotifications
 
 const typeIcons: Record<Notification["type"], React.ReactNode> = {
   qa: <MessageSquare className="h-4 w-4" />,

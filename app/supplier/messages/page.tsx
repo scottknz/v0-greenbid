@@ -59,6 +59,15 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react"
+import {
+  supplierRfpsData,
+  supplierTeamMembersData as importedBuyersData,
+  buyerSuppliersData,
+  globalSuppliersData as importedGlobalSuppliersData,
+  threadStatuses as importedThreadStatuses,
+  messageFolders,
+  supplierMessageThreads,
+} from "@/lib/mock-messages"
 
 // Type definitions
 interface ThreadMessage {
@@ -91,55 +100,29 @@ interface Thread {
   messages: ThreadMessage[];
 }
 
-// Mock RFPs data
-const rfpsData = [
-  { id: "rfp1", title: "Comprehensive Scope 3 Value Chain Emissions Analysis", status: "published" },
-  { id: "rfp2", title: "SBTi Target Setting & Validation Support", status: "published" },
-  { id: "rfp3", title: "Embodied Carbon Life Cycle Assessment (LCA)", status: "closed" },
-  { id: "rfp4", title: "ISSB (IFRS S1 & S2) Integration & Reporting", status: "evaluating" },
-]
+// Data imported from lib/mock-messages.ts
+const rfpsData = supplierRfpsData
+const buyersData = importedBuyersData
+const suppliersData = buyerSuppliersData
 
-// Mock buyers/team members
-const buyersData = [
-  { id: "b1", name: "Emma Thompson", role: "Sustainability Lead" },
-  { id: "b2", name: "David Kumar", role: "Carbon Analyst" },
-  { id: "b3", name: "Lisa Martinez", role: "ESG Manager" },
-]
+// Thread statuses with icons (icons need to be added here since they can't be serialized in the data file)
+const threadStatuses = importedThreadStatuses.map(s => ({
+  ...s,
+  icon: s.key === 'awaiting' ? Clock :
+        s.key === 'action' ? AlertCircle :
+        s.key === 'open' ? Circle : CheckCircle2
+}))
 
-// Mock suppliers
-const suppliersData = [
-  { id: "s1", name: "EcoMetrics Advisory", contact: "Dr. Sarah Chen" },
-  { id: "s2", name: "CarbonClear Solutions", contact: "Emily Rodriguez" },
-  { id: "s3", name: "Transition Risk Partners", contact: "Robert Williams" },
-  { id: "s4", name: "SustainSustain", contact: "David Park" },
-  { id: "s5", name: "Lifecycle Data Labs", contact: "Dr. Patricia Smith" },
-]
-
-// Global supplier database
-const globalSuppliersData = [
-  { id: "g1", name: "PCAF Analytics Group", contact: "James Mitchell", email: "james@pcafgroup.com" },
-  { id: "g2", name: "GridShift Energy Advisors", contact: "Nina Patel", email: "nina@gridshift.com" },
-  { id: "g3", name: "Apex Environmental Consulting", contact: "Tom Wilson", email: "tom@apexenv.com" },
-]
-
-// Thread statuses
-const threadStatuses = [
-  { key: "awaiting", label: "Awaiting Response", color: "bg-amber-100 text-amber-800", icon: Clock },
-  { key: "action", label: "Action Required", color: "bg-red-100 text-red-800", icon: AlertCircle },
-  { key: "open", label: "Open", color: "bg-blue-100 text-blue-800", icon: Circle },
-  { key: "resolved", label: "Resolved", color: "bg-brand-green-light text-brand-green", icon: CheckCircle2 },
-]
-
-// Folder definitions
-const folders = [
-  { key: "inbox", label: "Inbox", icon: Inbox },
-  { key: "starred", label: "Starred", icon: Star },
-  { key: "awaiting", label: "Awaiting Response", icon: Clock },
-  { key: "action", label: "Action Required", icon: AlertCircle },
-  { key: "sent", label: "Sent", icon: Send },
-  { key: "all", label: "All Messages", icon: Mail },
-  { key: "archived", label: "Archived", icon: Archive },
-]
+// Folder definitions with icons
+const folders = messageFolders.map(f => ({
+  ...f,
+  icon: f.key === 'inbox' ? Inbox :
+        f.key === 'starred' ? Star :
+        f.key === 'awaiting' ? Clock :
+        f.key === 'action' ? AlertCircle :
+        f.key === 'sent' ? Send :
+        f.key === 'all' ? Mail : Archive
+}))
 
 // Mock threads data
 const allThreadsData = [
