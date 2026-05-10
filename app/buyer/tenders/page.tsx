@@ -172,7 +172,7 @@ const statusTabs = [
 ]
 
 export default function TendersPage() {
-  const [marketView, setMarketView] = useState<'public' | 'private'>('private')
+  const [marketView, setMarketView] = useState<'public' | 'private'>('public')
   const [activeTab, setActiveTab] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [sortField, setSortField] = useState<SortField>(null)
