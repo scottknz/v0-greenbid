@@ -927,10 +927,10 @@ export default function RFPDetailPage() {
           <nav className="flex gap-0 px-6" aria-label="RFP tabs">
               {[
                 { key: 'overview', label: 'Overview', icon: Eye },
+                { key: 'team', label: 'Team', icon: Users },
                 { key: 'documents', label: 'Documents', icon: Folder },
                 { key: 'questionnaire', label: 'Questionnaire', icon: HelpCircle },
                 { key: 'messages', label: 'Messages', icon: MessageSquare, badge: mockMessages.some(m => m.unread) },
-                { key: 'team', label: 'Team', icon: Users },
                 { key: 'notes', label: 'Notes', icon: StickyNote },
                 { key: 'activity', label: 'Activity', icon: Activity },
               ].map(({ key, label, icon: Icon, badge }) => (
