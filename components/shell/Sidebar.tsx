@@ -25,7 +25,7 @@ interface SidebarProps {
 
 export function Sidebar({ variant }: SidebarProps) {
   const pathname = usePathname();
-  const { isSidebarCollapsed, toggleSidebar, toggleChatPanel } = useShell();
+  const { isSidebarCollapsed, toggleSidebar, toggleChatPanel, isSettingsOpen, setIsSettingsOpen } = useShell();
 
   const navItems = variant === 'buyer' ? buyerNav : supplierNav;
   const mainItems = navItems.filter((item) => item.section === 'main');
@@ -62,6 +62,20 @@ export function Sidebar({ variant }: SidebarProps) {
           ? 'bg-[#F0FDF4] text-[#16A34A] border-l-[3px] border-[#16A34A] -ml-[3px] rounded-l-none'
           : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
       );
+
+      // Settings button opens modal
+      if (item.label === 'Settings') {
+        return (
+          <button
+            key={item.label}
+            onClick={() => setIsSettingsOpen(true)}
+            className={cn('w-full', className)}
+            aria-label={item.label}
+          >
+            {content}
+          </button>
+        );
+      }
 
       if (item.isChatTrigger) {
         return (

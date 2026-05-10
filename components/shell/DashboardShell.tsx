@@ -1,18 +1,21 @@
 "use client";
 
 import React from 'react';
-import { ShellProvider } from './ShellContext';
+import { ShellProvider, useShell } from './ShellContext';
 import { Sidebar } from './Sidebar';
 import { ChatPanel } from './ChatPanel';
+import { SettingsModal } from '@/components/settings/SettingsModal';
 
 interface DashboardShellProps {
   children: React.ReactNode;
   variant?: 'buyer' | 'supplier';
 }
 
-export function DashboardShell({ children, variant = 'buyer' }: DashboardShellProps) {
+function DashboardShellContent({ children, variant = 'buyer' }: DashboardShellProps) {
+  const { isSettingsOpen, setIsSettingsOpen } = useShell();
+
   return (
-    <ShellProvider>
+    <>
       <div className="flex h-screen w-full overflow-hidden bg-background text-text-primary">
         <Sidebar variant={variant} />
         <ChatPanel />
@@ -20,6 +23,15 @@ export function DashboardShell({ children, variant = 'buyer' }: DashboardShellPr
           {children}
         </main>
       </div>
+      <SettingsModal open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
+    </>
+  );
+}
+
+export function DashboardShell({ children, variant = 'buyer' }: DashboardShellProps) {
+  return (
+    <ShellProvider>
+      <DashboardShellContent variant={variant}>{children}</DashboardShellContent>
     </ShellProvider>
   );
 }
