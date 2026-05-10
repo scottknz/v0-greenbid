@@ -670,6 +670,10 @@ function SubmissionDetailContent() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
+  
+  const tenderId = params.id as string
+  const submissionId = params.submissionId as string
+  
   const submission = submissionsData[submissionId]
   const communications = communicationsData[submissionId] || []
   const assessmentCategories = assessmentScoresData[submissionId] || []
