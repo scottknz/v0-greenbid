@@ -311,6 +311,9 @@ export default function RFPDetailPage() {
   // Filter states for Activity tab
   const [activitySearch, setActivitySearch] = useState('')
   const [activityTypeFilter, setActivityTypeFilter] = useState('all')
+  
+  // Notes expansion state
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set())
 
   // Internal team state
   const [team, setTeam] = useState<RFPTeamMember[]>([
@@ -1762,7 +1765,7 @@ export default function RFPDetailPage() {
                   Add Note
                 </Button>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {proposalNotes.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-border rounded-lg">
                     <StickyNote className="h-10 w-10 text-text-secondary mb-3" />
@@ -1770,17 +1773,206 @@ export default function RFPDetailPage() {
                     <p className="text-xs text-text-muted mt-1">Add internal notes to keep your team aligned</p>
                   </div>
                 ) : (
-                  proposalNotes.slice().reverse().map((note) => (
-                    <div key={note.id} className="p-4 bg-surface rounded-lg border border-border">
-                      <p className="text-sm text-text-primary whitespace-pre-wrap">{note.text}</p>
-                      <p className="text-xs text-text-secondary mt-3 flex items-center gap-2">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(note.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                        <span className="text-text-muted">•</span>
-                        {note.user}
-                      </p>
-                    </div>
-                  ))
+                  proposalNotes.slice().reverse().map((note) => {
+                    const isExpanded = expandedNotes.has(note.id)
+                    const toggleExpand = () => {
+                      setExpandedNotes(prev => {
+                        const next = new Set(prev)
+                        if (next.has(note.id)) {
+                          next.delete(note.id)
+                        } else {
+                          next.add(note.id)
+                        }
+                        return next
+                      })
+                    }
+                    const previewText = note.text.length > 120 ? note.text.slice(0, 120) + '...' : note.text
+                    
+                    return (
+                      <div 
+                        key={note.id} 
+                        className={cn(
+                          "rounded-lg border border-border overflow-hidden transition-all",
+                          isExpanded ? "bg-white shadow-sm" : "bg-surface hover:bg-white"
+                        )}
+                      >
+                        {/* Collapsed header - always visible */}
+                        <button
+                          onClick={toggleExpand}
+                          className="w-full p-4 text-left flex items-start gap-3"
+                        >
+                          {/* Priority indicator */}
+                          <div className={cn(
+                            "w-1 h-full min-h-[40px] rounded-full shrink-0",
+                            note.priority === 'high' ? "bg-red-400" :
+                            note.priority === 'medium' ? "bg-amber-400" : "bg-gray-300"
+                          )} />
+                          
+                          <div className="flex-1 min-w-0">
+                            {/* Top row: user info and meta */}
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium text-text-primary">{note.user}</span>
+                              {note.userRole && (
+                                <span className="text-xs text-text-muted">({note.userRole})</span>
+                              )}
+                              <span className="text-text-muted">•</span>
+                              <span className="text-xs text-text-secondary">
+                                {new Date(note.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                              {note.isEdited && (
+                                <span className="text-[10px] text-text-muted italic">(edited)</span>
+                              )}
+                            </div>
+                            
+                            {/* Preview or full text based on expansion */}
+                            <p className={cn(
+                              "text-sm text-text-primary",
+                              !isExpanded && "line-clamp-2"
+                            )}>
+                              {isExpanded ? '' : previewText}
+                            </p>
+                            
+                            {/* Tags row */}
+                            {!isExpanded && (
+                              <div className="flex items-center gap-2 mt-2">
+                                {note.category && (
+                                  <Badge variant="outline" className={cn(
+                                    "text-[10px] h-5 capitalize",
+                                    note.category === 'technical' && "border-blue-300 text-blue-700",
+                                    note.category === 'commercial' && "border-green-300 text-green-700",
+                                    note.category === 'legal' && "border-purple-300 text-purple-700",
+                                    note.category === 'risk' && "border-red-300 text-red-700",
+                                    note.category === 'general' && "border-gray-300 text-gray-600"
+                                  )}>
+                                    {note.category}
+                                  </Badge>
+                                )}
+                                {note.attachments && note.attachments.length > 0 && (
+                                  <span className="flex items-center gap-1 text-[10px] text-text-muted">
+                                    <Paperclip className="h-3 w-3" />
+                                    {note.attachments.length} attachment{note.attachments.length !== 1 && 's'}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Expand/collapse indicator */}
+                          <ChevronDown className={cn(
+                            "h-4 w-4 text-text-muted shrink-0 transition-transform",
+                            isExpanded && "rotate-180"
+                          )} />
+                        </button>
+                        
+                        {/* Expanded content */}
+                        {isExpanded && (
+                          <div className="px-4 pb-4 border-t border-border">
+                            {/* Full note text */}
+                            <div className="pt-4">
+                              <p className="text-sm text-text-primary whitespace-pre-wrap">{note.text}</p>
+                            </div>
+                            
+                            {/* Details grid */}
+                            <div className="mt-4 pt-4 border-t border-border grid grid-cols-2 md:grid-cols-4 gap-4">
+                              {/* Author details */}
+                              <div>
+                                <p className="text-[10px] uppercase text-text-muted font-medium mb-1">Author</p>
+                                <p className="text-sm font-medium text-text-primary">{note.user}</p>
+                                {note.userRole && <p className="text-xs text-text-secondary">{note.userRole}</p>}
+                                {note.userEmail && (
+                                  <a href={`mailto:${note.userEmail}`} className="text-xs text-[#16A34A] hover:underline">
+                                    {note.userEmail}
+                                  </a>
+                                )}
+                              </div>
+                              
+                              {/* Timestamp */}
+                              <div>
+                                <p className="text-[10px] uppercase text-text-muted font-medium mb-1">Created</p>
+                                <p className="text-sm text-text-primary">
+                                  {new Date(note.timestamp).toLocaleDateString('en-GB', { 
+                                    day: 'numeric', month: 'short', year: 'numeric' 
+                                  })}
+                                </p>
+                                <p className="text-xs text-text-secondary">
+                                  {new Date(note.timestamp).toLocaleTimeString('en-GB', { 
+                                    hour: '2-digit', minute: '2-digit' 
+                                  })}
+                                </p>
+                                {note.isEdited && note.editedAt && (
+                                  <p className="text-[10px] text-text-muted mt-1">
+                                    Edited: {new Date(note.editedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                  </p>
+                                )}
+                              </div>
+                              
+                              {/* Category & Priority */}
+                              <div>
+                                <p className="text-[10px] uppercase text-text-muted font-medium mb-1">Category</p>
+                                {note.category ? (
+                                  <Badge variant="outline" className={cn(
+                                    "text-xs capitalize",
+                                    note.category === 'technical' && "border-blue-300 text-blue-700",
+                                    note.category === 'commercial' && "border-green-300 text-green-700",
+                                    note.category === 'legal' && "border-purple-300 text-purple-700",
+                                    note.category === 'risk' && "border-red-300 text-red-700",
+                                    note.category === 'general' && "border-gray-300 text-gray-600"
+                                  )}>
+                                    {note.category}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-xs text-text-muted">Not specified</span>
+                                )}
+                                {note.priority && (
+                                  <div className="mt-2">
+                                    <p className="text-[10px] uppercase text-text-muted font-medium mb-1">Priority</p>
+                                    <Badge className={cn(
+                                      "text-xs capitalize",
+                                      note.priority === 'high' && "bg-red-100 text-red-700",
+                                      note.priority === 'medium' && "bg-amber-100 text-amber-700",
+                                      note.priority === 'low' && "bg-gray-100 text-gray-600"
+                                    )}>
+                                      {note.priority}
+                                    </Badge>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Related Section */}
+                              <div>
+                                <p className="text-[10px] uppercase text-text-muted font-medium mb-1">Related Section</p>
+                                {note.relatedSection ? (
+                                  <p className="text-sm text-text-primary">{note.relatedSection}</p>
+                                ) : (
+                                  <span className="text-xs text-text-muted">Not specified</span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {/* Attachments */}
+                            {note.attachments && note.attachments.length > 0 && (
+                              <div className="mt-4 pt-4 border-t border-border">
+                                <p className="text-[10px] uppercase text-text-muted font-medium mb-2">Attachments</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {note.attachments.map((att, idx) => (
+                                    <a
+                                      key={idx}
+                                      href={att.url}
+                                      className="flex items-center gap-2 px-3 py-2 bg-surface rounded-md border border-border text-sm text-text-primary hover:border-[#16A34A] hover:text-[#16A34A] transition-colors"
+                                    >
+                                      <FileText className="h-4 w-4" />
+                                      <span>{att.name}</span>
+                                      <span className="text-xs text-text-muted">({att.size})</span>
+                                    </a>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })
                 )}
               </CardContent>
             </Card>

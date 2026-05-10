@@ -25,7 +25,15 @@ export interface SupplierProposalNote {
   id: string
   timestamp: string
   user: string
+  userRole?: string
+  userEmail?: string
   text: string
+  category?: 'general' | 'technical' | 'commercial' | 'legal' | 'risk'
+  priority?: 'low' | 'medium' | 'high'
+  isEdited?: boolean
+  editedAt?: string
+  attachments?: { name: string; size: string; url: string }[]
+  relatedSection?: string
 }
 
 export interface BuyerQuestion {
@@ -316,8 +324,57 @@ export const mockRFPDetail: SupplierRFPDetail = {
   ],
   phaseBeforeDecline: null,
   proposalNotes: [
-    { id: 'note-1', timestamp: '2026-03-20T09:00:00Z', user: 'Sarah Chen', text: 'Need to gather additional emissions data from last 3 years' },
-    { id: 'note-2', timestamp: '2026-03-22T15:00:00Z', user: 'James Wilson', text: 'Received all supporting documentation from operations team' }
+    { 
+      id: 'note-1', 
+      timestamp: '2026-03-20T09:00:00Z', 
+      user: 'Sarah Chen', 
+      userRole: 'Sustainability Lead',
+      userEmail: 'sarah.chen@company.com',
+      text: 'Need to gather additional emissions data from last 3 years. This is critical for establishing a proper baseline. I have contacted the operations team and they should have this data available by end of week.\n\nKey data points needed:\n- Scope 1 direct emissions\n- Scope 2 electricity consumption\n- Fleet fuel usage records\n- Waste disposal volumes',
+      category: 'technical',
+      priority: 'high',
+      relatedSection: 'Technical Requirements',
+      attachments: [
+        { name: 'Data_Request_Template.xlsx', size: '45 KB', url: '#' }
+      ]
+    },
+    { 
+      id: 'note-2', 
+      timestamp: '2026-03-22T15:00:00Z', 
+      user: 'James Wilson',
+      userRole: 'Commercial Manager',
+      userEmail: 'james.wilson@company.com',
+      text: 'Received all supporting documentation from operations team. Everything looks complete. Ready to proceed with the technical sections.',
+      category: 'general',
+      priority: 'medium',
+      isEdited: true,
+      editedAt: '2026-03-22T16:30:00Z'
+    },
+    {
+      id: 'note-3',
+      timestamp: '2026-03-25T10:15:00Z',
+      user: 'Lisa Park',
+      userRole: 'Legal Counsel',
+      userEmail: 'lisa.park@company.com',
+      text: 'Reviewed the contract terms in Section 4. There are a few liability clauses that need discussion with our insurance team before we can commit. Flagging this as high priority as it may affect our pricing strategy.',
+      category: 'legal',
+      priority: 'high',
+      relatedSection: 'Contract Terms'
+    },
+    {
+      id: 'note-4',
+      timestamp: '2026-03-26T14:00:00Z',
+      user: 'Sarah Chen',
+      userRole: 'Sustainability Lead',
+      userEmail: 'sarah.chen@company.com',
+      text: 'Completed initial pricing calculations. Our competitive advantage lies in the software integration capabilities. Recommend emphasising this in the proposal.',
+      category: 'commercial',
+      priority: 'medium',
+      attachments: [
+        { name: 'Pricing_Model_v2.xlsx', size: '128 KB', url: '#' },
+        { name: 'Competitive_Analysis.pdf', size: '340 KB', url: '#' }
+      ]
+    }
   ],
   registeredAt: '2026-03-15',
   deadline: '2026-04-30',
