@@ -5,19 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+
+import Image from 'next/image';
 import {
   ArrowLeft,
   FileText,
   Users,
   Scale,
   Trophy,
-  Calendar,
-  CheckCircle,
-  Clock,
-  MessageSquare,
-  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -341,44 +336,53 @@ export default function TenderManagePage() {
   const progress = (completedSteps / progressSteps.length) * 100;
 
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Header */}
-      <div className="bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+    <div className="min-h-screen bg-background">
+      {/* Header — matches RFP create flow */}
+      <div className="border-b border-border bg-background">
+        <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
+              <Image
+                src="/greenbid-logo-green.png"
+                alt="Greenbid"
+                width={100}
+                height={28}
+                className="h-7 w-auto"
+              />
+              <div className="h-6 w-px bg-border" />
               <Button
                 variant="ghost"
-                size="icon"
+                size="sm"
+                className="text-text-secondary"
                 onClick={() => router.push(`/buyer/tenders/${rfpId}`)}
-                className="h-9 w-9"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to RFP
               </Button>
+              <div className="h-6 w-px bg-border" />
               <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-semibold text-text-primary">
-                    {tenderData.name}
-                  </h1>
-                  <Badge variant="outline" className="border-brand-green text-brand-green">
-                    {tenderData.referenceId}
-                  </Badge>
-                </div>
-                <p className="text-sm text-text-muted mt-0.5">
-                  RFP Lifecycle Management
+                <h1 className="text-lg font-semibold text-text-primary leading-tight">
+                  Manage RFP
+                </h1>
+                <p className="text-xs text-text-muted leading-tight">
+                  {tenderData.name}
                 </p>
               </div>
             </div>
-
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
               <div className="text-right">
-                <p className="text-sm text-text-muted">Deadline</p>
-                <p className="font-medium text-text-primary">{tenderData.deadline}</p>
+                <p className="text-xs text-text-muted">Reference</p>
+                <p className="text-sm font-medium text-text-primary">{tenderData.referenceId}</p>
               </div>
               <div className="w-px h-8 bg-border" />
               <div className="text-right">
-                <p className="text-sm text-text-muted">Budget</p>
-                <p className="font-medium text-text-primary">
+                <p className="text-xs text-text-muted">Deadline</p>
+                <p className="text-sm font-medium text-text-primary">{tenderData.deadline}</p>
+              </div>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-right">
+                <p className="text-xs text-text-muted">Budget</p>
+                <p className="text-sm font-medium text-text-primary">
                   ${tenderData.budget.toLocaleString()}
                 </p>
               </div>
@@ -387,76 +391,67 @@ export default function TenderManagePage() {
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <div className="bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-text-secondary">
-              Procurement Progress
-            </span>
-            <span className="text-sm text-text-muted">
-              {completedSteps} of {progressSteps.length} phases completed
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {progressSteps.map((step, index) => (
-              <div key={step.phase} className="flex-1 flex items-center">
-                <div
-                  className={cn(
-                    'h-2 flex-1 rounded-full transition-colors',
-                    step.complete ? 'bg-brand-green' : 'bg-gray-200'
-                  )}
-                />
-                {index < progressSteps.length - 1 && (
-                  <div className={cn(
-                    'h-2 w-2 rounded-full mx-1',
-                    step.complete ? 'bg-brand-green' : 'bg-gray-200'
-                  )} />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="bg-background border-b border-border sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6">
-          <nav className="flex gap-1" aria-label="Tabs">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
+      {/* Progress Steps — matches RFP create flow */}
+      <div className="border-b border-border bg-surface">
+        <div className="mx-auto max-w-7xl px-6 py-4">
+          <nav className="flex items-center justify-center gap-0">
+            {tabs.map((step, index) => {
+              const isActive = step.key === activeTab;
+              const stepIndex = tabs.findIndex(t => t.key === activeTab);
+              const isCompleted = index < stepIndex || progressSteps[index]?.complete;
+              const Icon = step.icon;
               return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={cn(
-                    'flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2',
-                    activeTab === tab.key
-                      ? 'text-brand-green border-brand-green bg-brand-green-light/30'
-                      : 'text-text-muted hover:text-text-primary border-transparent hover:border-gray-300'
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{tab.label}</span>
-                  {tab.count !== undefined && tab.count > 0 && (
-                    <Badge
-                      variant="outline"
+                <div key={step.key} className="flex items-center">
+                  <button
+                    onClick={() => setActiveTab(step.key)}
+                    className="flex items-center gap-2 group"
+                  >
+                    <div
                       className={cn(
-                        'text-xs h-5 min-w-5 px-1.5',
-                        activeTab === tab.key
-                          ? 'bg-brand-green text-white border-brand-green'
-                          : 'border-border'
+                        'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-brand-green text-white'
+                          : isCompleted
+                          ? 'bg-brand-green-light text-brand-green'
+                          : 'bg-surface-hover text-text-muted'
                       )}
                     >
-                      {tab.count}
-                    </Badge>
+                      {isCompleted && !isActive ? (
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <Icon className="h-4 w-4" />
+                      )}
+                    </div>
+                    <div className="text-left hidden sm:block">
+                      <p
+                        className={cn(
+                          'text-sm font-medium leading-tight',
+                          isActive ? 'text-text-primary' : 'text-text-muted group-hover:text-text-secondary'
+                        )}
+                      >
+                        {step.label}
+                      </p>
+                      <p className="text-xs text-text-muted leading-tight">{step.description}</p>
+                    </div>
+                  </button>
+                  {index < tabs.length - 1 && (
+                    <div
+                      className={cn(
+                        'mx-4 h-px w-12 sm:w-20 transition-colors',
+                        progressSteps[index]?.complete ? 'bg-brand-green' : 'bg-border'
+                      )}
+                    />
                   )}
-                </button>
+                </div>
               );
             })}
           </nav>
         </div>
       </div>
+
+
 
       {/* Tab Content */}
       <div className="max-w-7xl mx-auto px-6 py-6">
