@@ -169,10 +169,28 @@ export default function TenderManagePage() {
   };
 
   const handleCancelInterview = (id: string) => {
-    setInterviews(prev =>
-      prev.map(i => (i.id === id ? { ...i, status: 'cancelled' as const } : i))
-    );
+    setInterviews(prev => prev.filter(i => i.id !== id));
     console.log('[v0] Cancelled interview:', id);
+  };
+
+  const handleTriageResponse = (responseId: string, action: 'consider' | 'reject' | 'follow_up') => {
+    const response = responses.find(r => r.id === responseId);
+    if (!response) return;
+
+    let newStatus: typeof response.status;
+    if (action === 'consider') {
+      newStatus = 'shortlisted';
+    } else if (action === 'reject') {
+      newStatus = 'rejected';
+    } else {
+      // follow_up - keep as is but could track this in a separate field
+      newStatus = response.status;
+    }
+
+    setResponses(prev =>
+      prev.map(r => (r.id === responseId ? { ...r, status: newStatus } : r))
+    );
+    console.log('[v0] Triaged response:', responseId, 'action:', action, 'new status:', newStatus);
   };
 
   const handleSaveScore = (responseId: string, criteriaId: string, score: number, comment: string) => {
@@ -466,6 +484,7 @@ export default function TenderManagePage() {
               setActiveTab('interviews');
               // Pre-select the response for interview scheduling
             }}
+            onTriageResponse={handleTriageResponse}
           />
         )}
 

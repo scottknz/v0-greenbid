@@ -43,6 +43,7 @@ interface ResponsesTabProps {
   onShortlist: (responseIds: string[]) => void;
   onRequestClarification: (responseId: string) => void;
   onScheduleInterview: (responseId: string) => void;
+  onTriageResponse?: (responseId: string, action: 'consider' | 'reject' | 'follow_up') => void;
 }
 
 const statusConfig: Record<ResponseStatus, { color: string; icon: React.ElementType }> = {
@@ -64,6 +65,7 @@ export function ResponsesTab({
   onShortlist,
   onRequestClarification,
   onScheduleInterview,
+  onTriageResponse,
 }: ResponsesTabProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedResponses, setSelectedResponses] = useState<Set<string>>(new Set());
@@ -415,6 +417,37 @@ export function ResponsesTab({
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                </div>
+                
+                {/* Triage Quick Actions */}
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    className="text-xs h-7 px-2 border-green-200 text-green-700 hover:bg-green-50"
+                    onClick={() => onTriageResponse?.(response.id, 'consider')}
+                    title="Move to consideration"
+                  >
+                    Consider
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    className="text-xs h-7 px-2 border-amber-200 text-amber-700 hover:bg-amber-50"
+                    onClick={() => onTriageResponse?.(response.id, 'follow_up')}
+                    title="Follow up with supplier"
+                  >
+                    Follow Up
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    className="text-xs h-7 px-2 border-red-200 text-red-700 hover:bg-red-50"
+                    onClick={() => onTriageResponse?.(response.id, 'reject')}
+                    title="Reject response"
+                  >
+                    Reject
+                  </Button>
                 </div>
               </div>
             );
