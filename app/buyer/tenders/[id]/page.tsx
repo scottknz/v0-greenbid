@@ -1396,6 +1396,12 @@ export default function TenderDetailPage() {
                   <Pencil className="size-4 mr-2" />
                   Edit
                 </Button>
+                <Link href={`/buyer/tenders/${params.id}/manage`}>
+                  <Button className="bg-[#16A34A] hover:bg-[#15803D] text-white">
+                    <ClipboardList className="size-4 mr-2" />
+                    Manage RFP
+                  </Button>
+                </Link>
               </>
             )}
             <DropdownMenu>

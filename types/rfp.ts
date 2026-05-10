@@ -241,3 +241,403 @@ export const SECTION_TITLES: Record<RFPSectionType, string> = {
   terms_conditions: 'Terms & Conditions',
   appendices: 'Appendices',
 };
+
+// =====================================================
+// RFP LIFECYCLE MANAGEMENT TYPES
+// =====================================================
+
+// Response Status - tracks supplier submission journey
+export type ResponseStatus = 
+  | 'submitted'
+  | 'clarifications_requested'
+  | 'clarifications_provided'
+  | 'withdrawn'
+  | 'shortlisted'
+  | 'evaluated'
+  | 'finalist'
+  | 'awarded'
+  | 'rejected';
+
+// Supplier Response to an RFP
+export interface RFPResponse {
+  id: string;
+  rfpId: string;
+  supplierId: string;
+  supplierName: string;
+  supplierLogo?: string;
+  submittedAt: string;
+  submittedBy: string;
+  status: ResponseStatus;
+  
+  // Submission answers
+  priceAnswers: PriceAnswer[];
+  questionAnswers: QuestionAnswer[];
+  
+  // Documents
+  attachments: ResponseAttachment[];
+  
+  // Evaluation
+  totalScore?: number;
+  rank?: number;
+  evaluationStatus: 'pending' | 'in_progress' | 'complete';
+  
+  // Timestamps
+  lastUpdatedAt: string;
+  shortlistedAt?: string;
+  evaluatedAt?: string;
+}
+
+export interface PriceAnswer {
+  priceLineItemId: string;
+  label: string;
+  value: number;
+  currency: string;
+  notes?: string;
+}
+
+export interface QuestionAnswer {
+  questionId: string;
+  label: string;
+  value: string | number | Date;
+  fieldType: SubmissionFieldType;
+}
+
+export interface ResponseAttachment {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  uploadedAt: string;
+  url: string;
+}
+
+// =====================================================
+// INTERVIEW MANAGEMENT
+// =====================================================
+
+export type InterviewType = 'discovery' | 'technical' | 'commercial' | 'final' | 'presentation';
+export type InterviewStatus = 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show';
+
+export interface RFPInterview {
+  id: string;
+  rfpId: string;
+  responseId: string;
+  supplierId: string;
+  supplierName: string;
+  
+  // Scheduling
+  scheduledDate: string;
+  scheduledTime: string;
+  duration: number; // minutes
+  timezone: string;
+  
+  // Details
+  interviewType: InterviewType;
+  status: InterviewStatus;
+  title: string;
+  agenda?: string;
+  meetingLink?: string;
+  location?: string;
+  
+  // Attendees
+  buyerAttendees: InterviewAttendee[];
+  supplierAttendees: InterviewAttendee[];
+  
+  // Notes and outcomes
+  notes: InterviewNote[];
+  overallRating?: number; // 1-5 stars
+  recommendation?: 'proceed' | 'needs_follow_up' | 'do_not_proceed';
+  
+  // Timestamps
+  createdAt: string;
+  createdBy: string;
+  completedAt?: string;
+  lastUpdatedAt: string;
+}
+
+export interface InterviewAttendee {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isRequired: boolean;
+  rsvpStatus: 'pending' | 'accepted' | 'declined' | 'tentative';
+}
+
+export interface InterviewNote {
+  id: string;
+  author: string;
+  authorId: string;
+  timestamp: string;
+  content: string;
+  category: 'general' | 'strength' | 'concern' | 'question' | 'action_item';
+  relatedCriteriaId?: string;
+  isPrivate: boolean;
+}
+
+// =====================================================
+// EVALUATION & SCORING
+// =====================================================
+
+export interface EvaluationCriteria {
+  id: string;
+  rfpId: string;
+  name: string;
+  description: string;
+  weight: number; // Percentage, should sum to 100
+  maxScore: number; // e.g., 10
+  rubric: string; // Detailed scoring guide
+  order: number;
+  isRequired: boolean;
+  subcriteria?: EvaluationSubcriteria[];
+}
+
+export interface EvaluationSubcriteria {
+  id: string;
+  criteriaId: string;
+  name: string;
+  description: string;
+  weight: number; // Percentage within parent criteria
+  order: number;
+}
+
+export interface ProposalScore {
+  id: string;
+  responseId: string;
+  evaluatorId: string;
+  evaluatorName: string;
+  criteriaId: string;
+  subcriteriaId?: string;
+  score: number;
+  maxScore: number;
+  comment: string;
+  timestamp: string;
+  isFinalized: boolean;
+}
+
+export interface ProposalEvaluation {
+  id: string;
+  rfpId: string;
+  responseId: string;
+  supplierId: string;
+  supplierName: string;
+  
+  // Scoring
+  scores: ProposalScore[];
+  totalWeightedScore: number;
+  maxPossibleScore: number;
+  percentageScore: number;
+  
+  // Status
+  status: 'draft' | 'in_progress' | 'submitted' | 'reviewed' | 'finalized';
+  
+  // Evaluators
+  evaluators: EvaluatorAssignment[];
+  consensusScore?: number;
+  
+  // Timestamps
+  startedAt: string;
+  completedAt?: string;
+  lastUpdatedAt: string;
+}
+
+export interface EvaluatorAssignment {
+  evaluatorId: string;
+  evaluatorName: string;
+  assignedAt: string;
+  status: 'pending' | 'in_progress' | 'submitted';
+  submittedAt?: string;
+}
+
+// =====================================================
+// RANKING & COMPARISON
+// =====================================================
+
+export interface SupplierRanking {
+  responseId: string;
+  supplierId: string;
+  supplierName: string;
+  rank: number;
+  totalScore: number;
+  percentageScore: number;
+  priceTotal: number;
+  interviewsCompleted: number;
+  interviewRating?: number;
+  recommendation: 'highly_recommended' | 'recommended' | 'neutral' | 'not_recommended';
+  notes?: string;
+}
+
+export interface ComparisonView {
+  rfpId: string;
+  responseIds: string[];
+  criteria: EvaluationCriteria[];
+  rankings: SupplierRanking[];
+}
+
+// =====================================================
+// AWARD & COMMUNICATION
+// =====================================================
+
+export type AwardStatus = 'pending' | 'announced' | 'accepted' | 'declined' | 'finalized';
+
+export interface RFPAward {
+  id: string;
+  rfpId: string;
+  awardedResponseId: string;
+  awardedSupplierId: string;
+  awardedSupplierName: string;
+  
+  // Award details
+  status: AwardStatus;
+  awardedAt: string;
+  awardedBy: string;
+  awardedByName: string;
+  
+  // Contract info
+  contractValue: number;
+  contractCurrency: string;
+  contractStartDate?: string;
+  contractEndDate?: string;
+  
+  // Communication
+  awardMessageSent: boolean;
+  awardMessageSentAt?: string;
+  rejectionMessagesSent: boolean;
+  rejectionMessagesSentAt?: string;
+  
+  // Acceptance
+  supplierAcceptedAt?: string;
+  supplierDeclinedAt?: string;
+  declineReason?: string;
+  
+  // Next steps
+  nextSteps: AwardNextStep[];
+}
+
+export interface AwardNextStep {
+  id: string;
+  title: string;
+  description: string;
+  dueDate?: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  assignedTo?: string;
+  completedAt?: string;
+}
+
+export type NotificationType = 
+  | 'award_notification'
+  | 'rejection_notification'
+  | 'feedback_request'
+  | 'interview_invitation'
+  | 'clarification_request'
+  | 'shortlist_notification'
+  | 'general';
+
+export interface PostAwardCommunication {
+  id: string;
+  rfpId: string;
+  responseId: string;
+  supplierId: string;
+  supplierName: string;
+  
+  // Message details
+  notificationType: NotificationType;
+  subject: string;
+  message: string;
+  
+  // Status
+  status: 'draft' | 'scheduled' | 'sent' | 'delivered' | 'read' | 'acknowledged';
+  scheduledFor?: string;
+  sentAt?: string;
+  deliveredAt?: string;
+  readAt?: string;
+  acknowledgedAt?: string;
+  
+  // Sender
+  sentBy: string;
+  sentByName: string;
+  
+  // Response
+  supplierResponse?: string;
+  supplierRespondedAt?: string;
+  
+  // Attachments
+  attachments: CommunicationAttachment[];
+}
+
+export interface CommunicationAttachment {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  url: string;
+}
+
+// =====================================================
+// RFP LIFECYCLE PHASE TRACKING
+// =====================================================
+
+export type RFPPhase = 
+  | 'draft'
+  | 'published'
+  | 'accepting_responses'
+  | 'response_review'
+  | 'interviews_in_progress'
+  | 'evaluation'
+  | 'final_selection'
+  | 'award_pending'
+  | 'awarded'
+  | 'closed';
+
+export interface RFPPhaseHistory {
+  phase: RFPPhase;
+  enteredAt: string;
+  exitedAt?: string;
+  enteredBy: string;
+  notes?: string;
+}
+
+export interface RFPLifecycleStats {
+  rfpId: string;
+  totalResponses: number;
+  shortlistedCount: number;
+  interviewsScheduled: number;
+  interviewsCompleted: number;
+  evaluationsComplete: number;
+  daysToAward?: number;
+  currentPhase: RFPPhase;
+  phaseHistory: RFPPhaseHistory[];
+}
+
+// Interview type labels
+export const INTERVIEW_TYPE_LABELS: Record<InterviewType, string> = {
+  discovery: 'Discovery Call',
+  technical: 'Technical Review',
+  commercial: 'Commercial Discussion',
+  final: 'Final Presentation',
+  presentation: 'Capability Presentation',
+};
+
+// Interview status labels
+export const INTERVIEW_STATUS_LABELS: Record<InterviewStatus, string> = {
+  scheduled: 'Scheduled',
+  confirmed: 'Confirmed',
+  in_progress: 'In Progress',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  rescheduled: 'Rescheduled',
+  no_show: 'No Show',
+};
+
+// Response status labels
+export const RESPONSE_STATUS_LABELS: Record<ResponseStatus, string> = {
+  submitted: 'Submitted',
+  clarifications_requested: 'Clarifications Requested',
+  clarifications_provided: 'Clarifications Provided',
+  withdrawn: 'Withdrawn',
+  shortlisted: 'Shortlisted',
+  evaluated: 'Evaluated',
+  finalist: 'Finalist',
+  awarded: 'Awarded',
+  rejected: 'Not Selected',
+};
