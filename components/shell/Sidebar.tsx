@@ -164,18 +164,10 @@ export function Sidebar({ variant }: SidebarProps) {
 
       <div className="px-2 py-4 border-t border-border">
         <nav className="space-y-1">
+          {/* Notifications as a nav-style row, above secondary items */}
+          <NotificationBell collapsed={isSidebarCollapsed} />
           {renderNavItems(secondaryItems)}
         </nav>
-        
-        {/* Notification Bell */}
-        <div className="mt-4 pt-4 border-t border-border">
-          <div className="px-1 py-2 flex items-center justify-between">
-            {!isSidebarCollapsed && (
-              <span className="text-xs font-medium text-text-muted px-2">Quick Actions</span>
-            )}
-            <NotificationBell />
-          </div>
-        </div>
       </div>
 
       <div className="border-t border-border p-2">

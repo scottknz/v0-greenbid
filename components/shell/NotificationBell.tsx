@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Bell, MessageSquare, CheckCircle, AlertCircle, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +19,11 @@ interface Notification {
   href?: string;
 }
 
-export function NotificationBell() {
+interface NotificationBellProps {
+  collapsed?: boolean;
+}
+
+export function NotificationBell({ collapsed = false }: NotificationBellProps) {
   const [notifications, setNotifications] = useState<Notification[]>([
     {
       id: '1',
@@ -81,19 +84,32 @@ export function NotificationBell() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative h-9 w-9"
+        <button
           aria-label="Notifications"
-        >
-          <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 inline-flex items-center justify-center h-4 w-4 rounded-full bg-red-600 text-xs font-semibold text-white">
-              {unreadCount}
-            </span>
+          className={cn(
+            'group flex w-full items-center px-3 py-2 text-sm font-medium transition-colors text-text-secondary hover:bg-surface-hover hover:text-text-primary',
+            collapsed ? 'justify-center' : 'justify-start rounded-md'
           )}
-        </Button>
+        >
+          <div className="relative shrink-0">
+            <Bell className="h-4 w-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center h-3.5 w-3.5 rounded-full bg-red-600 text-[9px] font-bold text-white leading-none">
+                {unreadCount}
+              </span>
+            )}
+          </div>
+          {!collapsed && (
+            <>
+              <span className="ml-3 truncate text-[13px] font-medium leading-5">Notifications</span>
+              {unreadCount > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-medium text-white">
+                  {unreadCount}
+                </span>
+              )}
+            </>
+          )}
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
