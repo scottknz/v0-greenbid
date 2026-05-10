@@ -1,103 +1,194 @@
 'use client';
 
-import { RFP } from '@/types/rfp';
-import { format } from 'date-fns';
+import { forwardRef } from 'react';
+import { cn } from '@/lib/utils';
+import type { RFPDocument } from '@/types/rfp';
 
 interface RFPPreviewProps {
-  rfp: RFP;
+  rfp: RFPDocument;
+  className?: string;
 }
 
-export function RFPPreview({ rfp }: RFPPreviewProps) {
-  return (
-    <div className="w-full max-w-4xl mx-auto p-12 bg-white text-black print:p-0">
-      {/* Cover Page */}
-      <div className="flex flex-col items-center justify-center min-h-screen mb-12 border-b-4 border-primary pb-12">
-        <div className="text-center space-y-8">
-          {/* Company Logo Placeholder */}
-          <div className="w-24 h-24 mx-auto bg-gray-200 rounded flex items-center justify-center text-gray-400">
-            Logo
-          </div>
-          
-          <h1 className="text-5xl font-bold text-primary">{rfp.title}</h1>
-          
-          <div className="space-y-2 text-gray-700">
-            <p className="text-lg">{rfp.companyName}</p>
-            <p className="text-sm">{rfp.projectDescription}</p>
-          </div>
-
-          <div className="space-y-1 text-sm text-gray-600 pt-8">
-            <p>Document Reference: {rfp.id}</p>
-            <p>Issued: {format(new Date(rfp.createdAt), 'MMMM d, yyyy')}</p>
-            <p>Submission Deadline: {format(new Date(rfp.submissionDeadline), 'MMMM d, yyyy')}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Table of Contents */}
-      <div className="mb-12 page-break">
-        <h2 className="text-3xl font-bold mb-6 border-b-2 border-primary pb-3">Table of Contents</h2>
-        <ul className="space-y-2 text-sm">
-          {rfp.sections.map((section, index) => (
-            <li key={section.id} className="flex justify-between">
-              <span>{index + 1}. {section.title}</span>
-              <span className="text-gray-400">{index + 2}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Content Sections */}
-      {rfp.sections.map((section, sectionIndex) => (
-        <div key={section.id} className="mb-12 page-break">
-          <h2 className="text-2xl font-bold mb-4 border-b-2 border-primary pb-2">
-            {sectionIndex + 1}. {section.title}
-          </h2>
-          
-          <div className="space-y-4 text-gray-800 leading-relaxed">
-            {section.content && (
-              <div 
-                className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: section.content }}
-              />
-            )}
-          </div>
-
-          {section.subsections && section.subsections.length > 0 && (
-            <div className="mt-6 space-y-4">
-              {section.subsections.map((subsection, subIndex) => (
-                <div key={subsection.id}>
-                  <h3 className="text-lg font-semibold mb-2">
-                    {sectionIndex + 1}.{subIndex + 1} {subsection.title}
-                  </h3>
-                  <div 
-                    className="text-gray-800 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: subsection.content }}
-                  />
-                </div>
-              ))}
+/**
+ * RFP Preview Component
+ * 
+ * Renders the RFP document using Tailwind Typography (prose classes)
+ * for consistent styling that matches PDF output via Puppeteer/Headless Chrome.
+ * 
+ * This component is used for:
+ * 1. "Preview as HTML" viewing mode
+ * 2. Supplier-facing RFP viewer
+ * 3. PDF generation (printed via Puppeteer)
+ */
+export const RFPPreview = forwardRef<HTMLDivElement, RFPPreviewProps>(
+  function RFPPreview({ rfp, className }, ref) {
+    const submissionDeadline = rfp.projectInfo?.submissionDeadline;
+    
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'bg-white min-h-screen print:bg-white',
+          className
+        )}
+      >
+        {/* PDF-ready document container */}
+        <article className="max-w-3xl mx-auto px-8 py-12 print:px-12 print:py-8">
+          {/* Document Header */}
+          <header className="mb-12 pb-8 border-b-2 border-brand-green">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <p className="text-sm text-text-muted uppercase tracking-widest mb-2 font-medium">
+                  Request for Proposal
+                </p>
+                <h1 className="text-3xl font-bold text-text-primary leading-tight">
+                  {rfp.title}
+                </h1>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-text-muted uppercase tracking-wide">Reference</p>
+                <p className="text-lg font-semibold text-text-primary">
+                  {rfp.referenceId}
+                </p>
+              </div>
             </div>
-          )}
-        </div>
-      ))}
 
-      {/* Footer */}
-      <div className="mt-12 pt-8 border-t border-gray-300 text-center text-xs text-gray-600 page-break">
-        <p>This is a confidential document and is intended solely for the use of the named recipient.</p>
-        <p className="mt-2">© {new Date().getFullYear()} {rfp.companyName}. All rights reserved.</p>
-        <p className="mt-4 text-gray-400">Page: <span className="page-number">1</span></p>
+            {/* Document Metadata */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-sm mt-8">
+              <div>
+                <p className="text-text-muted text-xs uppercase tracking-wide mb-1">Category</p>
+                <p className="font-medium text-text-primary">
+                  {rfp.projectInfo?.category || 'Not specified'}
+                </p>
+              </div>
+              <div>
+                <p className="text-text-muted text-xs uppercase tracking-wide mb-1">Submission Deadline</p>
+                <p className="font-medium text-text-primary">
+                  {submissionDeadline
+                    ? new Date(submissionDeadline).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : 'To Be Determined'}
+                </p>
+              </div>
+              <div>
+                <p className="text-text-muted text-xs uppercase tracking-wide mb-1">Status</p>
+                <p className="font-medium text-text-primary capitalize">
+                  {rfp.status}
+                </p>
+              </div>
+              <div>
+                <p className="text-text-muted text-xs uppercase tracking-wide mb-1">Version</p>
+                <p className="font-medium text-text-primary">
+                  v{rfp.currentVersion}
+                </p>
+              </div>
+            </div>
+          </header>
+
+          {/* Table of Contents */}
+          <nav className="mb-12 print:break-after-page">
+            <h2 className="text-xl font-bold text-text-primary mb-4 pb-2 border-b border-border">
+              Table of Contents
+            </h2>
+            <ol className="space-y-2 text-sm">
+              {rfp.sections.map((section, index) => (
+                <li key={section.id} className="flex items-baseline">
+                  <span className="w-8 text-brand-green font-semibold">
+                    {section.number || index + 1}.
+                  </span>
+                  <a
+                    href={`#section-${section.id}`}
+                    className="text-text-primary hover:text-brand-green transition-colors"
+                  >
+                    {section.title}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+
+          {/* Document Sections - rendered with Tailwind Typography */}
+          <div className="space-y-10">
+            {rfp.sections.map((section, index) => (
+              <section
+                key={section.id}
+                id={`section-${section.id}`}
+                className="scroll-mt-8 print:break-inside-avoid"
+              >
+                {/* Section Header */}
+                <div className="flex items-baseline gap-3 mb-4 pb-2 border-b border-border">
+                  <span className="text-xl font-bold text-brand-green">
+                    {section.number || index + 1}.
+                  </span>
+                  <h2 className="text-xl font-bold text-text-primary">
+                    {section.title}
+                  </h2>
+                </div>
+
+                {/* Section Content - Tailwind Typography styling */}
+                <div
+                  className="prose prose-slate max-w-none 
+                    prose-headings:text-text-primary prose-headings:font-semibold
+                    prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3
+                    prose-p:text-text-primary prose-p:leading-7 prose-p:my-4
+                    prose-li:text-text-primary prose-li:leading-7
+                    prose-strong:text-text-primary prose-strong:font-semibold
+                    prose-a:text-brand-green prose-a:no-underline hover:prose-a:underline
+                    prose-ul:my-4 prose-ol:my-4
+                    prose-blockquote:border-l-brand-green prose-blockquote:text-text-secondary
+                    prose-code:text-brand-green prose-code:bg-surface prose-code:px-1 prose-code:py-0.5 prose-code:rounded
+                    prose-hr:border-border"
+                  dangerouslySetInnerHTML={{ 
+                    __html: section.content || '<p class="text-text-muted italic">No content yet.</p>' 
+                  }}
+                />
+              </section>
+            ))}
+          </div>
+
+          {/* Document Footer */}
+          <footer className="mt-16 pt-8 border-t-2 border-brand-green text-sm text-text-muted print:mt-8">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="font-medium text-text-primary">Generated by Greenbid</p>
+                <p className="mt-1">
+                  Last updated: {new Date(rfp.updatedAt).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </p>
+              </div>
+              <div className="text-right">
+                <p>Document ID: {rfp.id}</p>
+                <p>Version: {rfp.currentVersion}</p>
+              </div>
+            </div>
+            <p className="mt-6 text-xs text-center text-text-muted">
+              This document is confidential and intended solely for the named recipient.
+            </p>
+          </footer>
+        </article>
+
+        {/* Print styles */}
+        <style>{`
+          @media print {
+            @page {
+              margin: 1in;
+              size: letter;
+            }
+            body {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+          }
+        `}</style>
       </div>
-
-      <style>{`
-        @media print {
-          .page-break {
-            page-break-after: always;
-          }
-          body {
-            margin: 0;
-            padding: 0;
-          }
-        }
-      `}</style>
-    </div>
-  );
-}
+    );
+  }
+);

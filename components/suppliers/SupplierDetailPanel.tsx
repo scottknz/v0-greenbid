@@ -1,12 +1,20 @@
 'use client'
 
-import React from 'react'
-import { X, Edit2, Trash2, Mail, Phone, MapPin, Award } from 'lucide-react'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { X, Edit2, Trash2, Mail, Phone, MapPin, Award, StickyNote, Plus, Send } from 'lucide-react'
 import { Supplier } from '@/types/supplier'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { EngagementTimeline } from './EngagementTimeline'
 import { cn } from '@/lib/utils'
+
+interface Note {
+  id: string
+  text: string
+  createdAt: string
+}
 
 interface SupplierDetailPanelProps {
   supplier: Supplier
@@ -21,6 +29,23 @@ export function SupplierDetailPanel({
   onClose,
   onUpdate,
 }: SupplierDetailPanelProps) {
+  const router = useRouter()
+  const [notes, setNotes] = useState<Note[]>([])
+  const [newNote, setNewNote] = useState('')
+
+  const handleAddNote = () => {
+    const text = newNote.trim()
+    if (!text) return
+    setNotes(prev => [
+      { id: crypto.randomUUID(), text, createdAt: new Date().toISOString() },
+      ...prev,
+    ])
+    setNewNote('')
+  }
+
+  const handleDeleteNote = (id: string) => {
+    setNotes(prev => prev.filter(n => n.id !== id))
+  }
   const tierColors = {
     preferred: 'bg-brand-green-light text-brand-green border-brand-green/30',
     standard: 'bg-surface text-text-secondary border-border',
@@ -120,12 +145,14 @@ export function SupplierDetailPanel({
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-text-secondary shrink-0" />
-              <a
-                href={`mailto:${supplier.companyContact.email}`}
+              <button
+                onClick={() => {
+                  router.push(`/buyer/messages?compose=true&to=${encodeURIComponent(supplier.companyContact.name)}&email=${encodeURIComponent(supplier.companyContact.email)}`)
+                }}
                 className="text-sm text-brand-green hover:underline truncate"
               >
                 {supplier.companyContact.email}
-              </a>
+              </button>
             </div>
             <div className="flex items-center gap-3">
               <Phone className="h-4 w-4 text-text-secondary shrink-0" />
@@ -203,13 +230,65 @@ export function SupplierDetailPanel({
 
         {/* Engagement History */}
         {supplier.engagementHistory.length > 0 && (
-          <div className="p-6">
+          <div className="p-6 border-b border-border">
             <h3 className="text-sm font-semibold text-text-primary mb-4 uppercase tracking-wide">
               Engagement History
             </h3>
             <EngagementTimeline records={supplier.engagementHistory} />
           </div>
         )}
+
+        {/* Notes */}
+        <div className="p-6">
+          <h3 className="text-sm font-semibold text-text-primary mb-4 uppercase tracking-wide flex items-center gap-2">
+            <StickyNote className="h-4 w-4" />
+            Notes
+          </h3>
+          <div className="space-y-2 mb-4">
+            <Textarea
+              placeholder="Add a note about this company..."
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleAddNote()
+              }}
+              rows={3}
+              className="resize-none text-sm"
+            />
+            <Button
+              size="sm"
+              className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+              onClick={handleAddNote}
+              disabled={!newNote.trim()}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              Add Note
+            </Button>
+          </div>
+          {notes.length > 0 ? (
+            <div className="space-y-3">
+              {notes.map((note) => (
+                <div key={note.id} className="group flex gap-3 p-3 rounded-lg bg-surface border border-border">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-text-primary whitespace-pre-wrap">{note.text}</p>
+                    <p className="text-xs text-text-muted mt-1.5">
+                      {new Date(note.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteNote(note.id)}
+                    className="text-text-muted hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                    aria-label="Delete note"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-text-muted italic">No notes yet.</p>
+          )}
+        </div>
       </div>
     </div>
   )

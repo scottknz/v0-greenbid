@@ -3,10 +3,79 @@ import type {
   RFPDocument, 
   RFPVersion,
   RFPTeamMember,
+  RFPTeamRole,
   CompanyBranding, 
   ToneVoiceSettings,
   RFPSectionContent 
 } from '@/types/rfp';
+
+// Internal team members available to assign to proposals
+export const internalTeamMembers: RFPTeamMember[] = [
+  {
+    id: 'itm-1',
+    name: 'Sarah Chen',
+    email: 'sarah.chen@company.com',
+    phone: '+44 207 123 4567',
+    jobTitle: 'Senior Procurement Manager',
+    department: 'Procurement',
+    avatarInitials: 'SC',
+    role: 'Lead',
+    isLead: true,
+  },
+  {
+    id: 'itm-2',
+    name: 'James Wilson',
+    email: 'james.wilson@company.com',
+    phone: '+44 207 123 4568',
+    jobTitle: 'Finance Analyst',
+    department: 'Finance',
+    avatarInitials: 'JW',
+    role: 'Reviewer',
+    isLead: false,
+  },
+  {
+    id: 'itm-3',
+    name: 'Emily Rodriguez',
+    email: 'emily.rodriguez@company.com',
+    phone: '+44 207 123 4569',
+    jobTitle: 'Sustainability Officer',
+    department: 'Sustainability',
+    avatarInitials: 'ER',
+    role: 'Approver',
+    isLead: false,
+  },
+  {
+    id: 'itm-4',
+    name: 'Michael Park',
+    email: 'michael.park@company.com',
+    phone: '+44 207 123 4570',
+    jobTitle: 'Legal Counsel',
+    department: 'Legal',
+    avatarInitials: 'MP',
+    role: 'Reviewer',
+    isLead: false,
+  },
+  {
+    id: 'itm-5',
+    name: 'Lisa Wang',
+    email: 'lisa.wang@company.com',
+    jobTitle: 'Operations Manager',
+    department: 'Operations',
+    avatarInitials: 'LW',
+    role: 'Observer',
+    isLead: false,
+  },
+  {
+    id: 'itm-6',
+    name: 'David Thompson',
+    email: 'david.thompson@company.com',
+    jobTitle: 'IT Director',
+    department: 'Technology',
+    avatarInitials: 'DT',
+    role: 'Observer',
+    isLead: false,
+  },
+];
 
 // Generic RFP Template
 export const genericTemplate: RFPTemplate = {

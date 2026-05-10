@@ -13,6 +13,21 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     tags: ['sustainability', 'policy', 'climate', 'net-zero', 'sbti'],
     usedInRFPs: ['rfp-001', 'rfp-003', 'rfp-005'],
     version: '2.1',
+    attachment: {
+      name: 'Corporate_Sustainability_Policy_v2.1.pdf',
+      size: 245000,
+      type: 'application/pdf',
+      uploadedAt: '2024-01-15T10:30:00Z',
+    },
+    actionLog: [
+      {
+        id: 'action-001',
+        type: 'created',
+        description: 'Document created',
+        timestamp: '2024-01-15T10:30:00Z',
+        performedBy: 'Emma Thompson',
+      },
+    ],
   },
   {
     id: 'doc-002',
@@ -26,6 +41,21 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     tags: ['esg', 'questionnaire', 'assessment', 'supplier', 'form'],
     usedInRFPs: ['rfp-001', 'rfp-002', 'rfp-004'],
     version: '1.5',
+    attachment: {
+      name: 'ESG_Questionnaire_v1.5.docx',
+      size: 156000,
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      uploadedAt: '2024-01-10T14:20:00Z',
+    },
+    actionLog: [
+      {
+        id: 'action-002',
+        type: 'created',
+        description: 'Document created',
+        timestamp: '2024-01-10T14:20:00Z',
+        performedBy: 'David Kumar',
+      },
+    ],
   },
   {
     id: 'doc-003',
@@ -39,6 +69,21 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     tags: ['scope-3', 'emissions', 'methodology', 'ghg-protocol', 'carbon'],
     usedInRFPs: ['rfp-002', 'rfp-003'],
     version: '1.2',
+    attachment: {
+      name: 'Scope3_Methodology_v1.2.pdf',
+      size: 89000,
+      type: 'application/pdf',
+      uploadedAt: '2024-01-12T09:15:00Z',
+    },
+    actionLog: [
+      {
+        id: 'action-003',
+        type: 'created',
+        description: 'Document created',
+        timestamp: '2024-01-12T09:15:00Z',
+        performedBy: 'Michael Chen',
+      },
+    ],
   },
   {
     id: 'doc-004',
@@ -52,6 +97,21 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     tags: ['issb', 'csrd', 'regulatory', 'compliance', 'sustainability'],
     usedInRFPs: ['rfp-001', 'rfp-003', 'rfp-004', 'rfp-005'],
     version: '3.0',
+    attachment: {
+      name: 'ISSB_CSRD_Requirements_v3.0.pdf',
+      size: 234000,
+      type: 'application/pdf',
+      uploadedAt: '2024-01-08T11:45:00Z',
+    },
+    actionLog: [
+      {
+        id: 'action-004',
+        type: 'created',
+        description: 'Document created',
+        timestamp: '2024-01-08T11:45:00Z',
+        performedBy: 'Lisa Martinez',
+      },
+    ],
   },
   {
     id: 'doc-005',
@@ -65,6 +125,21 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     tags: ['sbti', 'targets', 'science-based', 'climate', 'validation'],
     usedInRFPs: ['rfp-002', 'rfp-005'],
     version: '1.8',
+    attachment: {
+      name: 'SBTi_Validation_v1.8.pdf',
+      size: 178000,
+      type: 'application/pdf',
+      uploadedAt: '2024-01-05T13:20:00Z',
+    },
+    actionLog: [
+      {
+        id: 'action-005',
+        type: 'created',
+        description: 'Document created',
+        timestamp: '2024-01-05T13:20:00Z',
+        performedBy: 'Tom Wilson',
+      },
+    ],
   },
   {
     id: 'doc-006',
@@ -78,6 +153,21 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     tags: ['template', 'rfp', 'response', 'sustainability', 'esg'],
     usedInRFPs: ['rfp-001', 'rfp-002', 'rfp-003', 'rfp-004'],
     version: '2.2',
+    attachment: {
+      name: 'RFP_Response_Template_v2.2.docx',
+      size: 267000,
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      uploadedAt: '2024-01-03T10:00:00Z',
+    },
+    actionLog: [
+      {
+        id: 'action-006',
+        type: 'created',
+        description: 'Document created',
+        timestamp: '2024-01-03T10:00:00Z',
+        performedBy: 'Rachel Green',
+      },
+    ],
   },
   {
     id: 'doc-007',
@@ -91,6 +181,21 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     tags: ['lca', 'lifecycle-assessment', 'environmental-impact', 'cradle-to-grave'],
     usedInRFPs: ['rfp-003', 'rfp-004', 'rfp-006'],
     version: '1.0',
+    attachment: {
+      name: 'LCA_Framework_v1.0.pdf',
+      size: 312000,
+      type: 'application/pdf',
+      uploadedAt: '2024-01-02T15:30:00Z',
+    },
+    actionLog: [
+      {
+        id: 'action-007',
+        type: 'created',
+        description: 'Document created',
+        timestamp: '2024-01-02T15:30:00Z',
+        performedBy: 'Dr. Patricia Smith',
+      },
+    ],
   },
   {
     id: 'doc-008',
@@ -104,6 +209,21 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     tags: ['pcaf', 'financed-emissions', 'finance', 'carbon-accounting'],
     usedInRFPs: [],
     version: '1.0',
+    attachment: {
+      name: 'PCAF_Guidance_v1.0.pdf',
+      size: 245000,
+      type: 'application/pdf',
+      uploadedAt: '2024-01-01T09:00:00Z',
+    },
+    actionLog: [
+      {
+        id: 'action-008',
+        type: 'created',
+        description: 'Document created',
+        timestamp: '2024-01-01T09:00:00Z',
+        performedBy: 'John Smith',
+      },
+    ],
   },
   {
     id: 'doc-009',
@@ -117,6 +237,21 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     tags: ['renewable-energy', 'vppa', 'procurement', 'energy-standards'],
     usedInRFPs: ['rfp-002', 'rfp-007'],
     version: '2.1',
+    attachment: {
+      name: 'Renewable_Energy_Standards_v2.1.pdf',
+      size: 289000,
+      type: 'application/pdf',
+      uploadedAt: '2023-12-28T14:15:00Z',
+    },
+    actionLog: [
+      {
+        id: 'action-009',
+        type: 'created',
+        description: 'Document created',
+        timestamp: '2023-12-28T14:15:00Z',
+        performedBy: 'Alex Kumar',
+      },
+    ],
   },
   {
     id: 'doc-010',
@@ -130,5 +265,20 @@ export const mockLibraryDocuments: LibraryDocument[] = [
     tags: ['case-study', 'example', 'scope-3', 'emissions-reduction'],
     usedInRFPs: ['rfp-001'],
     version: '1.0',
+    attachment: {
+      name: 'Case_Study_Scope3_v1.0.pdf',
+      size: 198000,
+      type: 'application/pdf',
+      uploadedAt: '2023-12-25T11:30:00Z',
+    },
+    actionLog: [
+      {
+        id: 'action-010',
+        type: 'created',
+        description: 'Document created',
+        timestamp: '2023-12-25T11:30:00Z',
+        performedBy: 'Emma Thompson',
+      },
+    ],
   },
 ]

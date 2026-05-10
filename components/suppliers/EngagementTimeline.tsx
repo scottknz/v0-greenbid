@@ -49,7 +49,7 @@ export function EngagementTimeline({ records }: EngagementTimelineProps) {
       case 'meeting':
         return 'bg-orange-100 text-orange-700'
       case 'rfp_invitation':
-        return 'bg-green-100 text-green-700'
+        return 'bg-brand-green-light text-brand-green'
       default:
         return 'bg-gray-100 text-gray-700'
     }

@@ -3,17 +3,24 @@
 import { LibraryDocument, CATEGORY_COLORS } from '@/types/library'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { FileText, Download, Trash2, MoreVertical } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
+import { FileText, Download, Trash2, MoreVertical, Pencil } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
 interface DocumentCardProps {
   document: LibraryDocument
   onDownload?: (id: string) => void
   onDelete?: (id: string) => void
-  onUsageStats?: (id: string) => void
+  onEdit?: (document: LibraryDocument) => void
 }
 
-export function DocumentCard({ document, onDownload, onDelete }: DocumentCardProps) {
+export function DocumentCard({ document, onDownload, onDelete, onEdit }: DocumentCardProps) {
   const uploadDate = new Date(document.uploadedAt)
   const timeAgo = formatDistanceToNow(uploadDate, { addSuffix: true })
 
@@ -37,15 +44,46 @@ export function DocumentCard({ document, onDownload, onDelete }: DocumentCardPro
           </div>
         </div>
         <button className="ml-2 text-muted-foreground hover:text-foreground">
-          <MoreVertical className="w-4 h-4" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="text-muted-foreground hover:text-foreground">
+                <MoreVertical className="w-4 h-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={() => onEdit?.(document)}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Details
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => onDownload?.(document.id)}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={() => onDelete?.(document.id)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </button>
       </div>
 
-      {/* Category badge */}
-      <div className="mb-3">
+      {/* Category badge and file status */}
+      <div className="mb-3 flex items-center gap-2">
         <Badge className={`${CATEGORY_COLORS[document.category]} text-xs`}>
           {document.category}
         </Badge>
+        {!document.attachment && (
+          <Badge className="bg-red-100 text-red-700 border border-red-300 text-xs">
+            File not available
+          </Badge>
+        )}
       </div>
 
       {/* Tags */}
@@ -79,27 +117,6 @@ export function DocumentCard({ document, onDownload, onDelete }: DocumentCardPro
         <div className="text-xs text-muted-foreground">
           Used in <span className="font-medium text-foreground">{document.usedInRFPs?.length || 0} RFPs</span>
         </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1 h-8 text-xs"
-          onClick={() => onDownload?.(document.id)}
-        >
-          <Download className="w-3 h-3 mr-1" />
-          Download
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 text-xs text-muted-foreground hover:text-destructive"
-          onClick={() => onDelete?.(document.id)}
-        >
-          <Trash2 className="w-3 h-3" />
-        </Button>
       </div>
     </div>
   )

@@ -1,5 +1,20 @@
 export type DocumentCategory = 'Legal' | 'Template' | 'Examples' | 'General' | 'Data' | 'Guidelines' | 'Forms' | 'Policies'
 
+export interface FileAttachment {
+  name: string
+  size: number
+  type: string
+  uploadedAt: string
+}
+
+export interface DocumentAction {
+  id: string
+  type: 'created' | 'edited' | 'file_added' | 'file_deleted' | 'file_replaced'
+  description: string
+  timestamp: string
+  performedBy: string
+}
+
 export interface LibraryDocument {
   id: string
   name: string
@@ -12,6 +27,8 @@ export interface LibraryDocument {
   tags: string[]
   usedInRFPs: string[]
   version?: string
+  attachment?: FileAttachment
+  actionLog?: DocumentAction[]
 }
 
 export const DOCUMENT_CATEGORIES: DocumentCategory[] = [

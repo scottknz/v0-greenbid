@@ -1,10 +1,11 @@
 "use client";
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, FileText, ClipboardList, Users, Library,
+  LayoutDashboard, FileText, ClipboardList, Users, UsersRound, Library, BookOpen,
   MessageSquare, Bell, Shield, Settings, Mail, Upload,
   FolderOpen, Star, PanelLeftClose, PanelLeftOpen, MoreHorizontal, Plus,
 } from 'lucide-react';
@@ -13,7 +14,7 @@ import { useShell } from './ShellContext';
 import { cn } from '@/lib/utils';
 
 const iconMap: Record<string, React.ElementType> = {
-  LayoutDashboard, FileText, ClipboardList, Users, Library,
+  LayoutDashboard, FileText, ClipboardList, Users, UsersRound, Library, BookOpen,
   MessageSquare, Bell, Shield, Settings, Mail, Upload,
   FolderOpen, Star,
 };
@@ -44,12 +45,12 @@ export function Sidebar({ variant }: SidebarProps) {
             </span>
           )}
           {item.badgeCount && item.badgeCount > 0 && !isSidebarCollapsed && (
-            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-green px-1.5 text-xs font-medium text-white" aria-hidden="true">
+            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#16A34A] px-1.5 text-xs font-medium text-white" aria-hidden="true">
               {item.badgeCount}
             </span>
           )}
           {item.badge && !item.badgeCount && !isSidebarCollapsed && (
-            <span className="ml-auto flex h-2 w-2 rounded-full bg-brand-green" aria-hidden="true" />
+            <span className="ml-auto flex h-2 w-2 rounded-full bg-[#16A34A]" aria-hidden="true" />
           )}
         </>
       );
@@ -58,7 +59,7 @@ export function Sidebar({ variant }: SidebarProps) {
         'group flex items-center px-3 py-2 text-sm font-medium transition-colors',
         isSidebarCollapsed ? 'justify-center' : 'justify-start rounded-md',
         isActive
-          ? 'bg-brand-green-light text-brand-green border-l-[3px] border-brand-green -ml-[3px] rounded-l-none'
+          ? 'bg-[#F0FDF4] text-[#16A34A] border-l-[3px] border-[#16A34A] -ml-[3px] rounded-l-none'
           : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
       );
 
@@ -95,13 +96,13 @@ export function Sidebar({ variant }: SidebarProps) {
         isSidebarCollapsed ? 'w-[56px]' : 'w-[220px]'
       )}
     >
-      <div className="flex h-14 items-center justify-between border-b border-border px-4">
+      <div className={cn(
+        'flex h-14 items-center border-b border-border px-4',
+        isSidebarCollapsed ? 'justify-center' : 'justify-between'
+      )}>
         {!isSidebarCollapsed && (
-          <Link href="/" className="flex items-center gap-2 overflow-hidden hover:opacity-80 transition-opacity">
-            <div className="h-6 w-6 rounded bg-text-primary shrink-0" aria-hidden="true" />
-            <span className="truncate font-semibold tracking-tight text-text-primary">
-              greenbid
-            </span>
+          <Link href="/" className="flex items-center overflow-hidden hover:opacity-80 transition-opacity">
+            <Image src="/greenbid-logo-green.png" alt="Greenbid" width={100} height={28} className="h-7 w-auto" />
           </Link>
         )}
         <button
@@ -142,20 +143,23 @@ export function Sidebar({ variant }: SidebarProps) {
         {renderNavItems(mainItems)}
       </nav>
 
-      <div className="px-2 py-3 border-t border-border">
-        <Link
-          href="/rfp/create"
-          className={cn(
-            'group flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors',
-            'bg-brand-green text-white hover:bg-brand-green/90',
-            isSidebarCollapsed ? 'justify-center' : 'justify-start'
-          )}
-          aria-label="Create RFP"
-        >
-          <Plus className="h-4 w-4 shrink-0" />
-          {!isSidebarCollapsed && <span>Create RFP</span>}
-        </Link>
-      </div>
+      {/* Only show "+ New RFP" button for buyers */}
+      {variant === 'buyer' && (
+        <div className="px-2 py-3 border-t border-border">
+          <Link
+            href="/buyer/rfp/create"
+            className={cn(
+              'group flex items-center gap-2 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors',
+              'bg-[#16A34A] text-white hover:bg-[#15803D]',
+              isSidebarCollapsed ? 'justify-center' : 'justify-start'
+            )}
+            aria-label="Create RFP"
+          >
+            <Plus className="h-4 w-4 shrink-0" />
+            {!isSidebarCollapsed && <span>New RFP</span>}
+          </Link>
+        </div>
+      )}
 
       <div className="px-2 py-4 border-t border-border">
         <nav className="space-y-1">

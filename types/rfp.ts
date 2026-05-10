@@ -1,6 +1,24 @@
 // RFP Document Types and Interfaces
 
+// Import supplier types (RFPInterest is defined in supplier.ts)
+export type { RFPInterest } from './supplier'
+
 export type RFPStatus = 'draft' | 'in_review' | 'approved' | 'published' | 'closed';
+
+// Team member role on an RFP
+export type RFPTeamRole = 'Lead' | 'Reviewer' | 'Approver' | 'Observer';
+
+export interface RFPTeamMember {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  jobTitle: string;
+  department: string;
+  avatarInitials: string;
+  role: RFPTeamRole;
+  isLead: boolean;
+}
 
 export type RFPSectionType = 
   | 'cover'
@@ -54,6 +72,12 @@ export interface RFPDocument {
   
   // Document sections
   sections: RFPSectionContent[];
+  
+  // Team members assigned to this RFP (at least one Lead required)
+  assignedTeamMemberIds: string[];
+  
+  // Supplier registrations (registered interest in responding to this RFP)
+  registeredSuppliers: RFPInterest[];
   
   // AI context/summary for continuity
   aiSummary: string;
@@ -115,6 +139,32 @@ export interface RFPVersion {
   savedBy: string;
   changesSummary: string;
   sections: RFPSectionContent[];
+}
+
+// Submission Questions (Custom Questions for Suppliers)
+export type SubmissionFieldType = 'text' | 'number' | 'date';
+
+export interface SubmissionQuestion {
+  id: string;
+  label: string;
+  description?: string;
+  fieldType: SubmissionFieldType;
+  required: boolean;
+  isMandatory: boolean; // System-required fields (cannot be deleted)
+  order: number;
+}
+
+export interface PriceLineItem {
+  id: string;
+  label: string;
+  description?: string;
+  order: number;
+}
+
+export interface SubmissionQuestionsConfig {
+  includeCustomQuestions: boolean;
+  priceLineItems: PriceLineItem[];
+  customQuestions: SubmissionQuestion[];
 }
 
 // RFP Template

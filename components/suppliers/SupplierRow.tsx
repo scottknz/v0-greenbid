@@ -1,11 +1,17 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ChevronDown, MoreHorizontal, Mail, Phone, MapPin } from 'lucide-react'
+import { ChevronDown, MoreHorizontal, Mail, Phone, MapPin, Edit, Trash2, Award, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Supplier, TeamMember } from '@/types/supplier'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface SupplierRowProps {
   supplier: Supplier
@@ -13,6 +19,8 @@ interface SupplierRowProps {
   onToggleExpand: () => void
   onViewDetails: (supplier: Supplier) => void
   onEdit: (supplier: Supplier) => void
+  onDelete: (supplier: Supplier) => void
+  onContactClick?: (supplier: Supplier, member: TeamMember) => void
 }
 
 export function SupplierRow({
@@ -21,6 +29,8 @@ export function SupplierRow({
   onToggleExpand,
   onViewDetails,
   onEdit,
+  onDelete,
+  onContactClick,
 }: SupplierRowProps) {
   const tierColors = {
     preferred: 'bg-brand-green-light text-brand-green',
@@ -43,6 +53,34 @@ export function SupplierRow({
             (1000 * 60 * 60 * 24)
         )
       : null
+
+  const getEcoVadisColor = (rating?: string) => {
+    switch (rating) {
+      case 'gold':
+        return 'bg-amber-100 text-amber-900 border-amber-300'
+      case 'silver':
+        return 'bg-slate-100 text-slate-900 border-slate-300'
+      case 'bronze':
+        return 'bg-orange-100 text-orange-900 border-orange-300'
+      default:
+        return ''
+    }
+  }
+
+  const getEmissionsColor = (intensity?: string) => {
+    switch (intensity) {
+      case 'low':
+        return 'text-green-600'
+      case 'medium':
+        return 'text-amber-600'
+      case 'high':
+        return 'text-red-600'
+      default:
+        return 'text-gray-600'
+    }
+  }
+
+  const credentials = supplier.sustainabilityCredentials
 
   return (
     <>
@@ -68,18 +106,67 @@ export function SupplierRow({
 
           {/* Company info */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-text-primary truncate">
-              {supplier.name}
-            </h3>
-            <p className="text-sm text-text-secondary truncate">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-medium text-text-primary truncate">
+                {supplier.name}
+              </h3>
+              {supplier.tier === 'preferred' && (
+                <Badge className="bg-brand-green-light text-brand-green text-[10px]">Preferred</Badge>
+              )}
+            </div>
+            <p className="text-sm text-text-secondary truncate mb-2">
               {supplier.companyContact.email}
             </p>
+
+            {/* Credentials Strip */}
+            {credentials && (
+              <div className="flex flex-wrap gap-1">
+                {credentials.ecovadisRating && (
+                  <Badge className={cn('text-[10px] py-0.5 px-1 border', getEcoVadisColor(credentials.ecovadisRating))}>
+                    <Award className="h-2.5 w-2.5 mr-0.5" />
+                    EcoVadis {credentials.ecovadisRating}
+                  </Badge>
+                )}
+                {credentials.bCorp && (
+                  <Badge className="bg-green-50 text-green-700 border border-green-200 text-[10px] py-0.5 px-1">
+                    B Corp
+                  </Badge>
+                )}
+                {credentials.sbtiStatus && (
+                  <Badge className="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] py-0.5 px-1">
+                    SBTi {credentials.sbtiStatus === 'validated' ? 'Validated' : 'Committed'}
+                  </Badge>
+                )}
+                {credentials.iso14001 && (
+                  <Badge className="bg-gray-100 text-gray-700 border border-gray-300 text-[10px] py-0.5 px-1">
+                    ISO 14001
+                  </Badge>
+                )}
+                {credentials.carbonNeutral && (
+                  <Badge className="bg-green-50 text-green-700 border border-green-200 text-[10px] py-0.5 px-1">
+                    Carbon Neutral
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Tier badge */}
-          <Badge className={cn('shrink-0', tierColors[supplier.tier])}>
-            {supplier.tier.charAt(0).toUpperCase() + supplier.tier.slice(1)}
-          </Badge>
+          {/* Emissions & Net Zero */}
+          {credentials && (credentials.emissionsIntensity || credentials.netZeroYear) && (
+            <div className="hidden lg:flex flex-col gap-1 shrink-0 text-xs w-40">
+              {credentials.emissionsIntensity && (
+                <div className={cn('font-medium', getEmissionsColor(credentials.emissionsIntensityLabel))}>
+                  <TrendingUp className="h-3 w-3 inline mr-1" />
+                  {credentials.emissionsIntensity} tCO2e/£M
+                </div>
+              )}
+              {credentials.netZeroYear && (
+                <div className="text-text-secondary font-medium">
+                  Net Zero {credentials.netZeroYear}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Metrics */}
           <div className="hidden sm:flex items-center gap-6 shrink-0">
@@ -99,7 +186,7 @@ export function SupplierRow({
               <p className="text-sm font-medium text-text-primary">
                 {formatCurrency(supplier.totalContractValue)}
               </p>
-              <p className="text-xs text-text-muted">Contract Value</p>
+              <p className="text-xs text-text-muted">Value</p>
             </div>
           </div>
 
@@ -125,16 +212,32 @@ export function SupplierRow({
               onClick={() => onViewDetails(supplier)}
               className="text-text-secondary hover:text-text-primary"
             >
-              View
+              Details
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(supplier)}
-              className="h-8 w-8"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEdit(supplier)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onDelete(supplier)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -146,7 +249,11 @@ export function SupplierRow({
             </p>
             <div className="space-y-2">
               {supplier.teamMembers.map((member) => (
-                <TeamMemberRow key={member.id} member={member} />
+                <TeamMemberRow 
+                  key={member.id} 
+                  member={member} 
+                  onClick={() => onContactClick?.(supplier, member)}
+                />
               ))}
             </div>
           </div>
@@ -156,11 +263,14 @@ export function SupplierRow({
   )
 }
 
-function TeamMemberRow({ member }: { member: TeamMember }) {
+function TeamMemberRow({ member, onClick }: { member: TeamMember; onClick?: () => void }) {
   return (
-    <div className="flex items-center gap-4 py-2 px-4 rounded bg-background border border-border/50">
+    <div 
+      className="flex items-center gap-4 py-2 px-4 rounded bg-background border border-border/50 cursor-pointer hover:bg-surface-hover hover:border-[#16A34A]/30 transition-colors"
+      onClick={onClick}
+    >
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-text-primary truncate">
+        <p className="text-sm font-medium text-text-primary truncate hover:text-[#16A34A]">
           {member.name}
         </p>
         <p className="text-xs text-text-secondary truncate">

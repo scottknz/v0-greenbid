@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { Search, Filter, Plus, Upload } from 'lucide-react'
-import { Supplier, ALL_EXPERTISE } from '@/types/supplier'
+import { Supplier, TeamMember, ALL_EXPERTISE } from '@/types/supplier'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +15,8 @@ interface SuppliersListProps {
   onImportCSV: () => void
   onViewDetails: (supplier: Supplier) => void
   onEdit: (supplier: Supplier) => void
+  onDelete: (supplier: Supplier) => void
+  onContactClick?: (supplier: Supplier, member: TeamMember) => void
 }
 
 export function SuppliersList({
@@ -23,6 +25,8 @@ export function SuppliersList({
   onImportCSV,
   onViewDetails,
   onEdit,
+  onDelete,
+  onContactClick,
 }: SuppliersListProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedSuppliers, setExpandedSuppliers] = useState<Set<string>>(
@@ -32,6 +36,9 @@ export function SuppliersList({
   const [selectedExpertise, setSelectedExpertise] = useState<Set<string>>(
     new Set()
   )
+  const [selectedCerts, setSelectedCerts] = useState<Set<string>>(new Set())
+  const [selectedEmissions, setSelectedEmissions] = useState<string>('')
+  const [netZeroOnly, setNetZeroOnly] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
 
   const toggleExpand = (supplierId: string) => {
@@ -64,6 +71,39 @@ export function SuppliersList({
     setSelectedExpertise(newExpertise)
   }
 
+  const toggleCert = (cert: string) => {
+    const next = new Set(selectedCerts)
+    if (next.has(cert)) {
+      next.delete(cert)
+    } else {
+      next.add(cert)
+    }
+    setSelectedCerts(next)
+  }
+
+  const certMatches = (supplier: Supplier, cert: string): boolean => {
+    const c = supplier.sustainabilityCredentials
+    if (!c) return false
+    switch (cert) {
+      case 'bcorp':       return !!c.bCorp
+      case 'sbti-val':    return c.sbtiStatus === 'validated'
+      case 'sbti-com':    return c.sbtiStatus === 'committed'
+      case 'iso14001':    return !!c.iso14001
+      case 'carbonneutral': return !!c.carbonNeutral
+      case 'ecovadis-gold':   return c.ecovadisRating === 'gold'
+      case 'ecovadis-silver': return c.ecovadisRating === 'silver'
+      case 'ecovadis-bronze': return c.ecovadisRating === 'bronze'
+      default: return false
+    }
+  }
+
+  const hasActiveFilters =
+    selectedTiers.size > 0 ||
+    selectedExpertise.size > 0 ||
+    selectedCerts.size > 0 ||
+    selectedEmissions !== '' ||
+    netZeroOnly
+
   const filteredSuppliers = useMemo(() => {
     return suppliers.filter((supplier) => {
       const matchesSearch =
@@ -84,9 +124,20 @@ export function SuppliersList({
         selectedExpertise.size === 0 ||
         supplier.expertise.some((exp) => selectedExpertise.has(exp))
 
-      return matchesSearch && matchesTier && matchesExpertise
+      const matchesCerts =
+        selectedCerts.size === 0 ||
+        [...selectedCerts].every((cert) => certMatches(supplier, cert))
+
+      const matchesEmissions =
+        selectedEmissions === '' ||
+        supplier.sustainabilityCredentials?.emissionsIntensityLabel === selectedEmissions
+
+      const matchesNetZero =
+        !netZeroOnly || !!supplier.sustainabilityCredentials?.netZeroYear
+
+      return matchesSearch && matchesTier && matchesExpertise && matchesCerts && matchesEmissions && matchesNetZero
     })
-  }, [searchTerm, selectedTiers, selectedExpertise, suppliers])
+  }, [searchTerm, selectedTiers, selectedExpertise, selectedCerts, selectedEmissions, netZeroOnly, suppliers])
 
   const sortedSuppliers = useMemo(() => {
     const tierOrder = { preferred: 0, standard: 1, new: 2 }
@@ -115,10 +166,18 @@ export function SuppliersList({
               variant={showFilters ? 'default' : 'outline'}
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
-              className="gap-2"
+              className={cn('gap-2', showFilters && 'bg-[#16A34A] hover:bg-[#15803D] border-[#16A34A]')}
             >
               <Filter className="h-4 w-4" />
               Filters
+              {hasActiveFilters && (
+                <span className={cn(
+                  'inline-flex items-center justify-center h-4 w-4 rounded-full text-[10px] font-bold',
+                  showFilters ? 'bg-white text-[#16A34A]' : 'bg-[#16A34A] text-white'
+                )}>
+                  {selectedTiers.size + selectedExpertise.size + selectedCerts.size + (selectedEmissions ? 1 : 0) + (netZeroOnly ? 1 : 0)}
+                </span>
+              )}
             </Button>
 
             <Button
@@ -143,24 +202,20 @@ export function SuppliersList({
 
           {/* Filter panel */}
           {showFilters && (
-            <div className="space-y-4 pt-4 border-t border-border">
+            <div className="space-y-5 pt-4 border-t border-border">
+
               {/* Tier filter */}
               <div>
-                <p className="text-xs font-medium text-text-secondary mb-2 uppercase tracking-wide">
-                  Supplier Tier
-                </p>
+                <p className="text-xs font-medium text-text-secondary mb-2 uppercase tracking-wide">Supplier Tier</p>
                 <div className="flex gap-2 flex-wrap">
                   {['preferred', 'standard', 'new'].map((tier) => (
                     <Badge
                       key={tier}
-                      variant={
-                        selectedTiers.has(tier) ? 'default' : 'outline'
-                      }
+                      variant={selectedTiers.has(tier) ? 'default' : 'outline'}
                       onClick={() => toggleTier(tier)}
                       className={cn(
-                        'cursor-pointer',
-                        selectedTiers.has(tier) &&
-                          'bg-brand-green text-white hover:bg-brand-green-mid'
+                        'cursor-pointer select-none',
+                        selectedTiers.has(tier) && 'bg-brand-green text-white hover:bg-brand-green-mid'
                       )}
                     >
                       {tier.charAt(0).toUpperCase() + tier.slice(1)}
@@ -171,23 +226,16 @@ export function SuppliersList({
 
               {/* Expertise filter */}
               <div>
-                <p className="text-xs font-medium text-text-secondary mb-2 uppercase tracking-wide">
-                  Expertise
-                </p>
+                <p className="text-xs font-medium text-text-secondary mb-2 uppercase tracking-wide">Expertise</p>
                 <div className="flex gap-2 flex-wrap max-h-32 overflow-y-auto">
                   {ALL_EXPERTISE.map((expertise) => (
                     <Badge
                       key={expertise}
-                      variant={
-                        selectedExpertise.has(expertise)
-                          ? 'default'
-                          : 'outline'
-                      }
+                      variant={selectedExpertise.has(expertise) ? 'default' : 'outline'}
                       onClick={() => toggleExpertise(expertise)}
                       className={cn(
-                        'cursor-pointer',
-                        selectedExpertise.has(expertise) &&
-                          'bg-brand-green text-white hover:bg-brand-green-mid'
+                        'cursor-pointer select-none',
+                        selectedExpertise.has(expertise) && 'bg-brand-green text-white hover:bg-brand-green-mid'
                       )}
                     >
                       {expertise}
@@ -196,18 +244,122 @@ export function SuppliersList({
                 </div>
               </div>
 
+              {/* Sustainability separator */}
+              <div className="border-t border-border pt-4 space-y-4">
+                <p className="text-xs font-semibold text-[#16A34A] uppercase tracking-wide">Sustainability</p>
+
+                {/* EcoVadis Tier */}
+                <div>
+                  <p className="text-xs font-medium text-text-secondary mb-2 uppercase tracking-wide">EcoVadis Rating</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {[
+                      { value: 'ecovadis-gold',   label: 'Gold',   cls: 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200' },
+                      { value: 'ecovadis-silver', label: 'Silver', cls: 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200' },
+                      { value: 'ecovadis-bronze', label: 'Bronze', cls: 'bg-orange-100 text-orange-900 border-orange-300 hover:bg-orange-200' },
+                    ].map(({ value, label, cls }) => (
+                      <Badge
+                        key={value}
+                        onClick={() => toggleCert(value)}
+                        className={cn(
+                          'cursor-pointer select-none border text-xs py-1 px-2',
+                          selectedCerts.has(value) ? cls + ' ring-1 ring-offset-1 ring-current' : 'bg-background text-text-secondary border-border hover:bg-gray-50'
+                        )}
+                      >
+                        {label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Certifications */}
+                <div>
+                  <p className="text-xs font-medium text-text-secondary mb-2 uppercase tracking-wide">Certifications</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {[
+                      { value: 'bcorp',        label: 'B Corp',         activeCls: 'bg-green-100 text-green-800 border-green-300' },
+                      { value: 'sbti-val',     label: 'SBTi Validated', activeCls: 'bg-blue-100 text-blue-800 border-blue-300' },
+                      { value: 'sbti-com',     label: 'SBTi Committed', activeCls: 'bg-blue-50 text-blue-700 border-blue-200' },
+                      { value: 'iso14001',     label: 'ISO 14001',      activeCls: 'bg-gray-200 text-gray-800 border-gray-400' },
+                      { value: 'carbonneutral',label: 'Carbon Neutral',  activeCls: 'bg-green-100 text-green-800 border-green-300' },
+                    ].map(({ value, label, activeCls }) => (
+                      <Badge
+                        key={value}
+                        onClick={() => toggleCert(value)}
+                        className={cn(
+                          'cursor-pointer select-none border text-xs py-1 px-2',
+                          selectedCerts.has(value)
+                            ? activeCls + ' ring-1 ring-offset-1 ring-current'
+                            : 'bg-background text-text-secondary border-border hover:bg-gray-50'
+                        )}
+                      >
+                        {label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Emissions Intensity */}
+                <div>
+                  <p className="text-xs font-medium text-text-secondary mb-2 uppercase tracking-wide">Emissions Intensity</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {[
+                      { value: 'low',    label: 'Low',    activeCls: 'bg-green-100 text-green-800 border-green-400' },
+                      { value: 'medium', label: 'Medium', activeCls: 'bg-amber-100 text-amber-800 border-amber-400' },
+                      { value: 'high',   label: 'High',   activeCls: 'bg-red-100 text-red-800 border-red-400' },
+                    ].map(({ value, label, activeCls }) => (
+                      <Badge
+                        key={value}
+                        onClick={() => setSelectedEmissions(selectedEmissions === value ? '' : value)}
+                        className={cn(
+                          'cursor-pointer select-none border text-xs py-1 px-2',
+                          selectedEmissions === value
+                            ? activeCls + ' ring-1 ring-offset-1 ring-current'
+                            : 'bg-background text-text-secondary border-border hover:bg-gray-50'
+                        )}
+                      >
+                        {label} Emissions
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Net Zero toggle */}
+                <div className="flex items-center gap-3">
+                  <button
+                    role="switch"
+                    aria-checked={netZeroOnly}
+                    onClick={() => setNetZeroOnly(!netZeroOnly)}
+                    className={cn(
+                      'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 transition-colors focus-visible:outline-none',
+                      netZeroOnly ? 'bg-[#16A34A] border-[#16A34A]' : 'bg-gray-200 border-gray-200'
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform',
+                        netZeroOnly ? 'translate-x-4' : 'translate-x-0'
+                      )}
+                    />
+                  </button>
+                  <span className="text-xs font-medium text-text-secondary">Has Net Zero target</span>
+                </div>
+              </div>
+
               {/* Clear filters button */}
-              {(selectedTiers.size > 0 || selectedExpertise.size > 0) && (
+              {hasActiveFilters && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
                     setSelectedTiers(new Set())
                     setSelectedExpertise(new Set())
+                    setSelectedCerts(new Set())
+                    setSelectedEmissions('')
+                    setNetZeroOnly(false)
                   }}
                   className="text-text-secondary"
                 >
-                  Clear Filters
+                  Clear All Filters
                 </Button>
               )}
             </div>
@@ -220,7 +372,7 @@ export function SuppliersList({
         {sortedSuppliers.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-text-secondary">
             <p className="text-sm">No suppliers found</p>
-            {(searchTerm || selectedTiers.size > 0 || selectedExpertise.size > 0) && (
+            {(searchTerm || hasActiveFilters) && (
               <Button
                 variant="link"
                 size="sm"
@@ -228,6 +380,9 @@ export function SuppliersList({
                   setSearchTerm('')
                   setSelectedTiers(new Set())
                   setSelectedExpertise(new Set())
+                  setSelectedCerts(new Set())
+                  setSelectedEmissions('')
+                  setNetZeroOnly(false)
                 }}
               >
                 Clear filters and search
@@ -244,6 +399,8 @@ export function SuppliersList({
                 onToggleExpand={() => toggleExpand(supplier.id)}
                 onViewDetails={onViewDetails}
                 onEdit={onEdit}
+                onDelete={onDelete}
+                onContactClick={onContactClick}
               />
             ))}
           </div>

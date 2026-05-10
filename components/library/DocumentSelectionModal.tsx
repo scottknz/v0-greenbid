@@ -94,7 +94,7 @@ export function DocumentSelectionModal({
               onClick={() => setSelectedCategory(null)}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                 selectedCategory === null
-                  ? 'bg-green-600 text-white'
+                  ? 'bg-brand-green text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -106,7 +106,7 @@ export function DocumentSelectionModal({
                 onClick={() => setSelectedCategory(category)}
                 className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                   selectedCategory === category
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-brand-green text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >

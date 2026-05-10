@@ -13,23 +13,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar, DollarSign, Users, Clock, Plus, Trash2, ArrowLeft, Lock } from 'lucide-react';
+import { Calendar, DollarSign, Users, Clock, Plus, Trash2, ArrowLeft, Lock, Upload, ClipboardList, FileText, X } from 'lucide-react';
 import { rfpCategories } from '@/lib/mock-rfp';
 import { generateReferenceId, getCompanyName } from '@/lib/rfp-utils';
 import type { RFPDocument, RFPMilestone } from '@/types/rfp';
+import { cn } from '@/lib/utils';
 
 interface ProjectSetupFormProps {
   projectInfo: Partial<RFPDocument['projectInfo']>;
   onUpdateProjectInfo: (info: Partial<RFPDocument['projectInfo']>) => void;
   onBack: () => void;
-  onNext: () => void;
+  onNext: (skipToEditor?: boolean) => void;
+  includeCustomQuestions: boolean;
+  onIncludeCustomQuestionsChange: (include: boolean) => void;
+  uploadedFile: File | null;
+  onFileUpload: (file: File | null) => void;
 }
 
 export function ProjectSetupForm({ 
   projectInfo, 
   onUpdateProjectInfo, 
   onBack, 
-  onNext 
+  onNext,
+  includeCustomQuestions,
+  onIncludeCustomQuestionsChange,
+  uploadedFile,
+  onFileUpload,
 }: ProjectSetupFormProps) {
   const [milestones, setMilestones] = useState<RFPMilestone[]>(
     projectInfo.milestones || []
@@ -74,6 +83,17 @@ export function ProjectSetupForm({
 
   const handleChange = (field: string, value: string | number) => {
     onUpdateProjectInfo({ ...projectInfo, [field]: value });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onFileUpload(file);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    onFileUpload(null);
   };
 
   const isValid = projectInfo.projectName && projectInfo.category && projectInfo.submissionDeadline;
@@ -444,19 +464,127 @@ export function ProjectSetupForm({
         </CardContent>
       </Card>
 
+      {/* Upload Pre-prepared RFP */}
+      <Card className="border-border">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-medium text-text-primary flex items-center gap-2">
+            <Upload className="h-4 w-4 text-brand-green" />
+            Upload Pre-prepared RFP
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            Already have an RFP document prepared? Upload it here to skip the AI interview and go directly to the editor.
+          </p>
+          
+          {uploadedFile ? (
+            <div className="flex items-center gap-3 p-3 rounded-lg border border-brand-green/30 bg-brand-green-light/30">
+              <FileText className="h-5 w-5 text-brand-green shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-text-primary truncate">{uploadedFile.name}</p>
+                <p className="text-xs text-text-muted">{(uploadedFile.size / 1024).toFixed(1)} KB</p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleRemoveFile}
+                className="text-text-muted hover:text-red-500 shrink-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-brand-green/50 transition-colors">
+              <input
+                type="file"
+                id="rfp-upload"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <label htmlFor="rfp-upload" className="cursor-pointer">
+                <Upload className="h-8 w-8 text-text-muted mx-auto mb-2" />
+                <p className="text-sm font-medium text-text-primary">Click to upload</p>
+                <p className="text-xs text-text-muted mt-1">PDF, DOC, DOCX (max 10MB)</p>
+              </label>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Custom Submission Questions */}
+      <Card className="border-border">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-medium text-text-primary flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-brand-green" />
+            Submission Questions
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            Would you like to ask suppliers custom questions as part of their submission? This allows you to collect specific information beyond the standard requirements.
+          </p>
+          
+          <div className="flex items-center gap-4 p-4 rounded-lg border border-border bg-surface">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={includeCustomQuestions}
+              onClick={() => onIncludeCustomQuestionsChange(!includeCustomQuestions)}
+              className={cn(
+                'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-colors focus-visible:outline-none',
+                includeCustomQuestions ? 'bg-[#16A34A] border-[#16A34A]' : 'bg-gray-200 border-gray-200'
+              )}
+            >
+              <span
+                className={cn(
+                  'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform',
+                  includeCustomQuestions ? 'translate-x-5' : 'translate-x-0'
+                )}
+              />
+            </button>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-text-primary">Include custom questions</p>
+              <p className="text-xs text-text-muted">You&apos;ll configure these questions in the next step</p>
+            </div>
+          </div>
+
+          {includeCustomQuestions && (
+            <div className="p-3 rounded-lg bg-brand-green-light/30 border border-brand-green/20">
+              <p className="text-xs text-text-secondary">
+                <strong className="text-brand-green">Note:</strong> Price is always a mandatory field. You can add multiple price line items and configure additional custom questions for suppliers to complete.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Actions */}
       <div className="flex justify-between pt-4">
         <Button variant="outline" onClick={onBack} className="border-border">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        <Button
-          onClick={onNext}
-          disabled={!isValid}
-          className="bg-brand-green hover:bg-brand-green-mid text-white"
-        >
-          Continue to Editor
-        </Button>
+        <div className="flex gap-3">
+          {uploadedFile && (
+            <Button
+              onClick={() => onNext(true)}
+              disabled={!isValid}
+              variant="outline"
+              className="border-brand-green text-brand-green hover:bg-brand-green-light"
+            >
+              Skip to Editor
+            </Button>
+          )}
+          <Button
+            onClick={() => onNext(false)}
+            disabled={!isValid}
+            className="bg-brand-green hover:bg-brand-green-mid text-white"
+          >
+            {includeCustomQuestions ? 'Continue to AI Interview' : 'Continue to AI Interview'}
+          </Button>
+        </div>
       </div>
     </div>
   );
