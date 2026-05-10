@@ -1839,46 +1839,66 @@ export default function RFPDetailPage() {
                   </Select>
                 </div>
 
-                {/* Activity List */}
-                <div className="space-y-4">
-                  {filteredActivity.map((activity, idx) => (
-                    <div key={activity.id} className="flex gap-4">
-                      <div className="flex flex-col items-center">
-                        <div className={cn(
-                          "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
-                          activity.type === 'phase_change' ? "bg-[#DCFCE7] text-[#16A34A]" :
-                          activity.type === 'document_upload' ? "bg-blue-100 text-blue-600" :
-                          activity.type === 'team_added' ? "bg-purple-100 text-purple-600" :
-                          activity.type === 'note_added' ? "bg-amber-100 text-amber-600" :
-                          "bg-gray-100 text-gray-600"
-                        )}>
-                          {activity.type === 'phase_change' && <ChevronRight className="h-4 w-4" />}
-                          {activity.type === 'document_upload' && <Upload className="h-4 w-4" />}
-                          {activity.type === 'team_added' && <Users className="h-4 w-4" />}
-                          {activity.type === 'note_added' && <StickyNote className="h-4 w-4" />}
-                          {activity.type === 'message_received' && <MessageSquare className="h-4 w-4" />}
-                          {activity.type === 'interest_registered' && <Send className="h-4 w-4" />}
-                        </div>
-                        {idx < filteredActivity.length - 1 && (
-                          <div className="w-0.5 flex-1 bg-border mt-2" />
-                        )}
-                      </div>
-                      <div className="flex-1 pb-6">
-                        <p className="text-sm font-medium text-text-primary">{activity.description}</p>
-                        <p className="text-xs text-text-secondary mt-1">
-                          {new Date(activity.date).toLocaleDateString('en-GB', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                          <span className="mx-1.5">•</span>
-                          {activity.user}
-                        </p>
-                      </div>
+                {/* Activity Table */}
+                <div className="border border-border rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-surface border-b border-border">
+                        <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wide px-4 py-3">Description</th>
+                        <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wide px-4 py-3 w-40">Person</th>
+                        <th className="text-left text-xs font-medium text-text-secondary uppercase tracking-wide px-4 py-3 w-44">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {filteredActivity.map((activity) => (
+                        <tr key={activity.id} className="hover:bg-surface/50 transition-colors">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className={cn(
+                                "h-7 w-7 rounded-full flex items-center justify-center shrink-0",
+                                activity.type === 'phase_change' ? "bg-[#DCFCE7] text-[#16A34A]" :
+                                activity.type === 'document_upload' ? "bg-blue-100 text-blue-600" :
+                                activity.type === 'team_added' ? "bg-purple-100 text-purple-600" :
+                                activity.type === 'note_added' ? "bg-amber-100 text-amber-600" :
+                                activity.type === 'approval_requested' ? "bg-orange-100 text-orange-600" :
+                                activity.type === 'approval_granted' ? "bg-green-100 text-green-600" :
+                                "bg-gray-100 text-gray-600"
+                              )}>
+                                {activity.type === 'phase_change' && <ChevronRight className="h-3.5 w-3.5" />}
+                                {activity.type === 'document_upload' && <Upload className="h-3.5 w-3.5" />}
+                                {activity.type === 'team_added' && <Users className="h-3.5 w-3.5" />}
+                                {activity.type === 'note_added' && <StickyNote className="h-3.5 w-3.5" />}
+                                {activity.type === 'message_received' && <MessageSquare className="h-3.5 w-3.5" />}
+                                {activity.type === 'interest_registered' && <Send className="h-3.5 w-3.5" />}
+                                {activity.type === 'approval_requested' && <Clock className="h-3.5 w-3.5" />}
+                                {activity.type === 'approval_granted' && <CheckCircle className="h-3.5 w-3.5" />}
+                              </div>
+                              <span className="text-sm text-text-primary">{activity.description}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-text-secondary">{activity.user}</td>
+                          <td className="px-4 py-3 text-sm text-text-secondary">
+                            {new Date(activity.date).toLocaleDateString('en-GB', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                            <span className="text-text-muted ml-2">
+                              {new Date(activity.date).toLocaleTimeString('en-GB', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {filteredActivity.length === 0 && (
+                    <div className="p-8 text-center text-sm text-text-muted">
+                      No activities match your search criteria.
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
