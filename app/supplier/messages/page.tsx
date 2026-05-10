@@ -304,6 +304,7 @@ export default function MessagesPage() {
   const [composeTo, setComposeTo] = useState<{ name: string; email: string } | null>(null)
   const [composeVisibility, setComposeVisibility] = useState<"all" | "private">("private")
   const [composeAttachments, setComposeAttachments] = useState<{ name: string; size: string }[]>([])
+  const [showBroadcastConfirm, setShowBroadcastConfirm] = useState(false)
   
   // Reply state
   const [replyMessage, setReplyMessage] = useState("")

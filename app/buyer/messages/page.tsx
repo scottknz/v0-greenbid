@@ -317,6 +317,7 @@ export default function MessagesPage() {
   const [composeTo, setComposeTo] = useState<{ name: string; email: string } | null>(null)
   const [composeVisibility, setComposeVisibility] = useState<"all" | "private">("private")
   const [composeAttachments, setComposeAttachments] = useState<{ name: string; size: string }[]>([])
+  const [showBroadcastConfirm, setShowBroadcastConfirm] = useState(false)
   
   // Reply state
   const [replyMessage, setReplyMessage] = useState("")
@@ -623,41 +624,47 @@ export default function MessagesPage() {
                 {/* Visibility */}
                 <div className="space-y-2">
                   <Label>Visibility</Label>
-                  <div className="flex items-center gap-1 p-1 rounded-lg bg-[#F3F4F6] w-fit">
+                  <div className="flex items-center gap-1 p-1 rounded-lg bg-blue-50 border border-blue-200 w-fit">
                     <button
                       type="button"
                       onClick={() => setComposeVisibility("private")}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                         composeVisibility === "private"
-                          ? "bg-white shadow-sm text-[#111827]"
-                          : "text-[#6B7280] hover:text-[#111827]"
+                          ? "bg-blue-600 text-white shadow-md"
+                          : "text-blue-700 hover:bg-blue-100"
                       }`}
                     >
                       <Lock className="size-3.5" />
-                      Private
+                      Private Only
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setComposeVisibility("all")
-                        setComposeRecipients(suppliersData.map(s => s.id))
-                      }}
+                      onClick={() => setShowBroadcastConfirm(true)}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                         composeVisibility === "all"
-                          ? "bg-white shadow-sm text-[#111827]"
-                          : "text-[#6B7280] hover:text-[#111827]"
+                          ? "bg-orange-600 text-white shadow-md"
+                          : "text-orange-700 hover:bg-orange-100"
                       }`}
                     >
                       <Globe className="size-3.5" />
-                      All Suppliers
+                      Broadcast All
                     </button>
                   </div>
 
-                  {composeVisibility === "all" && (
-                    <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-800">
-                      <Globe className="size-4 shrink-0 mt-0.5 text-amber-500" />
+                  {composeVisibility === "private" && (
+                    <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-800">
+                      <Lock className="size-4 shrink-0 mt-0.5 text-blue-600" />
                       <div className="text-xs leading-relaxed">
-                        <span className="font-semibold">This message will be sent to all {suppliersData.length} suppliers</span> registered for this RFP. All recipients will be able to see the message but not each other&apos;s replies.
+                        <span className="font-semibold">Private message:</span> Only selected suppliers will see this message and your responses to their individual replies.
+                      </div>
+                    </div>
+                  )}
+
+                  {composeVisibility === "all" && (
+                    <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-orange-200 bg-orange-50 text-orange-800">
+                      <Globe className="size-4 shrink-0 mt-0.5 text-orange-600" />
+                      <div className="text-xs leading-relaxed">
+                        <span className="font-semibold">Broadcast to all {suppliersData.length} suppliers:</span> All recipients will see this message publicly. Use for announcements, deadline changes, or clarifications intended for all participants. Your replies will also be visible to all.
                       </div>
                     </div>
                   )}
@@ -787,7 +794,48 @@ export default function MessagesPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          </div>
+
+          {/* Broadcast Confirmation Modal */}
+          <Dialog open={showBroadcastConfirm} onOpenChange={setShowBroadcastConfirm}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Broadcast to All Suppliers?</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3 p-3 rounded-lg border border-orange-200 bg-orange-50">
+                  <Globe className="size-5 text-orange-600 shrink-0 mt-0.5" />
+                  <div className="text-sm text-orange-800">
+                    <p className="font-semibold mb-1">This will send your message to ALL {suppliersData.length} suppliers</p>
+                    <p className="text-xs">All suppliers will see this message and your responses to their questions. This action is visible in the audit log.</p>
+                  </div>
+                </div>
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium text-gray-900">Use broadcast for:</p>
+                  <ul className="text-xs text-gray-600 space-y-1 ml-3">
+                    <li>• Deadline extensions or changes</li>
+                    <li>• Clarifications to RFP terms</li>
+                    <li>• Announcements relevant to all participants</li>
+                  </ul>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowBroadcastConfirm(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                  onClick={() => {
+                    setComposeVisibility("all")
+                    setComposeRecipients(suppliersData.map(s => s.id))
+                    setShowBroadcastConfirm(false)
+                  }}
+                >
+                  <Globe className="size-4 mr-1" />
+                  Broadcast Message
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           {/* Filter Pills */}
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={rfpFilter || "all"} onValueChange={(v) => setRfpFilter(v === "all" ? null : v)}>
