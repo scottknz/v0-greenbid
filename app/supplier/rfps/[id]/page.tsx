@@ -166,6 +166,8 @@ export default function RFPDetailPage() {
   // Form states
   const [transitionNotes, setTransitionNotes] = useState('')
   const [newNoteText, setNewNoteText] = useState('')
+  const [newNotePriority, setNewNotePriority] = useState<'low' | 'medium' | 'high'>('medium')
+  const [newNoteFiles, setNewNoteFiles] = useState<{ name: string; size: string; url: string }[]>([])
   const [questionResponses, setQuestionResponses] = useState<Record<string, string>>({})
   const [submissionAttachments, setSubmissionAttachments] = useState<File[]>([])
   const [selectedApprovers, setSelectedApprovers] = useState<string[]>([])
@@ -420,12 +422,31 @@ export default function RFPDetailPage() {
     const newNote: SupplierProposalNote = {
       id: `note-${Date.now()}`,
       timestamp: new Date().toISOString(),
-      user: 'Current User',
+      user: 'John Smith',
+      userRole: 'Account Manager',
+      userEmail: 'john.smith@company.com',
       text: newNoteText,
+      priority: newNotePriority,
+      attachments: newNoteFiles,
     }
     setProposalNotes([...proposalNotes, newNote])
     setNewNoteText('')
+    setNewNotePriority('medium')
+    setNewNoteFiles([])
     setShowAddNoteModal(false)
+  }
+
+  const handleNoteFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    const mapped = files.map(f => ({
+      name: f.name,
+      size: f.size > 1024 * 1024
+        ? `${(f.size / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.round(f.size / 1024)} KB`,
+      url: URL.createObjectURL(f),
+    }))
+    setNewNoteFiles(prev => [...prev, ...mapped])
+    e.target.value = ''
   }
   
   const handleProgressProposal = () => {
@@ -1644,189 +1665,126 @@ export default function RFPDetailPage() {
                     const toggleExpand = () => {
                       setExpandedNotes(prev => {
                         const next = new Set(prev)
-                        if (next.has(note.id)) {
-                          next.delete(note.id)
-                        } else {
-                          next.add(note.id)
-                        }
+                        if (next.has(note.id)) next.delete(note.id)
+                        else next.add(note.id)
                         return next
                       })
                     }
-                    const previewText = note.text.length > 120 ? note.text.slice(0, 120) + '...' : note.text
-                    
+
                     return (
-                      <div 
-                        key={note.id} 
+                      <div
+                        key={note.id}
                         className={cn(
                           "rounded-lg border border-border overflow-hidden transition-all",
                           isExpanded ? "bg-white shadow-sm" : "bg-surface hover:bg-white"
                         )}
                       >
-                        {/* Collapsed header - always visible */}
+                        {/* Always-visible header row */}
                         <button
                           onClick={toggleExpand}
-                          className="w-full p-4 text-left flex items-start gap-3"
+                          className="w-full px-4 py-3 text-left flex items-center gap-3"
                         >
-                          {/* Priority indicator */}
+                          {/* Priority bar */}
                           <div className={cn(
-                            "w-1 h-full min-h-[40px] rounded-full shrink-0",
+                            "w-1 self-stretch min-h-[36px] rounded-full shrink-0",
                             note.priority === 'high' ? "bg-red-400" :
                             note.priority === 'medium' ? "bg-amber-400" : "bg-gray-300"
                           )} />
-                          
-                          <div className="flex-1 min-w-0">
-                            {/* Top row: user info and meta */}
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-medium text-text-primary">{note.user}</span>
-                              {note.userRole && (
-                                <span className="text-xs text-text-muted">({note.userRole})</span>
-                              )}
-                              <span className="text-text-muted">•</span>
-                              <span className="text-xs text-text-secondary">
-                                {new Date(note.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                              </span>
-                              {note.isEdited && (
-                                <span className="text-[10px] text-text-muted italic">(edited)</span>
-                              )}
-                            </div>
-                            
-                            {/* Preview or full text based on expansion */}
-                            <p className={cn(
-                              "text-sm text-text-primary",
-                              !isExpanded && "line-clamp-2"
+
+                          <div className="flex-1 min-w-0 flex items-center gap-3 flex-wrap">
+                            {/* Author */}
+                            <span className="text-sm font-medium text-text-primary">{note.user}</span>
+                            {note.userRole && (
+                              <span className="text-xs text-text-muted">({note.userRole})</span>
+                            )}
+                            <span className="text-text-muted text-xs">•</span>
+                            {/* Date & time */}
+                            <span className="text-xs text-text-secondary">
+                              {new Date(note.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              {' '}
+                              {new Date(note.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            {/* Priority badge */}
+                            <Badge className={cn(
+                              "text-[10px] h-5 px-1.5 capitalize font-medium",
+                              note.priority === 'high' && "bg-red-100 text-red-700",
+                              note.priority === 'medium' && "bg-amber-100 text-amber-700",
+                              note.priority === 'low' && "bg-gray-100 text-gray-600"
                             )}>
-                              {isExpanded ? '' : previewText}
-                            </p>
-                            
-                            {/* Tags row */}
-                            {!isExpanded && (
-                              <div className="flex items-center gap-2 mt-2">
-                                {note.category && (
-                                  <Badge variant="outline" className={cn(
-                                    "text-[10px] h-5 capitalize",
-                                    note.category === 'technical' && "border-blue-300 text-blue-700",
-                                    note.category === 'commercial' && "border-green-300 text-green-700",
-                                    note.category === 'legal' && "border-purple-300 text-purple-700",
-                                    note.category === 'risk' && "border-red-300 text-red-700",
-                                    note.category === 'general' && "border-gray-300 text-gray-600"
-                                  )}>
-                                    {note.category}
-                                  </Badge>
-                                )}
-                                {note.attachments && note.attachments.length > 0 && (
-                                  <span className="flex items-center gap-1 text-[10px] text-text-muted">
-                                    <Paperclip className="h-3 w-3" />
-                                    {note.attachments.length} attachment{note.attachments.length !== 1 && 's'}
-                                  </span>
-                                )}
-                              </div>
+                              {note.priority}
+                            </Badge>
+                            {/* Attachment count */}
+                            {note.attachments.length > 0 && (
+                              <span className="flex items-center gap-1 text-[10px] text-text-muted">
+                                <Paperclip className="h-3 w-3" />
+                                {note.attachments.length} file{note.attachments.length !== 1 && 's'}
+                              </span>
                             )}
                           </div>
-                          
-                          {/* Expand/collapse indicator */}
+
                           <ChevronDown className={cn(
-                            "h-4 w-4 text-text-muted shrink-0 transition-transform",
+                            "h-4 w-4 text-text-muted shrink-0 transition-transform duration-200",
                             isExpanded && "rotate-180"
                           )} />
                         </button>
-                        
-                        {/* Expanded content */}
+
+                        {/* Expanded detail */}
                         {isExpanded && (
-                          <div className="px-4 pb-4 border-t border-border">
-                            {/* Full note text */}
-                            <div className="pt-4">
-                              <p className="text-sm text-text-primary whitespace-pre-wrap">{note.text}</p>
-                            </div>
-                            
-                            {/* Details grid */}
-                            <div className="mt-4 pt-4 border-t border-border grid grid-cols-2 md:grid-cols-4 gap-4">
-                              {/* Author details */}
+                          <div className="px-4 pb-4 border-t border-border space-y-4">
+                            {/* Note text */}
+                            <p className="pt-4 text-sm text-text-primary whitespace-pre-wrap leading-relaxed">{note.text}</p>
+
+                            {/* Metadata row */}
+                            <div className="pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-4">
                               <div>
-                                <p className="text-[10px] uppercase text-text-muted font-medium mb-1">Author</p>
+                                <p className="text-[10px] uppercase tracking-wide text-text-muted font-medium mb-1">Author</p>
                                 <p className="text-sm font-medium text-text-primary">{note.user}</p>
                                 {note.userRole && <p className="text-xs text-text-secondary">{note.userRole}</p>}
                                 {note.userEmail && (
-                                  <a href={`mailto:${note.userEmail}`} className="text-xs text-[#16A34A] hover:underline">
+                                  <a
+                                    href={`mailto:${note.userEmail}`}
+                                    onClick={e => e.stopPropagation()}
+                                    className="text-xs text-[#16A34A] hover:underline"
+                                  >
                                     {note.userEmail}
                                   </a>
                                 )}
                               </div>
-                              
-                              {/* Timestamp */}
                               <div>
-                                <p className="text-[10px] uppercase text-text-muted font-medium mb-1">Created</p>
+                                <p className="text-[10px] uppercase tracking-wide text-text-muted font-medium mb-1">Created</p>
                                 <p className="text-sm text-text-primary">
-                                  {new Date(note.timestamp).toLocaleDateString('en-GB', { 
-                                    day: 'numeric', month: 'short', year: 'numeric' 
-                                  })}
+                                  {new Date(note.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                                 </p>
                                 <p className="text-xs text-text-secondary">
-                                  {new Date(note.timestamp).toLocaleTimeString('en-GB', { 
-                                    hour: '2-digit', minute: '2-digit' 
-                                  })}
+                                  {new Date(note.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                                 </p>
-                                {note.isEdited && note.editedAt && (
-                                  <p className="text-[10px] text-text-muted mt-1">
-                                    Edited: {new Date(note.editedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                                  </p>
-                                )}
                               </div>
-                              
-                              {/* Category & Priority */}
                               <div>
-                                <p className="text-[10px] uppercase text-text-muted font-medium mb-1">Category</p>
-                                {note.category ? (
-                                  <Badge variant="outline" className={cn(
-                                    "text-xs capitalize",
-                                    note.category === 'technical' && "border-blue-300 text-blue-700",
-                                    note.category === 'commercial' && "border-green-300 text-green-700",
-                                    note.category === 'legal' && "border-purple-300 text-purple-700",
-                                    note.category === 'risk' && "border-red-300 text-red-700",
-                                    note.category === 'general' && "border-gray-300 text-gray-600"
-                                  )}>
-                                    {note.category}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-xs text-text-muted">Not specified</span>
-                                )}
-                                {note.priority && (
-                                  <div className="mt-2">
-                                    <p className="text-[10px] uppercase text-text-muted font-medium mb-1">Priority</p>
-                                    <Badge className={cn(
-                                      "text-xs capitalize",
-                                      note.priority === 'high' && "bg-red-100 text-red-700",
-                                      note.priority === 'medium' && "bg-amber-100 text-amber-700",
-                                      note.priority === 'low' && "bg-gray-100 text-gray-600"
-                                    )}>
-                                      {note.priority}
-                                    </Badge>
-                                  </div>
-                                )}
-                              </div>
-                              
-                              {/* Related Section */}
-                              <div>
-                                <p className="text-[10px] uppercase text-text-muted font-medium mb-1">Related Section</p>
-                                {note.relatedSection ? (
-                                  <p className="text-sm text-text-primary">{note.relatedSection}</p>
-                                ) : (
-                                  <span className="text-xs text-text-muted">Not specified</span>
-                                )}
+                                <p className="text-[10px] uppercase tracking-wide text-text-muted font-medium mb-1">Priority</p>
+                                <Badge className={cn(
+                                  "text-xs capitalize",
+                                  note.priority === 'high' && "bg-red-100 text-red-700",
+                                  note.priority === 'medium' && "bg-amber-100 text-amber-700",
+                                  note.priority === 'low' && "bg-gray-100 text-gray-600"
+                                )}>
+                                  {note.priority}
+                                </Badge>
                               </div>
                             </div>
-                            
+
                             {/* Attachments */}
-                            {note.attachments && note.attachments.length > 0 && (
-                              <div className="mt-4 pt-4 border-t border-border">
-                                <p className="text-[10px] uppercase text-text-muted font-medium mb-2">Attachments</p>
+                            {note.attachments.length > 0 && (
+                              <div className="pt-4 border-t border-border">
+                                <p className="text-[10px] uppercase tracking-wide text-text-muted font-medium mb-2">Attachments</p>
                                 <div className="flex flex-wrap gap-2">
                                   {note.attachments.map((att, idx) => (
                                     <a
                                       key={idx}
                                       href={att.url}
+                                      onClick={e => e.stopPropagation()}
                                       className="flex items-center gap-2 px-3 py-2 bg-surface rounded-md border border-border text-sm text-text-primary hover:border-[#16A34A] hover:text-[#16A34A] transition-colors"
                                     >
-                                      <FileText className="h-4 w-4" />
+                                      <FileText className="h-3.5 w-3.5 shrink-0" />
                                       <span>{att.name}</span>
                                       <span className="text-xs text-text-muted">({att.size})</span>
                                     </a>
@@ -2101,22 +2059,106 @@ export default function RFPDetailPage() {
       </Dialog>
       
       {/* Add Note Modal */}
-      <Dialog open={showAddNoteModal} onOpenChange={setShowAddNoteModal}>
-        <DialogContent className="max-w-md">
+      <Dialog open={showAddNoteModal} onOpenChange={(open) => {
+        if (!open) {
+          setNewNoteText('')
+          setNewNotePriority('medium')
+          setNewNoteFiles([])
+        }
+        setShowAddNoteModal(open)
+      }}>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Add Internal Note</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
-            <Label htmlFor="new-note">Note</Label>
-            <Textarea
-              id="new-note"
-              value={newNoteText}
-              onChange={(e) => setNewNoteText(e.target.value)}
-              placeholder="Add a note about this proposal..."
-              className="min-h-[120px]"
-            />
+          <div className="space-y-4 py-1">
+
+            {/* Author (read-only) */}
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-surface border border-border">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#16A34A] text-white text-xs font-semibold shrink-0">
+                JS
+              </div>
+              <div>
+                <p className="text-sm font-medium text-text-primary">John Smith</p>
+                <p className="text-xs text-text-secondary">Account Manager · john.smith@company.com</p>
+              </div>
+            </div>
+
+            {/* Priority */}
+            <div className="space-y-1.5">
+              <Label>Priority</Label>
+              <div className="flex gap-2">
+                {(['low', 'medium', 'high'] as const).map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setNewNotePriority(p)}
+                    className={cn(
+                      "flex-1 py-1.5 rounded-md border text-xs font-medium capitalize transition-colors",
+                      newNotePriority === p
+                        ? p === 'high' ? "bg-red-100 border-red-300 text-red-700"
+                          : p === 'medium' ? "bg-amber-100 border-amber-300 text-amber-700"
+                          : "bg-gray-100 border-gray-300 text-gray-600"
+                        : "border-border text-text-secondary hover:bg-surface"
+                    )}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Note text */}
+            <div className="space-y-1.5">
+              <Label htmlFor="new-note">Note</Label>
+              <Textarea
+                id="new-note"
+                value={newNoteText}
+                onChange={(e) => setNewNoteText(e.target.value)}
+                placeholder="Add a note about this proposal..."
+                className="min-h-[120px] resize-none"
+              />
+            </div>
+
+            {/* File upload */}
+            <div className="space-y-1.5">
+              <Label>Attachments</Label>
+              <div className="space-y-2">
+                {newNoteFiles.length > 0 && (
+                  <div className="space-y-1">
+                    {newNoteFiles.map((f, idx) => (
+                      <div key={idx} className="flex items-center gap-2 px-3 py-2 rounded-md bg-surface border border-border">
+                        <FileText className="h-3.5 w-3.5 text-text-secondary shrink-0" />
+                        <span className="text-xs text-text-primary flex-1 truncate">{f.name}</span>
+                        <span className="text-xs text-text-muted shrink-0">{f.size}</span>
+                        <button
+                          type="button"
+                          onClick={() => setNewNoteFiles(prev => prev.filter((_, i) => i !== idx))}
+                          className="text-text-muted hover:text-red-500 transition-colors ml-1"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={handleNoteFileInput}
+                  />
+                  <span className="flex items-center gap-1.5 text-xs text-text-secondary border border-dashed border-border rounded-md px-3 py-2 w-full hover:border-[#16A34A] hover:text-[#16A34A] transition-colors">
+                    <Paperclip className="h-3.5 w-3.5" />
+                    Click to attach files
+                  </span>
+                </label>
+              </div>
+            </div>
           </div>
-          <DialogFooter className="gap-2 mt-4">
+
+          <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowAddNoteModal(false)}>
               Cancel
             </Button>
