@@ -124,7 +124,6 @@ export default function BuyerDashboardPage() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }
