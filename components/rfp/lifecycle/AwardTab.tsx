@@ -385,78 +385,80 @@ export function AwardTab({
 
         {/* Award Flow Modal */}
         <Dialog open={showAwardFlow} onOpenChange={handleCloseFlow}>
-          <DialogContent className="sm:max-w-[680px] max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[620px] flex flex-col max-h-[85vh] p-0 gap-0">
 
             {/* ── Step 1: Confirm Winner ── */}
             {awardStep === 'confirm' && (
               <>
-                <DialogHeader>
+                <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
                   <DialogTitle className="flex items-center gap-2">
                     <Award className="h-5 w-5 text-brand-green" />
                     Confirm Award
                   </DialogTitle>
                   <DialogDescription>
-                    Review the selected supplier and contract value before proceeding. You will be able to compose messages to all participants in the next step.
+                    Review the selected supplier and contract value before proceeding. You will compose messages to all participants in the next step.
                   </DialogDescription>
                 </DialogHeader>
 
-                {selectedWinnerRanking && (
-                  <div className="py-4 space-y-4">
-                    {/* Winner card */}
-                    <div className="flex items-center gap-4 p-4 bg-brand-green-light/30 rounded-lg border border-brand-green/20">
-                      <Avatar className="h-14 w-14 border-2 border-brand-green">
-                        <AvatarFallback className="bg-brand-green-light text-brand-green font-semibold">
-                          {getInitials(selectedWinnerRanking.supplierName)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-semibold text-text-primary text-lg">
-                          {selectedWinnerRanking.supplierName}
-                        </p>
-                        <p className="text-sm text-text-muted">
-                          Rank #{selectedWinnerRanking.rank} &middot; {selectedWinnerRanking.percentageScore}% overall score
-                        </p>
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+                  {selectedWinnerRanking && (
+                    <>
+                      {/* Winner card */}
+                      <div className="flex items-center gap-3 p-3 bg-brand-green-light/30 rounded-lg border border-brand-green/20">
+                        <Avatar className="h-11 w-11 border-2 border-brand-green shrink-0">
+                          <AvatarFallback className="bg-brand-green-light text-brand-green font-semibold text-sm">
+                            {getInitials(selectedWinnerRanking.supplierName)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-text-primary">
+                            {selectedWinnerRanking.supplierName}
+                          </p>
+                          <p className="text-xs text-text-muted">
+                            Rank #{selectedWinnerRanking.rank} &middot; {selectedWinnerRanking.percentageScore}% overall score
+                          </p>
+                        </div>
+                        <Badge className="bg-brand-green text-white shrink-0">Selected Winner</Badge>
                       </div>
-                      <Badge className="bg-brand-green text-white">Selected Winner</Badge>
-                    </div>
 
-                    {/* Contract value */}
-                    <div className="space-y-2">
-                      <Label>Contract Value</Label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
-                        <Input
-                          type="number"
-                          value={contractValue}
-                          onChange={e => setContractValue(e.target.value)}
-                          className="pl-10 bg-background border-border"
-                          placeholder="Enter contract value"
-                        />
+                      {/* Contract value */}
+                      <div className="space-y-1.5">
+                        <Label className="text-sm">Contract Value</Label>
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+                          <Input
+                            type="number"
+                            value={contractValue}
+                            onChange={e => setContractValue(e.target.value)}
+                            className="pl-9 bg-background border-border"
+                            placeholder="Enter contract value"
+                          />
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Unsuccessful count */}
-                    <div className="p-3 bg-surface rounded-lg border border-border flex items-center gap-3">
-                      <Users className="h-5 w-5 text-text-muted shrink-0" />
-                      <p className="text-sm text-text-secondary">
-                        <span className="font-medium">{responses.length - 1} other supplier{responses.length - 1 !== 1 ? 's' : ''}</span> will be notified as unsuccessful in the next step.
-                      </p>
-                    </div>
-
-                    {/* Warning */}
-                    <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-2">
-                      <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                      <div className="text-sm">
-                        <p className="font-medium text-amber-800">This action cannot be undone</p>
-                        <p className="text-amber-700 mt-0.5">
-                          Once confirmed, the RFP will be marked as awarded. You will then compose notification messages to all suppliers.
+                      {/* Unsuccessful count */}
+                      <div className="p-3 bg-surface rounded-lg border border-border flex items-center gap-2">
+                        <Users className="h-4 w-4 text-text-muted shrink-0" />
+                        <p className="text-sm text-text-secondary">
+                          <span className="font-medium">{responses.length - 1} other supplier{responses.length - 1 !== 1 ? 's' : ''}</span> will be notified as unsuccessful in the next step.
                         </p>
                       </div>
-                    </div>
-                  </div>
-                )}
 
-                <DialogFooter>
+                      {/* Warning */}
+                      <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                        <div className="text-sm">
+                          <p className="font-medium text-amber-800">This action cannot be undone</p>
+                          <p className="text-amber-700 mt-0.5 text-xs">
+                            Once confirmed, the RFP will be marked as awarded. You will then compose notification messages to all suppliers.
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <DialogFooter className="px-6 py-4 border-t border-border shrink-0">
                   <Button variant="outline" onClick={handleCloseFlow}>Cancel</Button>
                   <Button
                     onClick={handleConfirmAndCompose}
@@ -472,54 +474,54 @@ export function AwardTab({
             {/* ── Step 2: Compose Messages ── */}
             {awardStep === 'compose' && !messagesSent && (
               <>
-                <DialogHeader>
+                <DialogHeader className="px-6 pt-5 pb-4 border-b border-border shrink-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="h-7 w-7 rounded-full bg-brand-green flex items-center justify-center">
-                      <CheckCircle className="h-4 w-4 text-white" />
+                    <div className="h-6 w-6 rounded-full bg-brand-green flex items-center justify-center">
+                      <CheckCircle className="h-3.5 w-3.5 text-white" />
                     </div>
-                    <Badge className="bg-brand-green text-white">Contract Awarded</Badge>
+                    <Badge className="bg-brand-green text-white text-xs">Contract Awarded</Badge>
                   </div>
                   <DialogTitle className="flex items-center gap-2">
                     <MessageSquare className="h-5 w-5 text-text-primary" />
                     Notify Suppliers
                   </DialogTitle>
-                  <DialogDescription>
-                    Compose your messages below. Both will be sent to the Message Centre and delivered to each supplier when you click Send. Use <code className="bg-surface px-1 rounded text-xs">{'{supplierName}'}</code> in the unsuccessful message — it will be personalised automatically.
+                  <DialogDescription className="text-xs leading-relaxed">
+                    Compose your messages below. Both go to the Message Centre when you click Send. Use <code className="bg-surface px-1 rounded">{'{supplierName}'}</code> in the unsuccessful message to personalise automatically.
                   </DialogDescription>
                 </DialogHeader>
 
-                <div className="py-4 space-y-6">
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
 
                   {/* ── Winner message ── */}
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                        <Trophy className="h-3.5 w-3.5 text-amber-600" />
+                      <div className="h-5 w-5 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                        <Trophy className="h-3 w-3 text-amber-600" />
                       </div>
                       <h4 className="font-semibold text-text-primary text-sm">
-                        Message to winning supplier — {selectedWinnerResponse?.supplierName}
+                        Winner — {selectedWinnerResponse?.supplierName}
                       </h4>
                     </div>
-                    <div className="rounded-lg border border-brand-green/30 bg-brand-green-light/10 p-4 space-y-3">
-                      <div className="space-y-1.5">
+                    <div className="rounded-lg border border-brand-green/30 bg-brand-green-light/10 p-3 space-y-2">
+                      <div className="space-y-1">
                         <Label className="text-xs text-text-secondary">Subject</Label>
                         <Input
                           value={winnerSubject}
                           onChange={e => setWinnerSubject(e.target.value)}
-                          className="bg-background border-border text-sm h-9"
+                          className="bg-background border-border text-sm h-8"
                         />
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-1">
                         <div className="flex items-center justify-between">
                           <Label className="text-xs text-text-secondary">Message</Label>
                           <span className="text-xs text-text-muted flex items-center gap-1">
-                            <Pencil className="h-3 w-3" /> Fully editable
+                            <Pencil className="h-3 w-3" /> Editable
                           </span>
                         </div>
                         <Textarea
                           value={winnerMessage}
                           onChange={e => setWinnerMessage(e.target.value)}
-                          className="min-h-[160px] bg-background border-border text-sm resize-none"
+                          className="min-h-[100px] bg-background border-border text-sm resize-none"
                         />
                       </div>
                     </div>
@@ -536,68 +538,68 @@ export function AwardTab({
                   </div>
 
                   {/* ── Rejection message ── */}
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-surface border border-border flex items-center justify-center shrink-0">
-                          <Mail className="h-3.5 w-3.5 text-text-muted" />
+                        <div className="h-5 w-5 rounded-full bg-surface border border-border flex items-center justify-center shrink-0">
+                          <Mail className="h-3 w-3 text-text-muted" />
                         </div>
                         <h4 className="font-semibold text-text-primary text-sm">
-                          Message to {unsuccessfulResponses.length} unsuccessful supplier{unsuccessfulResponses.length !== 1 ? 's' : ''}
+                          {unsuccessfulResponses.length} unsuccessful supplier{unsuccessfulResponses.length !== 1 ? 's' : ''}
                         </h4>
                       </div>
-                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <label className="flex items-center gap-1.5 cursor-pointer select-none">
                         <input
                           type="checkbox"
                           checked={sendRejections}
                           onChange={e => setSendRejections(e.target.checked)}
-                          className="accent-brand-green h-4 w-4"
+                          className="accent-brand-green h-3.5 w-3.5"
                         />
-                        <span className="text-xs text-text-secondary">Send this message</span>
+                        <span className="text-xs text-text-secondary">Send message</span>
                       </label>
                     </div>
 
                     <div className={cn(
-                      'rounded-lg border p-4 space-y-3 transition-opacity',
+                      'rounded-lg border p-3 space-y-2 transition-opacity',
                       sendRejections ? 'border-border bg-background' : 'border-border bg-surface opacity-50 pointer-events-none'
                     )}>
                       {/* Recipient pills */}
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-1">
                         {unsuccessfulResponses.map(resp => (
                           <span key={resp.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface border border-border text-xs text-text-secondary">
-                            <Avatar className="h-4 w-4">
-                              <AvatarFallback className="text-[9px]">{getInitials(resp.supplierName)}</AvatarFallback>
+                            <Avatar className="h-3.5 w-3.5">
+                              <AvatarFallback className="text-[8px]">{getInitials(resp.supplierName)}</AvatarFallback>
                             </Avatar>
                             {resp.supplierName}
                           </span>
                         ))}
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-1">
                         <Label className="text-xs text-text-secondary">Subject</Label>
                         <Input
                           value={rejectionSubject}
                           onChange={e => setRejectionSubject(e.target.value)}
-                          className="bg-background border-border text-sm h-9"
+                          className="bg-background border-border text-sm h-8"
                         />
                       </div>
-                      <div className="space-y-1.5">
+                      <div className="space-y-1">
                         <div className="flex items-center justify-between">
                           <Label className="text-xs text-text-secondary">Message</Label>
                           <span className="text-xs text-text-muted">
-                            Use <code className="bg-surface px-1 rounded">{'{supplierName}'}</code> to personalise
+                            Use <code className="bg-surface px-1 rounded">{'{supplierName}'}</code>
                           </span>
                         </div>
                         <Textarea
                           value={rejectionMessage}
                           onChange={e => setRejectionMessage(e.target.value)}
-                          className="min-h-[140px] bg-background border-border text-sm resize-none"
+                          className="min-h-[100px] bg-background border-border text-sm resize-none"
                         />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <DialogFooter className="gap-2">
+                <DialogFooter className="px-6 py-4 border-t border-border shrink-0 gap-2">
                   <Button variant="outline" onClick={handleCloseFlow}>Cancel</Button>
                   <Button
                     onClick={handleSendMessages}
@@ -614,15 +616,15 @@ export function AwardTab({
             {/* ── Sent confirmation ── */}
             {awardStep === 'compose' && messagesSent && (
               <>
-                <DialogHeader>
+                <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
                   <DialogTitle className="flex items-center gap-2">
                     <CheckCircle className="h-5 w-5 text-brand-green" />
                     Messages Sent
                   </DialogTitle>
                 </DialogHeader>
-                <div className="py-6 flex flex-col items-center gap-4 text-center">
-                  <div className="h-16 w-16 rounded-full bg-brand-green-light flex items-center justify-center">
-                    <Send className="h-8 w-8 text-brand-green" />
+                <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col items-center gap-4 text-center">
+                  <div className="h-14 w-14 rounded-full bg-brand-green-light flex items-center justify-center">
+                    <Send className="h-7 w-7 text-brand-green" />
                   </div>
                   <div>
                     <p className="font-semibold text-text-primary text-lg">All notifications sent</p>
@@ -633,7 +635,7 @@ export function AwardTab({
                   <div className="flex flex-col gap-2 w-full max-w-xs">
                     <div className="flex items-center gap-2 p-3 rounded-lg bg-brand-green-light/30 border border-brand-green/20">
                       <Trophy className="h-4 w-4 text-amber-600 shrink-0" />
-                      <span className="text-sm text-text-secondary">
+                      <span className="text-sm text-text-secondary text-left">
                         Award notification sent to{' '}
                         <span className="font-medium text-text-primary">{selectedWinnerResponse?.supplierName}</span>
                       </span>
@@ -641,7 +643,7 @@ export function AwardTab({
                     {sendRejections && (
                       <div className="flex items-center gap-2 p-3 rounded-lg bg-surface border border-border">
                         <Mail className="h-4 w-4 text-text-muted shrink-0" />
-                        <span className="text-sm text-text-secondary">
+                        <span className="text-sm text-text-secondary text-left">
                           Decline notices sent to{' '}
                           <span className="font-medium text-text-primary">{unsuccessfulResponses.length} supplier{unsuccessfulResponses.length !== 1 ? 's' : ''}</span>
                         </span>
@@ -649,7 +651,7 @@ export function AwardTab({
                     )}
                   </div>
                 </div>
-                <DialogFooter className="gap-2">
+                <DialogFooter className="px-6 py-4 border-t border-border shrink-0 gap-2">
                   <Button variant="outline" onClick={handleCloseFlow}>Close</Button>
                   <Button
                     onClick={() => router.push('/buyer/messages')}
