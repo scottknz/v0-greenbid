@@ -193,25 +193,31 @@ export function Sidebar({ variant }: SidebarProps) {
       </div>
 
       <div className="border-t border-border p-2">
-        <button
-          className={cn(
-            'flex w-full items-center gap-3 rounded-md p-2 text-sm transition-colors hover:bg-surface-hover',
-            isSidebarCollapsed ? 'justify-center' : 'justify-start'
-          )}
-          aria-label="User menu"
-        >
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-border-strong text-xs font-semibold text-text-primary">
-            U
+        <div className={cn(
+          'flex items-center gap-2 rounded-md p-2',
+          isSidebarCollapsed ? 'justify-center' : 'justify-between'
+        )}>
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F0FDF4] text-xs font-semibold text-[#16A34A]">
+              JD
+            </div>
+            {!isSidebarCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-text-primary truncate">John Doe</p>
+                <p className="text-[10px] text-text-muted truncate">Procurement Manager</p>
+              </div>
+            )}
           </div>
           {!isSidebarCollapsed && (
-            <>
-              <span className="flex-1 truncate text-left font-medium text-text-primary">
-                Current User
-              </span>
-              <MoreHorizontal className="h-4 w-4 text-text-muted" />
-            </>
+            <button
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-1.5 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-hover transition-colors"
+              aria-label="Settings"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
           )}
-        </button>
+        </div>
       </div>
     </div>
   );
