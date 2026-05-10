@@ -188,10 +188,7 @@ export function Sidebar({ variant }: SidebarProps) {
               JD
             </div>
             {!isSidebarCollapsed && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text-primary truncate">John Doe</p>
-                <p className="text-[10px] text-text-muted truncate">Procurement Manager</p>
-              </div>
+              <p className="text-sm font-medium text-text-primary truncate">John Doe</p>
             )}
           </div>
           {!isSidebarCollapsed && (
