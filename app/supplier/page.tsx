@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { 
   FileText, Clock, MessageSquare, AlertCircle, ChevronRight, 
   Calendar, Building2, ArrowRight, Sparkles, MapPin, DollarSign,
@@ -259,10 +258,10 @@ export default function SupplierDashboard() {
         </Link>
       </div>
 
-      {/* Two column layout: Active RFPs (left, wider) + Requires Attention & Opportunities (right, stacked) */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      {/* Two column layout: Active RFPs (left, wider) + Requires Attention (right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         
-        {/* Left column: My Active RFPs (spans 3 of 5) */}
+        {/* Left column: My Active RFPs (spans 2.5 of 4) */}
         <Card className="lg:col-span-3 border-[#E5E7EB]">
           <CardHeader className="pb-0">
             <div className="flex items-center justify-between">
@@ -322,22 +321,17 @@ export default function SupplierDashboard() {
               })}
             </div>
             {/* Table footer */}
-            <div className="pt-4 border-t border-[#E5E7EB] mt-2">
-              <Link href="/supplier/rfps">
-                <Button variant="outline" size="sm" className="w-full text-[#16A34A] border-[#16A34A] hover:bg-[#F0FDF4]">
-                  View all RFPs
-                  <ArrowRight className="h-3.5 w-3.5 ml-2" />
-                </Button>
+            <div className="pt-3 border-t border-[#E5E7EB] mt-2">
+              <Link href="/supplier/rfps" className="text-sm text-[#16A34A] hover:underline font-medium flex items-center gap-1">
+                View all RFPs
+                <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </CardContent>
         </Card>
 
-        {/* Right column: Requires Attention + New Opportunities stacked (spans 2 of 5) */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Requires Attention */}
-          <Card className="border-[#E5E7EB]">
+        {/* Right column: Requires Attention (spans 1 of 4) */}
+        <Card className="lg:col-span-1 border-[#E5E7EB]">
             <CardHeader className="pb-0">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold text-[#111827] flex items-center gap-2">
@@ -375,19 +369,17 @@ export default function SupplierDashboard() {
                 ))}
               </div>
               {/* Table footer */}
-              <div className="pt-4 border-t border-[#E5E7EB] mt-2">
-                <Link href="/supplier/rfps?filter=attention">
-                  <Button variant="outline" size="sm" className="w-full text-amber-600 border-amber-300 hover:bg-amber-50">
-                    View all tasks
-                    <ArrowRight className="h-3.5 w-3.5 ml-2" />
-                  </Button>
+              <div className="pt-3 border-t border-[#E5E7EB] mt-2">
+                <Link href="/supplier/rfps?filter=attention" className="text-sm text-amber-600 hover:underline font-medium flex items-center gap-1">
+                  View all tasks
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </CardContent>
           </Card>
 
-          {/* New Opportunities */}
-          <Card className="border-[#E5E7EB]">
+      {/* Full-width New Opportunities at bottom */}
+      <Card className="border-[#E5E7EB]">
             <CardHeader className="pb-0">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold text-[#111827] flex items-center gap-2">
@@ -434,17 +426,14 @@ export default function SupplierDashboard() {
                 })}
               </div>
               {/* Table footer */}
-              <div className="pt-4 border-t border-[#E5E7EB] mt-2">
-                <Link href="/supplier/marketplace">
-                  <Button variant="outline" size="sm" className="w-full text-blue-600 border-blue-300 hover:bg-blue-50">
-                    Browse Marketplace
-                    <ArrowRight className="h-3.5 w-3.5 ml-2" />
-                  </Button>
+              <div className="pt-3 border-t border-[#E5E7EB] mt-2">
+                <Link href="/supplier/marketplace" className="text-sm text-blue-600 hover:underline font-medium flex items-center gap-1">
+                  Browse Marketplace
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </CardContent>
           </Card>
-        </div>
       </div>
     </div>
   )
