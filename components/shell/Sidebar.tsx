@@ -103,7 +103,7 @@ export function Sidebar({ variant }: SidebarProps) {
       )}>
         {!isSidebarCollapsed && (
           <Link href="/" className="flex items-center overflow-hidden hover:opacity-80 transition-opacity">
-            <Image src="/greenbid-logo-new.jpg" alt="Greenbid" width={120} height={32} className="h-7 w-auto" />
+            <Image src="/greenbid-logo-green.png" alt="Greenbid" width={100} height={28} className="h-7 w-auto" />
           </Link>
         )}
         <button
