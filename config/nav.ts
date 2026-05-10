@@ -17,6 +17,7 @@ export const buyerNav: NavItem[] = [
   { label: 'Messages', href: '/buyer/messages', icon: 'Mail', section: 'main', badgeCount: 2 },
   { label: 'Activity Log', href: '/buyer/activity', icon: 'ClipboardList', section: 'main' },
   { label: 'Approvals', href: '/buyer/approvals', icon: 'Shield', section: 'main' },
+  { label: 'Marketplace', href: '/supplier/marketplace', icon: 'Library', section: 'secondary' },
   { label: 'AI Copilot', href: '#', icon: 'MessageSquare', section: 'secondary', isChatTrigger: true },
 ];
 
