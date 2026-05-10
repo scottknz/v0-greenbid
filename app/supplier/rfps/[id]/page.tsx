@@ -102,7 +102,6 @@ export default function RFPDetailPage() {
   const [phaseHistory, setPhaseHistory] = useState<SupplierRFPPhaseTransition[]>(mockRFPDetail.phaseHistory)
   const [proposalNotes, setProposalNotes] = useState<SupplierProposalNote[]>(mockRFPDetail.proposalNotes)
   const [phaseBeforeDecline, setPhaseBeforeDecline] = useState<SupplierRFPPhase | null>(mockRFPDetail.phaseBeforeDecline)
-  const [showRetractConfirm, setShowRetractConfirm] = useState(false)
   
   // Modal states
   const [showDeclineConfirmModal, setShowDeclineConfirmModal] = useState(false)
@@ -271,33 +270,12 @@ export default function RFPDetailPage() {
   }
   
   const handleSubmitProposal = () => {
-    setShowFinalReviewModal(false)
-    setPhaseHistory([
-      ...phaseHistory,
-      {
-        phase: 'submitted',
-        timestamp: new Date().toISOString(),
-        user: 'current-user',
-        notes: 'Proposal submitted to buyer',
-      },
-    ])
-    setCurrentPhase('submitted')
-  }
-
-  const handleRetractAndEdit = () => {
-    setShowRetractConfirm(false)
-    // Revert to previous phase for editing
-    setPhaseHistory([
-      ...phaseHistory,
-      {
-        phase: 'under_final_review',
-        timestamp: new Date().toISOString(),
-        user: 'current-user',
-        notes: 'Proposal retracted for editing',
-      },
-    ])
-    setCurrentPhase('under_final_review')
-  }
+    const submitTransition: SupplierRFPPhaseTransition = {
+      phase: 'submitted',
+      timestamp: new Date().toISOString(),
+      user: 'Current User',
+      notes: 'Proposal submitted to buyer',
+    }
     setPhaseHistory([...phaseHistory, submitTransition])
     setCurrentPhase('submitted')
     setShowFinalReviewModal(false)
@@ -346,25 +324,11 @@ export default function RFPDetailPage() {
     }
   }
 
-  const isCurrentUserOrgLead = team.some(m => m.isLead)
-  
   const getPhaseButtonDisabled = () => {
-    // Non-leads cannot submit
-    if ((currentPhase === 'under_final_review' || currentPhase === 'in_progress') && !isCurrentUserOrgLead) {
-      return true
-    }
     if (currentPhase === 'under_final_review' && currentApproval?.status === 'pending') {
       return true
     }
     return false
-  }
-
-  const getPhaseButtonTooltip = () => {
-    if ((currentPhase === 'under_final_review' || currentPhase === 'in_progress') && !isCurrentUserOrgLead) {
-      const lead = team.find(m => m.isLead)
-      return `Only the Organization Lead (${lead?.name}) can submit this proposal`
-    }
-    return ''
   }
 
   const handleCopilotMessage = (message: string) => {
@@ -490,45 +454,20 @@ export default function RFPDetailPage() {
           <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-2">
               {!isTerminalPhase && currentPhase !== 'submitted' && currentPhase !== 'client_reviewing' && currentPhase !== 'declined' && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={handleContinueResponse}
-                    disabled={getPhaseButtonDisabled()}
-                    className="bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50"
-                    title={getPhaseButtonTooltip()}
-                  >
-                    <ChevronRight className="h-4 w-4 mr-2" />
-                    {getPhaseButtonLabel()}
-                  </Button>
-                  {!isCurrentUserOrgLead && (currentPhase === 'in_progress' || currentPhase === 'under_final_review') && (
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-blue-50 border border-blue-200">
-                      <Crown className="h-3.5 w-3.5 text-blue-600" />
-                      <p className="text-[11px] text-blue-700 font-medium">
-                        {(() => {
-                          const lead = team.find(m => m.isLead)
-                          return lead ? `${lead.name} is the Organization Lead` : 'No Organization Lead assigned'
-                        })()}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                <Button
+                  onClick={handleContinueResponse}
+                  disabled={getPhaseButtonDisabled()}
+                  className="bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50"
+                >
+                  <ChevronRight className="h-4 w-4 mr-2" />
+                  {getPhaseButtonLabel()}
+                </Button>
               )}
               {currentPhase === 'submitted' && (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-[#16A34A]" />
-                    <p className="text-sm text-[#16A34A] font-medium">Proposal submitted — awaiting client review.</p>
-                  </div>
-                  <Button
-                    onClick={() => setShowRetractConfirm(true)}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs ml-auto"
-                  >
-                    <History className="h-3.5 w-3.5 mr-1" />
-                    Retract & Edit
-                  </Button>
-                </div>
+                <p className="text-sm text-[#16A34A] font-medium flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Proposal submitted — awaiting client review.
+                </p>
               )}
               {currentPhase === 'client_reviewing' && (
                 <p className="text-sm text-gray-500 flex items-center gap-2">
@@ -1099,39 +1038,8 @@ export default function RFPDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Retract & Edit Confirmation Modal */}
-      <Dialog open={showRetractConfirm} onOpenChange={setShowRetractConfirm}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-amber-700">Retract and Edit Proposal?</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-text-secondary">
-              Retracting this proposal will remove it from buyer review and allow you to make edits. You can resubmit when ready.
-            </p>
-            <div className="flex items-start gap-2.5 p-3 rounded-lg border border-amber-200 bg-amber-50">
-              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-800">
-                The buyer will be notified that you've withdrawn your proposal. This may impact your standing for this RFP.
-              </p>
-            </div>
-          </div>
-          <DialogFooter className="gap-2 mt-4">
-            <Button variant="outline" onClick={() => setShowRetractConfirm(false)}>
-              Cancel
-            </Button>
-            <Button
-              className="bg-amber-600 hover:bg-amber-700 text-white"
-              onClick={handleRetractAndEdit}
-            >
-              <History className="h-4 w-4 mr-2" />
-              Retract & Edit
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       
+      {/* Submission Modal - Questions Page */}
       <Dialog open={showSubmissionModal} onOpenChange={setShowSubmissionModal}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
