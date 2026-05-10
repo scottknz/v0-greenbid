@@ -141,6 +141,32 @@ export interface RFPVersion {
   sections: RFPSectionContent[];
 }
 
+// Submission Questions (Custom Questions for Suppliers)
+export type SubmissionFieldType = 'text' | 'number' | 'date';
+
+export interface SubmissionQuestion {
+  id: string;
+  label: string;
+  description?: string;
+  fieldType: SubmissionFieldType;
+  required: boolean;
+  isMandatory: boolean; // System-required fields (cannot be deleted)
+  order: number;
+}
+
+export interface PriceLineItem {
+  id: string;
+  label: string;
+  description?: string;
+  order: number;
+}
+
+export interface SubmissionQuestionsConfig {
+  includeCustomQuestions: boolean;
+  priceLineItems: PriceLineItem[];
+  customQuestions: SubmissionQuestion[];
+}
+
 // RFP Template
 export interface RFPTemplate {
   id: string;

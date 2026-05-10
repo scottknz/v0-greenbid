@@ -5,19 +5,21 @@ import { useRouter } from 'next/navigation';
 import { TemplateSelector } from '@/components/rfp/TemplateSelector';
 import { ProjectSetupForm } from '@/components/rfp/ProjectSetupForm';
 import { RFPInterview } from '@/components/rfp/RFPInterview';
+import { SubmissionQuestionsStep } from '@/components/rfp/SubmissionQuestionsStep';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Settings, MessageSquare, Edit3 } from 'lucide-react';
+import { ArrowLeft, FileText, Settings, MessageSquare, ClipboardList, Edit3 } from 'lucide-react';
 import { rfpTemplates, createRFPFromTemplate, saveRFP } from '@/lib/mock-rfp';
-import type { RFPTemplate, RFPDocument } from '@/types/rfp';
+import type { RFPTemplate, RFPDocument, SubmissionQuestionsConfig } from '@/types/rfp';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-type Step = 'template' | 'setup' | 'interview';
+type Step = 'template' | 'setup' | 'interview' | 'questions';
 
 const steps = [
   { id: 'template', label: 'Select Template', icon: FileText },
   { id: 'setup', label: 'Project Details', icon: Settings },
   { id: 'interview', label: 'AI Interview', icon: MessageSquare },
+  { id: 'questions', label: 'Submission Questions', icon: ClipboardList },
   { id: 'editor', label: 'Edit Document', icon: Edit3 },
 ];
 
@@ -33,6 +35,13 @@ export default function CreateRFPPage() {
     milestones: [],
   });
   const [interviewData, setInterviewData] = useState<Record<string, string>>({});
+  const [uploadedRFPFile, setUploadedRFPFile] = useState<File | null>(null);
+  const [includeCustomQuestions, setIncludeCustomQuestions] = useState(false);
+  const [submissionConfig, setSubmissionConfig] = useState<SubmissionQuestionsConfig>({
+    includeCustomQuestions: false,
+    priceLineItems: [{ id: 'price-1', label: 'Total Price', description: '', order: 0 }],
+    customQuestions: [],
+  });
 
   const handleSelectTemplate = (template: RFPTemplate) => {
     setSelectedTemplate(template);
@@ -48,9 +57,14 @@ export default function CreateRFPPage() {
     setCurrentStep('template');
   };
 
-  const handleNextFromSetup = () => {
+  const handleNextFromSetup = (skipToEditor?: boolean) => {
     if (projectInfo.projectName) {
-      setCurrentStep('interview');
+      if (skipToEditor) {
+        // User uploaded a pre-prepared RFP - skip interview and questions
+        createAndNavigateToEditor({});
+      } else {
+        setCurrentStep('interview');
+      }
     }
   };
 
@@ -60,11 +74,28 @@ export default function CreateRFPPage() {
 
   const handleInterviewComplete = (data: Record<string, string>) => {
     setInterviewData(data);
-    createAndNavigateToEditor(data);
+    if (includeCustomQuestions) {
+      setCurrentStep('questions');
+    } else {
+      createAndNavigateToEditor(data);
+    }
   };
 
   const handleSkipInterview = () => {
-    createAndNavigateToEditor({});
+    if (includeCustomQuestions) {
+      setCurrentStep('questions');
+    } else {
+      createAndNavigateToEditor({});
+    }
+  };
+
+  const handleBackToInterview = () => {
+    setCurrentStep('interview');
+  };
+
+  const handleQuestionsComplete = (config: SubmissionQuestionsConfig) => {
+    setSubmissionConfig(config);
+    createAndNavigateToEditor(interviewData);
   };
 
   const createAndNavigateToEditor = (interviewAnswers: Record<string, string>) => {
@@ -94,6 +125,7 @@ export default function CreateRFPPage() {
       case 'template': return 0;
       case 'setup': return 1;
       case 'interview': return 2;
+      case 'questions': return 3;
       default: return 0;
     }
   };
@@ -188,6 +220,10 @@ export default function CreateRFPPage() {
             onUpdateProjectInfo={setProjectInfo}
             onBack={handleBackToTemplate}
             onNext={handleNextFromSetup}
+            includeCustomQuestions={includeCustomQuestions}
+            onIncludeCustomQuestionsChange={setIncludeCustomQuestions}
+            uploadedFile={uploadedRFPFile}
+            onFileUpload={setUploadedRFPFile}
           />
         )}
 
@@ -221,6 +257,15 @@ export default function CreateRFPPage() {
               onSkip={handleSkipInterview}
             />
           </div>
+        )}
+
+        {currentStep === 'questions' && (
+          <SubmissionQuestionsStep
+            config={submissionConfig}
+            onUpdateConfig={setSubmissionConfig}
+            onBack={handleBackToInterview}
+            onComplete={handleQuestionsComplete}
+          />
         )}
       </div>
     </div>
