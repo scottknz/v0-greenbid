@@ -1225,7 +1225,7 @@ export default function RFPDetailPage() {
             </Button>
             <Button
               className="bg-[#16A34A] hover:bg-[#15803D]"
-              onClick={handleSendForApproval}
+              onClick={() => handleSendForApproval({ approverIds: selectedApprovers, message: '', approvalMode: 'any' })}
               disabled={selectedApprovers.length === 0}
             >
               <Send className="h-4 w-4 mr-2" />

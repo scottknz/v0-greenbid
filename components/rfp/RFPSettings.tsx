@@ -107,7 +107,10 @@ export function RFPSettings({ rfp, onUpdate }: RFPSettingsProps) {
                     setFormData({
                       ...formData,
                       toneSettings: {
-                        ...(formData.toneSettings || {}),
+                        toneFile: formData.toneSettings?.toneFile || null,
+                        formality: formData.toneSettings?.formality || 'professional',
+                        industry: formData.toneSettings?.industry || '',
+                        customInstructions: formData.toneSettings?.customInstructions || '',
                         tone: e.target.value,
                       },
                     })

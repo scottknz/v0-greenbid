@@ -1,7 +1,8 @@
 // RFP Document Types and Interfaces
 
 // Import supplier types (RFPInterest is defined in supplier.ts)
-export type { RFPInterest } from './supplier'
+import type { RFPInterest } from './supplier'
+export type { RFPInterest }
 
 export type RFPStatus = 'draft' | 'in_review' | 'approved' | 'published' | 'closed';
 
@@ -31,7 +32,14 @@ export type RFPSectionType =
   | 'evaluation_criteria'
   | 'timeline_milestones'
   | 'terms_conditions'
-  | 'appendices';
+  | 'appendices'
+  | 'data_requirements'
+  | 'deliverables'
+  | 'risk_analysis'
+  | 'adaptation_strategy'
+  | 'materiality_assessment'
+  | 'reporting_disclosure'
+  | 'assurance_readiness';
 
 export type DocumentCategory = 
   | 'Legal'
@@ -96,6 +104,12 @@ export interface RFPDocument {
   approvalStatus: 'pending' | 'approved' | 'rejected' | null;
   approvedBy: string | null;
   approvedAt: string | null;
+  
+  // Branding & settings (optional)
+  brandColor?: string;
+  footerText?: string;
+  toneSettings?: ToneVoiceSettings;
+  requiresApproval?: boolean;
 }
 
 // Project setup information
@@ -204,6 +218,7 @@ export interface CompanyBranding {
 // Tone and voice settings
 export interface ToneVoiceSettings {
   toneFile: string | null; // Uploaded file content
+  tone?: string; // Legacy tone field
   formality: 'formal' | 'professional' | 'casual';
   industry: string;
   customInstructions: string;
@@ -246,6 +261,13 @@ export const SECTION_TITLES: Record<RFPSectionType, string> = {
   timeline_milestones: 'Timeline & Milestones',
   terms_conditions: 'Terms & Conditions',
   appendices: 'Appendices',
+  data_requirements: 'Data Requirements',
+  deliverables: 'Deliverables',
+  risk_analysis: 'Risk Analysis',
+  adaptation_strategy: 'Adaptation Strategy',
+  materiality_assessment: 'Materiality Assessment',
+  reporting_disclosure: 'Reporting & Disclosure',
+  assurance_readiness: 'Assurance Readiness',
 };
 
 // =====================================================

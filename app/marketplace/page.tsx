@@ -203,13 +203,27 @@ function MarketplaceCard({
 }
 
 // Internal RFPs - buyer's own submitted RFPs
-const internalRFPs = [
+interface InternalRFP {
+  id: string;
+  referenceId: string;
+  title: string;
+  summary: string;
+  status: 'accepting_bids' | 'published' | 'evaluation' | 'draft';
+  deadline: string;
+  budget: number;
+  submissions: number;
+  pendingQA: number;
+  publishedAt: string;
+  category: string;
+}
+
+const internalRFPs: InternalRFP[] = [
   {
     id: '1',
     referenceId: 'RFP-2026-001',
     title: 'Sustainable Office Furniture Supply',
     summary: 'Seeking suppliers for eco-friendly office furniture for our new headquarters.',
-    status: 'accepting_bids' as const,
+    status: 'accepting_bids',
     deadline: '2026-06-15',
     budget: 250000,
     submissions: 8,
@@ -222,7 +236,7 @@ const internalRFPs = [
     referenceId: 'RFP-2026-002',
     title: 'Green Energy Consulting Services',
     summary: 'Professional consulting for transitioning to 100% renewable energy sources.',
-    status: 'published' as const,
+    status: 'published',
     deadline: '2026-07-01',
     budget: 175000,
     submissions: 5,
@@ -235,7 +249,7 @@ const internalRFPs = [
     referenceId: 'RFP-2026-003',
     title: 'Electric Vehicle Fleet Procurement',
     summary: 'Procurement of 50 electric vehicles for company fleet replacement program.',
-    status: 'accepting_bids' as const,
+    status: 'accepting_bids',
     deadline: '2026-06-30',
     budget: 2500000,
     submissions: 12,
@@ -248,7 +262,7 @@ const internalRFPs = [
     referenceId: 'RFP-2026-004',
     title: 'Waste Management & Recycling Services',
     summary: 'Comprehensive waste management and recycling services for all office locations.',
-    status: 'evaluation' as const,
+    status: 'evaluation',
     deadline: '2026-05-30',
     budget: 120000,
     submissions: 6,

@@ -121,11 +121,11 @@ export function formatRFPForPDF(rfp: RFPDocument): string {
   html += `
     <div class="cover-page">
       <h1>${rfp.title}</h1>
-      <p style="font-size: 18px; margin: 30px 0;">${rfp.companyName}</p>
-      <p style="color: #666; margin: 20px 0;">${rfp.projectDescription}</p>
+      <p style="font-size: 18px; margin: 30px 0;">${rfp.projectInfo?.projectName || rfp.title}</p>
+      <p style="color: #666; margin: 20px 0;">${rfp.projectInfo?.description || ''}</p>
       <div style="margin-top: 60px; color: #999; font-size: 12px;">
         <p>Issued: ${new Date(rfp.createdAt).toLocaleDateString()}</p>
-        <p>Submission Deadline: ${new Date(rfp.submissionDeadline).toLocaleDateString()}</p>
+        <p>Submission Deadline: ${rfp.projectInfo?.submissionDeadline ? new Date(rfp.projectInfo.submissionDeadline).toLocaleDateString() : 'TBD'}</p>
       </div>
     </div>
   `;
@@ -164,7 +164,7 @@ export function formatRFPForPDF(rfp: RFPDocument): string {
   // Footer
   html += `
     <div class="footer">
-      <p>© ${new Date().getFullYear()} ${rfp.companyName}. All rights reserved.</p>
+      <p>© ${new Date().getFullYear()} ${rfp.projectInfo?.projectName || 'GreenBid'}. All rights reserved.</p>
       <p>This is a confidential document.</p>
     </div>
   `;

@@ -60,6 +60,37 @@ import {
   PanelLeftOpen,
 } from "lucide-react"
 
+// Type definitions
+interface ThreadMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderCompany?: string;
+  senderType: "buyer" | "supplier";
+  content: string;
+  attachments: { name: string; size: string; url: string }[];
+  timestamp: string;
+}
+
+interface Thread {
+  id: string;
+  rfpId: string;
+  rfpTitle: string;
+  subject: string;
+  visibility: "all" | "private";
+  status: string;
+  isRead: boolean;
+  isStarred: boolean;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastSender: string;
+  lastSenderType: "buyer" | "supplier";
+  lastSenderCompany?: string;
+  participants: string[];
+  messages: ThreadMessage[];
+}
+
 // Mock RFPs data
 const rfpsData = [
   { id: "rfp1", title: "Comprehensive Scope 3 Value Chain Emissions Analysis", status: "published" },
@@ -287,7 +318,7 @@ export default function MessagesPage() {
   const searchParams = useSearchParams()
 
   // State
-  const [threads, setThreads] = useState(allThreadsData)
+  const [threads, setThreads] = useState<Thread[]>(allThreadsData as Thread[])
   const [selectedFolder, setSelectedFolder] = useState("inbox")
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [selectedThreadIds, setSelectedThreadIds] = useState<Set<string>>(new Set())

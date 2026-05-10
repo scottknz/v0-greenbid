@@ -75,6 +75,29 @@ import { ApprovalStatus } from "@/components/approval/ApprovalStatus"
 import { mockBuyerApprovalRequests } from "@/lib/mock-approvals"
 import type { ApprovalRequest } from "@/types/approval"
 
+// Q&A Thread types
+interface QaMessage {
+  id: string;
+  threadId: string;
+  senderId: string;
+  senderName: string;
+  senderCompany?: string;
+  senderType: "buyer" | "supplier";
+  content: string;
+  attachments: { name: string; size: string; url: string }[];
+  timestamp: string;
+}
+
+interface QaThread {
+  id: string;
+  subject: string;
+  visibility: "all" | "private";
+  createdAt: string;
+  updatedAt: string;
+  participants: string[];
+  messages: QaMessage[];
+}
+
 // Mock data - in production this would come from an API
 const tenderData = {
   id: "1",
@@ -882,7 +905,7 @@ export default function TenderDetailPage() {
   }
 
   // Q&A state
-  const [qaThreads, setQaThreads] = useState(qaThreadsData)
+  const [qaThreads, setQaThreads] = useState<QaThread[]>(qaThreadsData as QaThread[])
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [qaSearch, setQaSearch] = useState("")
   const [qaVisibilityFilter, setQaVisibilityFilter] = useState<"all" | "private" | "public" | null>(null)
@@ -1063,6 +1086,7 @@ export default function TenderDetailPage() {
       id: `t${teamMembers.length + 1}`,
       name: member.name,
       email: member.email,
+      phone: "",
       companyTitle: member.companyTitle,
       projectRole: selectedMemberRole || "Team Member",
       isLead: false,
@@ -1078,6 +1102,7 @@ export default function TenderDetailPage() {
       id: `t${teamMembers.length + 1}`,
       name: newMember.name,
       email: newMember.email,
+      phone: "",
       companyTitle: newMember.companyTitle,
       projectRole: newMember.projectRole || "Team Member",
       isLead: false,
@@ -2064,7 +2089,7 @@ export default function TenderDetailPage() {
                             {criteria.subcategories.map((sub, subIndex) => (
                               <li key={subIndex} className="text-xs text-[#6B7280] flex items-center gap-2">
                                 <span className="size-1 rounded-full bg-[#D1D5DB]" />
-                                {sub}
+                                {sub.name}
                               </li>
                             ))}
                           </ul>
