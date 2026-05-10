@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -283,7 +283,8 @@ const allThreadsData = [
   },
 ]
 
-export default function MessagesPage() {
+// Component that uses useSearchParams - must be wrapped in Suspense
+function MessagesPageContent() {
   const searchParams = useSearchParams()
 
   // State — merge any threads injected from the Award flow via localStorage
@@ -1268,5 +1269,14 @@ export default function MessagesPage() {
           </DialogContent>
         </Dialog>
     </div>
+  )
+}
+
+// Wrap the component in Suspense to handle useSearchParams
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <MessagesPageContent />
+    </Suspense>
   )
 }
