@@ -71,7 +71,7 @@ function MarketplaceCard({
       )}
 
       {/* Clickable body */}
-      <Link href={`/marketplace/${rfp.id}`} className="flex-1 flex flex-col p-5 gap-3 pt-6">
+      <Link href={`/supplier/marketplace/${rfp.id}`} className="flex-1 flex flex-col p-5 gap-3 pt-6">
         {/* Buyer + status */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
