@@ -3512,6 +3512,8 @@ export default function TenderDetailPage() {
         availableApprovers={availableApproversForBuyer}
         onSubmit={handleSendForApproval}
       />
+    </div>
+  );
 }
 
 function SubmissionStatusBadge({ status }: { status: string }) {
