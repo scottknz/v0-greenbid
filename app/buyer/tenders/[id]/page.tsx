@@ -3498,7 +3498,6 @@ export default function TenderDetailPage() {
             <ApprovalStatus approval={currentApproval} compact={false} />
           </div>
         )}
-      </div>
 
       {/* Approval Modal */}
       <ApprovalRequestModal
