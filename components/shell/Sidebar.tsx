@@ -12,6 +12,7 @@ import {
 import { buyerNav, supplierNav, NavItem } from '@/config/nav';
 import { useShell } from './ShellContext';
 import { cn } from '@/lib/utils';
+import { NotificationBell } from './NotificationBell';
 
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard, FileText, ClipboardList, Users, UsersRound, Library, BookOpen,
@@ -179,6 +180,16 @@ export function Sidebar({ variant }: SidebarProps) {
         <nav className="space-y-1">
           {renderNavItems(secondaryItems)}
         </nav>
+        
+        {/* Notification Bell */}
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="px-1 py-2 flex items-center justify-between">
+            {!isSidebarCollapsed && (
+              <span className="text-xs font-medium text-text-muted px-2">Quick Actions</span>
+            )}
+            <NotificationBell />
+          </div>
+        </div>
       </div>
 
       <div className="border-t border-border p-2">
