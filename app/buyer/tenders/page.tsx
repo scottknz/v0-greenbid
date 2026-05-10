@@ -26,6 +26,11 @@ import {
   Archive,
   Filter,
   Download,
+  Globe,
+  Lock,
+  Calendar,
+  DollarSign,
+  Building2,
 } from "lucide-react"
 
 type TenderStatus = "draft" | "published" | "accepting_bids" | "evaluating" | "closed"
@@ -167,6 +172,7 @@ const statusTabs = [
 ]
 
 export default function TendersPage() {
+  const [marketView, setMarketView] = useState<'public' | 'private'>('private')
   const [activeTab, setActiveTab] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [sortField, setSortField] = useState<SortField>(null)
@@ -252,12 +258,56 @@ export default function TendersPage() {
 
   return (
     <div className="space-y-6 p-6">
+      <div className="flex items-start justify-between gap-4">
         <PageHeader
-          title="RFPs"
-          description="Manage and track all your procurement RFPs"
+          title="RFP Marketplace"
+          description={
+            marketView === 'public'
+              ? 'Browse RFPs across the marketplace'
+              : 'Manage and track all your procurement RFPs'
+          }
         />
 
-        {/* Tabs */}
+        {/* Public / Private toggle */}
+        <div className="flex items-center shrink-0 bg-surface border border-border rounded-lg p-1 gap-1 mt-1">
+          <button
+            onClick={() => setMarketView('public')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
+              marketView === 'public'
+                ? 'bg-brand-green text-white shadow-sm'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+            )}
+          >
+            <Globe className="h-4 w-4" />
+            Browse Marketplace
+          </button>
+          <button
+            onClick={() => setMarketView('private')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
+              marketView === 'private'
+                ? 'bg-brand-green text-white shadow-sm'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+            )}
+          >
+            <Lock className="h-4 w-4" />
+            My Tenders
+            {allTendersData.length > 0 && (
+              <span className={cn(
+                'inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-semibold',
+                marketView === 'private' ? 'bg-white/20 text-white' : 'bg-brand-green-light text-brand-green'
+              )}>
+                {allTendersData.length}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* ── My Tenders (Private) ── */}
+      {marketView === 'private' && (
+        <div className="space-y-4">
         <div className="border-b border-border">
           <nav className="flex gap-6" aria-label="Tabs">
             {statusTabs.map(tab => (
@@ -424,6 +474,121 @@ export default function TendersPage() {
             </Button>
           </div>
         </div>
+        </div>
+      )}
+
+      {/* ── Public Marketplace ── */}
+      {marketView === 'public' && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex flex-1 items-center gap-2 bg-background rounded-md border border-border px-3 py-2">
+              <Search className="h-4 w-4 text-text-secondary shrink-0" />
+              <input
+                placeholder="Search marketplace RFPs by title, company or category..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-none"
+              />
+            </div>
+            <Button variant="outline" className="gap-2 shrink-0">
+              <Filter className="h-4 w-4" />
+              Filter
+            </Button>
+          </div>
+
+          {/* Marketplace stats */}
+          <div className="flex items-center gap-4 text-sm text-text-muted">
+            <span className="font-medium text-text-primary">{allTendersData.filter(t => t.status === 'published' || t.status === 'accepting_bids').length} active RFPs</span>
+            <span>&middot;</span>
+            <span>Published by buyers in your network</span>
+          </div>
+
+          {/* Marketplace cards grid */}
+          <div className="grid gap-4">
+            {allTendersData
+              .filter(t => t.status === 'published' || t.status === 'accepting_bids')
+              .filter(t => {
+                if (!searchQuery) return true
+                const q = searchQuery.toLowerCase()
+                return (
+                  t.name.toLowerCase().includes(q) ||
+                  t.referenceId.toLowerCase().includes(q) ||
+                  t.category.toLowerCase().includes(q)
+                )
+              })
+              .map(tender => (
+                <Card key={tender.id} className="bg-background border-border hover:shadow-sm transition-shadow">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <p className="text-xs text-text-muted font-medium">Owner: {tender.owner}</p>
+                        <h3 className="font-semibold text-text-primary line-clamp-2 hover:text-brand-green transition-colors cursor-pointer">
+                          {tender.name}
+                        </h3>
+                        <p className="text-xs text-text-muted">{tender.referenceId}</p>
+                      </div>
+                      <Badge className={cn(
+                        'text-[10px] border shrink-0',
+                        tender.status === 'accepting_bids'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-brand-green-light text-brand-green border-brand-green/20'
+                      )}>
+                        {tender.status === 'accepting_bids' ? 'Accepting Bids' : 'Published'}
+                      </Badge>
+                    </div>
+
+                    <p className="text-xs text-text-secondary line-clamp-2">{tender.category}</p>
+
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {tender.deadline}
+                      </span>
+                      {tender.budget > 0 && (
+                        <span className="flex items-center gap-1">
+                          <DollarSign className="h-3 w-3 text-brand-green" />
+                          {tender.budget >= 1000000
+                            ? `$${(tender.budget / 1000000).toFixed(1)}M`
+                            : `$${(tender.budget / 1000).toFixed(0)}K`}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Building2 className="h-3 w-3" />
+                        {tender.submissions} responses
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2">
+                      <Button
+                        size="sm"
+                        className="flex-1 h-8 text-xs bg-brand-green hover:bg-brand-green-mid text-white"
+                        onClick={() => router.push(`/buyer/tenders/${tender.id}`)}
+                      >
+                        View Details
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+
+          {allTendersData.filter(t => t.status === 'published' || t.status === 'accepting_bids').filter(t => {
+            if (!searchQuery) return true
+            const q = searchQuery.toLowerCase()
+            return t.name.toLowerCase().includes(q) || t.referenceId.toLowerCase().includes(q) || t.category.toLowerCase().includes(q)
+          }).length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <div className="h-12 w-12 rounded-full bg-surface flex items-center justify-center">
+                <Search className="h-6 w-6 text-text-muted" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-medium text-text-secondary">No RFPs found</p>
+                <p className="text-xs text-text-muted mt-1">Try adjusting your search criteria</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
