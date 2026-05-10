@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/shared'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Select,
   SelectContent,
@@ -19,6 +19,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -35,12 +36,11 @@ import {
   Calendar,
   DollarSign,
   Download,
-  Bookmark,
-  MapPin,
-  TrendingUp,
-  ExternalLink,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
   Globe,
-  Lock,
+  ExternalLink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { 
@@ -48,463 +48,392 @@ import {
   SUPPLIER_PHASE_CONFIG,
   type SupplierRFPPhase 
 } from '@/lib/mock-supplier-rfps'
-import { mockMarketplaceRFPs } from '@/lib/mock-marketplace'
 
-// Simulate 2 marketplace RFPs saved to pipeline
-const SAVED_MARKETPLACE_IDS = ['mkt-001', 'mkt-004']
+type SortField = 'title' | 'phase' | 'buyer' | 'deadline' | 'budget' | null
+type SortDirection = 'asc' | 'desc'
+
+const phaseTabs = [
+  { key: 'all', label: 'All' },
+  { key: 'in_progress', label: 'In Progress' },
+  { key: 'submitted', label: 'Submitted' },
+  { key: 'awarded', label: 'Awarded' },
+  { key: 'archived', label: 'Archived' },
+]
 
 export default function SupplierRFPsPage() {
-  const [marketView, setMarketView] = useState<'public' | 'private'>('public')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [phaseFilter, setPhaseFilter] = useState('all')
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('all')
-  const [savedPipelineIds, setSavedPipelineIds] = useState<Set<string>>(new Set(SAVED_MARKETPLACE_IDS))
+  const [searchQuery, setSearchQuery] = useState('')
+  const [phaseFilter, setPhaseFilter] = useState('all')
+  const [sortField, setSortField] = useState<SortField>(null)
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [selectedRFPs, setSelectedRFPs] = useState<string[]>([])
 
-  const savedMarketplaceRFPs = mockMarketplaceRFPs.filter(r => savedPipelineIds.has(r.id))
-
-  const filteredRFPs = mockSupplierRFPs.filter((rfp) => {
-    const matchesSearch =
-      rfp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rfp.buyerCompany.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesPhase = phaseFilter === 'all' || rfp.currentPhase === phaseFilter
-
-    const matchesTab =
-      activeTab === 'all' ||
-      (activeTab === 'in_progress' && ['new_rfp', 'in_progress', 'under_final_review'].includes(rfp.currentPhase)) ||
-      (activeTab === 'submitted' && ['submitted', 'client_reviewing'].includes(rfp.currentPhase)) ||
-      (activeTab === 'awarded' && rfp.currentPhase === 'awarded') ||
-      (activeTab === 'archived' && (rfp.currentPhase === 'rejected' || rfp.currentPhase === 'declined'))
-
-    return matchesSearch && matchesPhase && matchesTab
-  })
-
-  const counts = {
+  // Calculate counts
+  const counts = useMemo(() => ({
     all: mockSupplierRFPs.length,
-    in_progress: mockSupplierRFPs.filter((r) => ['new_rfp', 'in_progress', 'under_final_review'].includes(r.currentPhase)).length,
-    submitted: mockSupplierRFPs.filter((r) => ['submitted', 'client_reviewing'].includes(r.currentPhase)).length,
-    awarded: mockSupplierRFPs.filter((r) => r.currentPhase === 'awarded').length,
-    archived: mockSupplierRFPs.filter((r) => r.currentPhase === 'rejected' || r.currentPhase === 'declined').length,
+    in_progress: mockSupplierRFPs.filter(r => ['new_rfp', 'in_progress', 'under_final_review'].includes(r.currentPhase)).length,
+    submitted: mockSupplierRFPs.filter(r => ['submitted', 'client_reviewing'].includes(r.currentPhase)).length,
+    awarded: mockSupplierRFPs.filter(r => r.currentPhase === 'awarded').length,
+    archived: mockSupplierRFPs.filter(r => r.currentPhase === 'rejected' || r.currentPhase === 'declined').length,
+  }), [])
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
+
+  const handleSelectAll = () => {
+    if (selectedRFPs.length === filteredRFPs.length) {
+      setSelectedRFPs([])
+    } else {
+      setSelectedRFPs(filteredRFPs.map(r => r.id))
+    }
+  }
+
+  const handleSelectRFP = (id: string) => {
+    setSelectedRFPs(prev =>
+      prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]
+    )
+  }
+
+  const filteredRFPs = useMemo(() => {
+    let result = mockSupplierRFPs
+
+    // Filter by tab
+    if (activeTab === 'in_progress') {
+      result = result.filter(r => ['new_rfp', 'in_progress', 'under_final_review'].includes(r.currentPhase))
+    } else if (activeTab === 'submitted') {
+      result = result.filter(r => ['submitted', 'client_reviewing'].includes(r.currentPhase))
+    } else if (activeTab === 'awarded') {
+      result = result.filter(r => r.currentPhase === 'awarded')
+    } else if (activeTab === 'archived') {
+      result = result.filter(r => r.currentPhase === 'rejected' || r.currentPhase === 'declined')
+    }
+
+    // Filter by phase dropdown
+    if (phaseFilter !== 'all') {
+      result = result.filter(r => r.currentPhase === phaseFilter)
+    }
+
+    // Filter by search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(r =>
+        r.title.toLowerCase().includes(query) ||
+        r.buyerCompany.toLowerCase().includes(query) ||
+        r.category.toLowerCase().includes(query)
+      )
+    }
+
+    // Sort
+    if (sortField) {
+      result = [...result].sort((a, b) => {
+        let comparison = 0
+        switch (sortField) {
+          case 'title':
+            comparison = a.title.localeCompare(b.title)
+            break
+          case 'phase':
+            const phaseOrder = ['new_rfp', 'in_progress', 'under_final_review', 'submitted', 'client_reviewing', 'awarded', 'rejected', 'declined']
+            comparison = phaseOrder.indexOf(a.currentPhase) - phaseOrder.indexOf(b.currentPhase)
+            break
+          case 'buyer':
+            comparison = a.buyerCompany.localeCompare(b.buyerCompany)
+            break
+          case 'deadline':
+            comparison = new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+            break
+          case 'budget':
+            // Parse budget strings like "$150,000 - $200,000" to get numeric value
+            const parseVal = (s: string) => {
+              const match = s.match(/\$?([\d,]+)/)
+              return match ? parseInt(match[1].replace(/,/g, ''), 10) : 0
+            }
+            comparison = parseVal(a.budget) - parseVal(b.budget)
+            break
+        }
+        return sortDirection === 'asc' ? comparison : -comparison
+      })
+    }
+
+    return result
+  }, [activeTab, phaseFilter, searchQuery, sortField, sortDirection])
+
+  const getDeadlineStatus = (deadline: string) => {
+    const days = Math.ceil((new Date(deadline).getTime() - Date.now()) / 86400000)
+    if (days < 0) return { label: 'Overdue', className: 'text-red-600' }
+    if (days <= 7) return { label: `${days}d left`, className: 'text-red-600 font-medium' }
+    if (days <= 14) return { label: `${days}d left`, className: 'text-amber-600 font-medium' }
+    return { label: `${days}d left`, className: 'text-[#6B7280]' }
   }
 
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-start justify-between gap-4">
         <PageHeader
-          title="RFP Marketplace"
-          description={
-            marketView === 'public'
-              ? 'Browse open opportunities across the public marketplace'
-              : 'Manage your private invitations and active RFP responses'
-          }
+          title="My RFPs"
+          description="Manage and track your RFP responses"
         />
-
-        {/* Public / Private toggle */}
-        <div className="flex items-center shrink-0 bg-surface border border-border rounded-lg p-1 gap-1 mt-1">
-          <button
-            onClick={() => setMarketView('public')}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
-              marketView === 'public'
-                ? 'bg-brand-green text-white shadow-sm'
-                : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
-            )}
-          >
+        <Link href="/supplier/marketplace">
+          <Button variant="outline" className="gap-2 shrink-0">
             <Globe className="h-4 w-4" />
             Public Marketplace
-          </button>
-          <button
-            onClick={() => setMarketView('private')}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
-              marketView === 'private'
-                ? 'bg-brand-green text-white shadow-sm'
-                : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
-            )}
-          >
-            <Lock className="h-4 w-4" />
-            Private / Invited
-            {counts.all > 0 && (
-              <span className={cn(
-                'inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-semibold',
-                marketView === 'private' ? 'bg-white/20 text-white' : 'bg-brand-green-light text-brand-green'
-              )}>
-                {counts.all}
-              </span>
-            )}
-          </button>
-        </div>
+            <ExternalLink className="h-3.5 w-3.5 text-[#9CA3AF]" />
+          </Button>
+        </Link>
       </div>
 
-      {/* ── Public Marketplace ── */}
-      {marketView === 'public' && (
-        <div className="space-y-4">
-          {/* Search + filters */}
-          <div className="flex items-center gap-3">
-            <div className="flex flex-1 items-center gap-2 bg-background rounded-md border border-border px-3 py-2">
-              <Search className="h-4 w-4 text-text-secondary shrink-0" />
-              <input
-                placeholder="Search opportunities by title, company or tag..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-none"
-              />
-            </div>
-            <Button variant="outline" className="gap-2 shrink-0">
-              <Filter className="h-4 w-4" />
-              Filter
-            </Button>
-          </div>
+      {/* Tabs */}
+      <div className="border-b border-[#E5E7EB]">
+        <nav className="flex gap-6" aria-label="Tabs">
+          {phaseTabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                'relative pb-3 text-sm font-medium transition-colors',
+                activeTab === tab.key
+                  ? 'text-[#16A34A]'
+                  : 'text-[#6B7280] hover:text-[#111827]'
+              )}
+            >
+              <span className="flex items-center gap-2">
+                {tab.label}
+                <span
+                  className={cn(
+                    'rounded-full px-2 py-0.5 text-xs',
+                    activeTab === tab.key
+                      ? 'bg-[#DCFCE7] text-[#16A34A]'
+                      : 'bg-[#F3F4F6] text-[#6B7280]'
+                  )}
+                >
+                  {counts[tab.key as keyof typeof counts]}
+                </span>
+              </span>
+              {activeTab === tab.key && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#16A34A]" />
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
 
-          {/* Stats row */}
-          <div className="flex items-center gap-4 text-sm text-text-muted">
-            <span className="font-medium text-text-primary">{mockMarketplaceRFPs.filter(r => r.status !== 'closed').length} open opportunities</span>
-            <span>&middot;</span>
-            <span>{savedPipelineIds.size} saved to pipeline</span>
-          </div>
-
-          {/* Marketplace cards */}
-          <div className="space-y-3">
-            {mockMarketplaceRFPs
-              .filter(r => {
-                if (!searchTerm) return true
-                const q = searchTerm.toLowerCase()
-                return (
-                  r.title.toLowerCase().includes(q) ||
-                  r.buyerCompany.toLowerCase().includes(q) ||
-                  r.tags.some(t => t.toLowerCase().includes(q))
-                )
-              })
-              .map(rfp => {
-                const days = Math.ceil((new Date(rfp.deadline).getTime() - Date.now()) / 86400000)
-                const urgent = days <= 14
-                const critical = days <= 7
-                const isSaved = savedPipelineIds.has(rfp.id)
-                return (
-                  <div key={rfp.id} className={cn(
-                    'bg-background border rounded-xl p-5 flex flex-col sm:flex-row sm:items-start gap-4 hover:shadow-sm transition-shadow',
-                    rfp.featured ? 'border-brand-green/30' : 'border-border'
-                  )}>
-                    <div className={cn('h-11 w-11 rounded-lg shrink-0 flex items-center justify-center text-white text-xs font-bold', rfp.buyerColor)}>
-                      {rfp.buyerInitials}
-                    </div>
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div className="flex items-start justify-between gap-2 flex-wrap">
-                        <div className="space-y-0.5 min-w-0">
-                          <p className="text-xs text-text-muted font-medium">{rfp.buyerCompany}</p>
-                          <Link href={`/marketplace/${rfp.id}`} className="font-semibold text-sm text-text-primary hover:text-brand-green transition-colors line-clamp-1">
-                            {rfp.title}
-                          </Link>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {rfp.featured && (
-                            <Badge className="bg-amber-100 text-amber-700 border border-amber-200 text-[10px]">Featured</Badge>
-                          )}
-                          <Badge className={cn('text-[10px] border', rfp.status === 'closing-soon' ? 'bg-amber-50 text-amber-700 border-amber-200' : rfp.status === 'closed' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-brand-green-light text-brand-green border-brand-green/20')}>
-                            {rfp.status === 'closing-soon' ? 'Closing Soon' : rfp.status === 'closed' ? 'Closed' : 'Open'}
-                          </Badge>
-                        </div>
-                      </div>
-                      <p className="text-xs text-text-secondary line-clamp-2">{rfp.summary}</p>
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />{rfp.country}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          <span className={cn(critical ? 'text-red-600 font-medium' : urgent ? 'text-amber-600 font-medium' : '')}>
-                            {days > 0 ? `${days} days left` : 'Deadline passed'}
-                          </span>
-                        </span>
-                        {rfp.budget && (
-                          <span className="flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3 text-brand-green" />{rfp.budget}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Building2 className="h-3 w-3" />{rfp.registeredSuppliers} registered
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {rfp.tags.slice(0, 4).map(tag => (
-                          <span key={tag} className="px-2 py-0.5 rounded-full bg-surface border border-border text-[10px] text-text-secondary">{tag}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex sm:flex-col items-center gap-2 shrink-0">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={cn(
-                          'h-8 gap-1.5 text-xs',
-                          isSaved ? 'border-brand-green text-brand-green hover:bg-brand-green-light' : 'border-border'
-                        )}
-                        onClick={() => setSavedPipelineIds(prev => {
-                          const s = new Set(prev)
-                          isSaved ? s.delete(rfp.id) : s.add(rfp.id)
-                          return s
-                        })}
-                      >
-                        <Bookmark className={cn('h-3.5 w-3.5', isSaved && 'fill-brand-green')} />
-                        {isSaved ? 'Saved' : 'Save'}
-                      </Button>
-                      <Link href={`/marketplace/${rfp.id}`}>
-                        <Button size="sm" className="h-8 text-xs bg-brand-green hover:bg-brand-green-mid text-white gap-1.5">
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          View RFP
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                )
-              })}
-          </div>
+      {/* Search and Filters */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9CA3AF]" />
+          <Input
+            placeholder="Search RFPs by title, buyer, or category..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="pl-10 border-[#E5E7EB] bg-white"
+          />
         </div>
-      )}
-
-      {/* ── Private / Invited Marketplace ── */}
-      {marketView === 'private' && (
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-background border border-border">
-          <TabsTrigger value="all">All ({counts.all})</TabsTrigger>
-          <TabsTrigger value="in_progress">In Progress ({counts.in_progress})</TabsTrigger>
-          <TabsTrigger value="submitted">Submitted ({counts.submitted})</TabsTrigger>
-          <TabsTrigger value="awarded">Awarded ({counts.awarded})</TabsTrigger>
-          <TabsTrigger value="archived">Archived ({counts.archived})</TabsTrigger>
-          <TabsTrigger value="pipeline" className="flex items-center gap-1.5">
-            <Bookmark className="h-3.5 w-3.5" />
-            My Pipeline ({savedMarketplaceRFPs.length})
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Filters */}
-        <div className="flex items-center gap-4 mt-4">
-          <div className="flex flex-1 items-center gap-2 bg-background rounded-md border border-border px-3 py-2">
-            <Search className="h-4 w-4 text-text-secondary" />
-            <Input
-              placeholder="Search RFPs by title or buyer..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="border-0 bg-transparent focus-visible:ring-0"
-            />
-          </div>
-
+        <div className="flex items-center gap-2">
+          {selectedRFPs.length > 0 && (
+            <span className="text-sm text-[#6B7280] mr-2">
+              {selectedRFPs.length} selected
+            </span>
+          )}
           <Select value={phaseFilter} onValueChange={setPhaseFilter}>
-            <SelectTrigger className="w-48">
-              <Filter className="h-4 w-4 mr-2" />
+            <SelectTrigger className="w-44 border-[#E5E7EB]">
+              <Filter className="h-4 w-4 mr-2 text-[#6B7280]" />
               <SelectValue placeholder="Filter by phase" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Phases</SelectItem>
-              <SelectItem value="new_rfp">New RFP</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="under_final_review">Under Final Review</SelectItem>
+              <SelectItem value="new_rfp">Initial Review</SelectItem>
+              <SelectItem value="in_progress">Preparation</SelectItem>
+              <SelectItem value="under_final_review">Internal Review</SelectItem>
               <SelectItem value="submitted">Submitted</SelectItem>
-              <SelectItem value="client_reviewing">Client Reviewing</SelectItem>
+              <SelectItem value="client_reviewing">Client Review</SelectItem>
               <SelectItem value="awarded">Awarded</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="declined">Decline to Submit</SelectItem>
+              <SelectItem value="rejected">Not Successful</SelectItem>
+              <SelectItem value="declined">Declined</SelectItem>
             </SelectContent>
           </Select>
-
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" size="sm" className="border-[#E5E7EB] gap-2">
             <Download className="h-4 w-4" />
             Export
           </Button>
         </div>
+      </div>
 
-        {/* My Pipeline tab — saved marketplace opportunities */}
-        <TabsContent value="pipeline" className="mt-4">
-          {savedMarketplaceRFPs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 border border-border rounded-lg bg-background">
-              <Bookmark className="h-10 w-10 text-text-muted" />
-              <p className="text-sm font-medium text-text-primary">No opportunities saved yet</p>
-              <p className="text-xs text-text-muted">Browse the marketplace and add opportunities to your pipeline.</p>
-              <Link href="/marketplace">
-                <Button size="sm" variant="outline" className="mt-1 gap-1.5">
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  Browse Marketplace
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {savedMarketplaceRFPs.map(rfp => {
-                const days = Math.ceil((new Date(rfp.deadline).getTime() - Date.now()) / 86400000)
-                const urgent = days <= 14
-                const critical = days <= 7
-                  return (
-                  <div key={rfp.id} className="bg-background border border-border rounded-xl p-5 flex flex-col sm:flex-row sm:items-start gap-4 hover:shadow-sm transition-shadow">
-                    <div className={cn('h-10 w-10 rounded-lg shrink-0 flex items-center justify-center text-white text-xs font-bold', rfp.buyerColor)}>
-                      {rfp.buyerInitials}
-                    </div>
-                    <div className="flex-1 min-w-0 space-y-1.5">
-                      <div className="flex items-start justify-between gap-2 flex-wrap">
-                        <p className="font-bold text-sm text-text-primary">{rfp.buyerCompany}</p>
-                        <Badge className="bg-[#F0FDF4] text-[#166534] border border-[#16A34A]/20 text-[10px] shrink-0">
-                          Saved to Pipeline
-                        </Badge>
-                      </div>
-                      <Link href={`/marketplace/${rfp.id}`} className="text-sm font-medium text-text-primary hover:text-[#16A34A] transition-colors line-clamp-1">
-                        {rfp.title}
-                      </Link>
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />{rfp.country}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          <span className={cn(critical ? 'text-red-600 font-medium' : urgent ? 'text-amber-600 font-medium' : '')}>
-                            {days > 0 ? `${days} days left` : 'Deadline passed'}
-                          </span>
-                        </span>
-                        {rfp.budget && (
-                          <span className="flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3 text-[#16A34A]" />{rfp.budget}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 h-8"
-                        onClick={() => setSavedPipelineIds(prev => { const s = new Set(prev); s.delete(rfp.id); return s })}
-                      >
-                        Remove
-                      </Button>
-                      <Link href={`/marketplace/${rfp.id}`}>
-                        <Button size="sm" className="text-xs bg-[#16A34A] hover:bg-[#15803D] h-8 gap-1.5">
-                          <ExternalLink className="h-3 w-3" />
-                          View RFP
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value={activeTab} className="mt-4">
-          {/* RFPs Table */}
-          <div className="border border-border rounded-lg overflow-hidden bg-background">
-            <table className="w-full">
-              <thead className="bg-surface border-b border-border">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                    RFP Title
+      {/* Table */}
+      <Card className="border-[#E5E7EB] bg-white overflow-hidden">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[#E5E7EB] bg-[#F9FAFB]">
+                  <th className="px-4 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectedRFPs.length === filteredRFPs.length && filteredRFPs.length > 0}
+                      onChange={handleSelectAll}
+                      className="h-4 w-4 rounded border-[#D1D5DB] text-[#16A34A] focus:ring-[#16A34A]"
+                    />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                    Buyer
+                  <SortableHeader
+                    label="RFP Title"
+                    field="title"
+                    currentField={sortField}
+                    direction={sortDirection}
+                    onSort={handleSort}
+                  />
+                  <SortableHeader
+                    label="Buyer"
+                    field="buyer"
+                    currentField={sortField}
+                    direction={sortDirection}
+                    onSort={handleSort}
+                  />
+                  <SortableHeader
+                    label="Phase"
+                    field="phase"
+                    currentField={sortField}
+                    direction={sortDirection}
+                    onSort={handleSort}
+                  />
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#6B7280] uppercase tracking-wide">
+                    Category
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                    Deadline
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                    Budget
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                  <SortableHeader
+                    label="Deadline"
+                    field="deadline"
+                    currentField={sortField}
+                    direction={sortDirection}
+                    onSort={handleSort}
+                  />
+                  <SortableHeader
+                    label="Est. Value"
+                    field="budget"
+                    currentField={sortField}
+                    direction={sortDirection}
+                    onSort={handleSort}
+                  />
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-[#6B7280] uppercase tracking-wide">
                     Progress
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-[#6B7280] uppercase tracking-wide">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
-                {filteredRFPs.map((rfp) => {
+              <tbody className="divide-y divide-[#E5E7EB]">
+                {filteredRFPs.map(rfp => {
                   const phaseConfig = SUPPLIER_PHASE_CONFIG[rfp.currentPhase]
-                  const daysDue = Math.ceil((new Date(rfp.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-                  const isDeadlineSoon = daysDue <= 7 && daysDue > 0
-                  const isOverdue = daysDue < 0
+                  const deadlineStatus = getDeadlineStatus(rfp.deadline)
+                  const isSelected = selectedRFPs.includes(rfp.id)
 
-                    return (
-                    <tr key={rfp.id} className="hover:bg-surface-hover transition-colors">
-                      <td className="px-6 py-4">
+                  return (
+                    <tr
+                      key={rfp.id}
+                      onClick={(e) => {
+                        if (!(e.target as HTMLElement).closest('input, button, [role="menuitem"]')) {
+                          router.push(`/supplier/rfps/${rfp.id}`)
+                        }
+                      }}
+                      className={cn(
+                        'hover:bg-[#F9FAFB] transition-colors cursor-pointer',
+                        isSelected && 'bg-[#F0FDF4]'
+                      )}
+                    >
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleSelectRFP(rfp.id)}
+                          className="h-4 w-4 rounded border-[#D1D5DB] text-[#16A34A] focus:ring-[#16A34A]"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
                         <div>
-                          <Link
-                            href={`/supplier/rfps/${rfp.id}`}
-                            className="font-medium text-text-primary hover:text-brand-green transition-colors"
-                          >
-                            {rfp.title}
-                          </Link>
-                          <p className="text-xs text-text-secondary mt-1">{rfp.category}</p>
+                          <p className="font-medium text-[#111827] line-clamp-1">{rfp.title}</p>
+                          <p className="text-xs text-[#9CA3AF]">{rfp.id}</p>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-text-secondary" />
-                          <span className="text-sm text-text-primary">{rfp.buyerCompany}</span>
+                          <Building2 className="h-3.5 w-3.5 text-[#9CA3AF]" />
+                          <span className="text-[#374151] text-sm">{rfp.buyerCompany}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <Badge className={cn('text-xs font-medium', phaseConfig.color)}>
+                      <td className="px-4 py-3">
+                        <Badge
+                          variant="outline"
+                          className={cn('rounded-full text-xs font-medium whitespace-nowrap border', phaseConfig.color)}
+                        >
                           {phaseConfig.label}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className={cn('flex items-center gap-2 text-sm', isOverdue ? 'text-red-600' : isDeadlineSoon ? 'text-amber-600' : 'text-text-primary')}>
-                          <Calendar className="h-4 w-4" />
-                          {new Date(rfp.deadline).toLocaleDateString('en-GB', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                          {isOverdue && <span className="text-xs font-medium text-red-600 ml-1">(OVERDUE)</span>}
-                          {isDeadlineSoon && !isOverdue && <span className="text-xs font-medium text-amber-600 ml-1">(Due soon)</span>}
+                      <td className="px-4 py-3 text-[#6B7280]">{rfp.category}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div>
+                          <p className="text-[#374151] text-sm">
+                            {new Date(rfp.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                          <p className={cn('text-xs', deadlineStatus.className)}>{deadlineStatus.label}</p>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-sm text-text-primary">
-                          <DollarSign className="h-4 w-4 text-text-secondary" />
-                          {rfp.budget}
-                        </div>
+                      <td className="px-4 py-3 text-[#374151] tabular-nums whitespace-nowrap">
+                        {rfp.budget}
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="w-full max-w-[120px]">
-                          <div className="flex items-center justify-between text-xs text-text-secondary mb-1">
-                            <span>{phaseConfig.progressPercent}%</span>
-                          </div>
-                          <div className="h-2 bg-grey-200 rounded-full overflow-hidden">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-1.5 bg-[#E5E7EB] rounded-full overflow-hidden">
                             <div
-                              className="h-full rounded-full transition-all bg-brand-green"
+                              className="h-full bg-[#16A34A] rounded-full"
                               style={{ width: `${phaseConfig.progressPercent}%` }}
                             />
                           </div>
+                          <span className="text-xs text-[#6B7280] tabular-nums">
+                            {phaseConfig.progressPercent}%
+                          </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/supplier/rfps/${rfp.id}`}>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-[#6B7280] hover:text-[#111827]"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/supplier/rfps/${rfp.id}`)
+                            }}
+                          >
+                            Open
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Open menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40">
+                              <DropdownMenuItem onClick={() => router.push(`/supplier/rfps/${rfp.id}`)}>
                                 <Eye className="h-4 w-4 mr-2" />
                                 View Details
-                              </Link>
-                            </DropdownMenuItem>
-                            {rfp.currentPhase === 'in_progress' && (
+                              </DropdownMenuItem>
                               <DropdownMenuItem>
                                 <FileText className="h-4 w-4 mr-2" />
-                                Continue Response
+                                View Documents
                               </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem>
-                              <Download className="h-4 w-4 mr-2" />
-                              Download RFP
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-red-600">
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Decline RFP
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -513,15 +442,67 @@ export default function SupplierRFPsPage() {
             </table>
 
             {filteredRFPs.length === 0 && (
-              <div className="text-center py-12 text-text-secondary">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No RFPs found</p>
+              <div className="py-12 text-center">
+                <p className="text-[#9CA3AF]">No RFPs found matching your criteria.</p>
               </div>
             )}
           </div>
-        </TabsContent>
-      </Tabs>
-      )}
+        </CardContent>
+      </Card>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-[#6B7280]">
+          Showing {filteredRFPs.length} of {mockSupplierRFPs.length} RFPs
+        </p>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="border-[#E5E7EB]" disabled>
+            Previous
+          </Button>
+          <Button variant="outline" size="sm" className="border-[#E5E7EB] bg-[#16A34A] text-white hover:bg-[#15803D]">
+            1
+          </Button>
+          <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+            Next
+          </Button>
+        </div>
+      </div>
     </div>
+  )
+}
+
+function SortableHeader({
+  label,
+  field,
+  currentField,
+  direction,
+  onSort,
+}: {
+  label: string
+  field: SortField
+  currentField: SortField
+  direction: SortDirection
+  onSort: (field: SortField) => void
+}) {
+  const isActive = currentField === field
+
+  return (
+    <th
+      className="px-4 py-3 text-left text-xs font-semibold text-[#6B7280] uppercase tracking-wide cursor-pointer hover:bg-[#F3F4F6] transition-colors select-none"
+      onClick={() => onSort(field)}
+    >
+      <div className="flex items-center gap-1">
+        <span>{label}</span>
+        {isActive ? (
+          direction === 'asc' ? (
+            <ArrowUp className="h-3 w-3" />
+          ) : (
+            <ArrowDown className="h-3 w-3" />
+          )
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-40" />
+        )}
+      </div>
+    </th>
   )
 }
