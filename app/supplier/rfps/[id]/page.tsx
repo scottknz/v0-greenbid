@@ -81,6 +81,10 @@ import {
   Activity,
   FileCheck,
   Link2,
+  Globe,
+  Lock,
+  Paperclip,
+  Reply,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { internalTeamMembers } from '@/lib/mock-rfp'
@@ -137,12 +141,134 @@ const mockProposalDocuments = [
   { id: 'pd-4', name: 'Technical Proposal v1.pdf', size: '3.8 MB', uploadedAt: '2026-05-05', version: 1, status: 'archived' },
 ]
 
-// Mock messages/comms
-const mockMessages = [
-  { id: 'm-1', type: 'public', subject: 'Clarification on delivery timeline', sender: 'Jane Smith (Buyer)', date: '2026-05-08', unread: true },
-  { id: 'm-2', type: 'private', subject: 'Re: Pricing adjustments', sender: 'You', date: '2026-05-07', unread: false },
-  { id: 'm-3', type: 'public', subject: 'Updated specifications', sender: 'Jane Smith (Buyer)', date: '2026-05-05', unread: false },
+// Message thread structure for full messaging interface
+interface MessageThread {
+  id: string
+  subject: string
+  visibility: 'public' | 'private'
+  status: 'open' | 'awaiting' | 'resolved'
+  isRead: boolean
+  isStarred: boolean
+  createdAt: string
+  updatedAt: string
+  messages: {
+    id: string
+    senderId: string
+    senderName: string
+    senderType: 'buyer' | 'supplier'
+    content: string
+    attachments: { name: string; size: string; url: string }[]
+    timestamp: string
+  }[]
+}
+
+const initialMessageThreads: MessageThread[] = [
+  {
+    id: 't1',
+    subject: 'Clarification on delivery timeline',
+    visibility: 'public',
+    status: 'awaiting',
+    isRead: false,
+    isStarred: true,
+    createdAt: '2026-05-06T09:30:00Z',
+    updatedAt: '2026-05-08T14:20:00Z',
+    messages: [
+      {
+        id: 'm1',
+        senderId: 'buyer',
+        senderName: 'Jane Smith',
+        senderType: 'buyer',
+        content: 'Could you please clarify the expected delivery timeline for the initial pilot phase? We need to ensure alignment with our internal deadlines.',
+        attachments: [{ name: 'Project_Timeline.pdf', size: '245 KB', url: '#' }],
+        timestamp: '2026-05-06T09:30:00Z',
+      },
+      {
+        id: 'm2',
+        senderId: 'supplier',
+        senderName: 'John Smith',
+        senderType: 'supplier',
+        content: 'Thank you for reaching out. We can deliver the pilot phase within 6-8 weeks from contract signing. I have attached our proposed timeline for your review.',
+        attachments: [{ name: 'Proposed_Delivery_Schedule.pdf', size: '312 KB', url: '#' }],
+        timestamp: '2026-05-07T11:15:00Z',
+      },
+      {
+        id: 'm3',
+        senderId: 'buyer',
+        senderName: 'Jane Smith',
+        senderType: 'buyer',
+        content: 'Thanks for the quick response. Can you confirm if the 6-8 week timeline includes the testing phase, or is that additional?',
+        attachments: [],
+        timestamp: '2026-05-08T14:20:00Z',
+      },
+    ],
+  },
+  {
+    id: 't2',
+    subject: 'Pricing adjustments discussion',
+    visibility: 'private',
+    status: 'resolved',
+    isRead: true,
+    isStarred: false,
+    createdAt: '2026-05-05T10:00:00Z',
+    updatedAt: '2026-05-07T16:45:00Z',
+    messages: [
+      {
+        id: 'm4',
+        senderId: 'supplier',
+        senderName: 'John Smith',
+        senderType: 'supplier',
+        content: 'We wanted to discuss pricing adjustments privately. Based on the volume requirements, we can offer a 12% discount on the per-unit pricing.',
+        attachments: [{ name: 'Volume_Discount_Proposal.xlsx', size: '128 KB', url: '#' }],
+        timestamp: '2026-05-05T10:00:00Z',
+      },
+      {
+        id: 'm5',
+        senderId: 'buyer',
+        senderName: 'Jane Smith',
+        senderType: 'buyer',
+        content: 'Thank you for the proposal. The discount is acceptable. Please include this in your final submission.',
+        attachments: [],
+        timestamp: '2026-05-07T16:45:00Z',
+      },
+    ],
+  },
+  {
+    id: 't3',
+    subject: 'Updated specifications - please review',
+    visibility: 'public',
+    status: 'open',
+    isRead: true,
+    isStarred: false,
+    createdAt: '2026-05-05T08:00:00Z',
+    updatedAt: '2026-05-05T08:00:00Z',
+    messages: [
+      {
+        id: 'm6',
+        senderId: 'buyer',
+        senderName: 'Jane Smith',
+        senderType: 'buyer',
+        content: 'We have updated the technical specifications document. Please review the changes highlighted in Section 3.2 regarding environmental compliance requirements.',
+        attachments: [
+          { name: 'Technical_Specs_v2.pdf', size: '1.2 MB', url: '#' },
+          { name: 'Change_Log.docx', size: '45 KB', url: '#' },
+        ],
+        timestamp: '2026-05-05T08:00:00Z',
+      },
+    ],
+  },
 ]
+
+// Legacy format for badge indicator
+const mockMessages = initialMessageThreads.map(t => ({
+  id: t.id,
+  type: t.visibility,
+  subject: t.subject,
+  sender: t.messages[t.messages.length - 1].senderType === 'buyer' 
+    ? t.messages[t.messages.length - 1].senderName + ' (Buyer)'
+    : 'You',
+  date: new Date(t.updatedAt).toLocaleDateString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+  unread: !t.isRead,
+}))
 
 // Mock activity for the RFP
 const mockRFPActivity = [
@@ -197,6 +323,15 @@ export default function RFPDetailPage() {
   const [selectedRole, setSelectedRole] = useState<RFPTeamRole>('Reviewer')
 
   const [interestRegistered, setInterestRegistered] = useState(false)
+
+  // Messaging state
+  const [messageThreads, setMessageThreads] = useState<MessageThread[]>(initialMessageThreads)
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
+  const [replyMessage, setReplyMessage] = useState('')
+  const [showComposeModal, setShowComposeModal] = useState(false)
+  const [composeSubject, setComposeSubject] = useState('')
+  const [composeMessage, setComposeMessage] = useState('')
+  const [composeVisibility, setComposeVisibility] = useState<'public' | 'private'>('private')
 
   // Approval workflow states
   const [currentApproval, setCurrentApproval] = useState<ApprovalRequest | null>(
@@ -277,6 +412,82 @@ export default function RFPDetailPage() {
   const totalRequirements = rfp.requirements.length + rfp.deliverables.length + rfp.buyerQuestions.length
   const completedRequirements = Object.keys(questionResponses).length + mockProposalDocuments.filter(d => d.status === 'active').length
   const completionPercent = Math.min(100, Math.round((completedRequirements / totalRequirements) * 100))
+  
+  // Selected message thread
+  const selectedThread = messageThreads.find(t => t.id === selectedThreadId)
+  const unreadCount = messageThreads.filter(t => !t.isRead).length
+  
+  // Message formatting
+  const formatMessageDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const now = new Date()
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+    if (diffDays === 0) return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    if (diffDays < 7) return date.toLocaleDateString('en-GB', { weekday: 'short' })
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+  }
+  
+  const handleSelectThread = (id: string) => {
+    setSelectedThreadId(id)
+    // Mark as read
+    setMessageThreads(prev => prev.map(t => t.id === id ? { ...t, isRead: true } : t))
+  }
+  
+  const handleSendReply = () => {
+    if (!replyMessage.trim() || !selectedThreadId) return
+    setMessageThreads(prev => prev.map(thread => {
+      if (thread.id !== selectedThreadId) return thread
+      return {
+        ...thread,
+        updatedAt: new Date().toISOString(),
+        status: 'awaiting' as const,
+        messages: [...thread.messages, {
+          id: `m${Date.now()}`,
+          senderId: 'supplier',
+          senderName: 'John Smith',
+          senderType: 'supplier' as const,
+          content: replyMessage,
+          attachments: [],
+          timestamp: new Date().toISOString(),
+        }],
+      }
+    }))
+    setReplyMessage('')
+  }
+  
+  const handleSendNewMessage = () => {
+    if (!composeSubject.trim() || !composeMessage.trim()) return
+    const newThread: MessageThread = {
+      id: `t${Date.now()}`,
+      subject: composeSubject,
+      visibility: composeVisibility,
+      status: 'awaiting',
+      isRead: true,
+      isStarred: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messages: [{
+        id: `m${Date.now()}`,
+        senderId: 'supplier',
+        senderName: 'John Smith',
+        senderType: 'supplier',
+        content: composeMessage,
+        attachments: [],
+        timestamp: new Date().toISOString(),
+      }],
+    }
+    setMessageThreads(prev => [newThread, ...prev])
+    setShowComposeModal(false)
+    setComposeSubject('')
+    setComposeMessage('')
+    setComposeVisibility('private')
+    setSelectedThreadId(newThread.id)
+  }
+  
+  const toggleThreadStar = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setMessageThreads(prev => prev.map(t => t.id === id ? { ...t, isStarred: !t.isStarred } : t))
+  }
   
   // Phase transition handlers
   const handleMoveForward = () => {
@@ -1096,44 +1307,287 @@ export default function RFPDetailPage() {
           )}
 
           {activeTab === 'messages' && (
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base">Message Centre</CardTitle>
-                <Button className="bg-[#16A34A] hover:bg-[#15803D] gap-1.5">
-                  <Plus className="h-4 w-4" />
-                  New Message
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {mockMessages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={cn(
-                      "flex items-start gap-4 p-4 rounded-lg border transition-colors cursor-pointer",
-                      msg.unread ? "bg-[#F0FDF4] border-[#16A34A]/20" : "border-border hover:bg-surface"
+            <div className="flex gap-4 h-[600px]">
+              {/* Thread List (left panel) */}
+              <Card className="w-80 shrink-0 flex flex-col">
+                <CardHeader className="flex flex-row items-center justify-between pb-3 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-base">Messages</CardTitle>
+                    {unreadCount > 0 && (
+                      <Badge className="bg-[#16A34A] text-white text-xs h-5 px-1.5">{unreadCount}</Badge>
                     )}
-                  >
-                    <div className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-full shrink-0 text-xs font-medium",
-                      msg.type === 'public' ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
-                    )}>
-                      {msg.type === 'public' ? 'P' : 'PR'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-text-primary truncate">{msg.subject}</p>
-                        {msg.unread && <span className="h-2 w-2 rounded-full bg-[#16A34A]" />}
-                      </div>
-                      <p className="text-xs text-text-secondary mt-0.5">{msg.sender} • {msg.date}</p>
-                    </div>
-                    <Badge variant="outline" className="text-xs shrink-0">
-                      {msg.type === 'public' ? 'Public' : 'Private'}
-                    </Badge>
                   </div>
-                ))}
-              </CardContent>
-            </Card>
+                  <Button 
+                    size="sm"
+                    onClick={() => setShowComposeModal(true)}
+                    className="bg-[#16A34A] hover:bg-[#15803D] gap-1.5 h-8"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    New
+                  </Button>
+                </CardHeader>
+                <CardContent className="flex-1 overflow-y-auto p-0">
+                  <div className="divide-y divide-border">
+                    {messageThreads
+                      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+                      .map((thread) => (
+                      <div
+                        key={thread.id}
+                        onClick={() => handleSelectThread(thread.id)}
+                        className={cn(
+                          "flex items-start gap-3 p-3 cursor-pointer transition-colors",
+                          selectedThreadId === thread.id 
+                            ? "bg-[#F0FDF4] border-l-2 border-l-[#16A34A]" 
+                            : "hover:bg-surface",
+                          !thread.isRead && "bg-blue-50/50"
+                        )}
+                      >
+                        <div className={cn(
+                          "flex h-8 w-8 items-center justify-center rounded-full shrink-0 text-xs font-medium mt-0.5",
+                          thread.visibility === 'public' ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
+                        )}>
+                          {thread.visibility === 'public' ? <Globe className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <p className={cn(
+                              "text-sm truncate",
+                              !thread.isRead ? "font-semibold text-text-primary" : "font-medium text-text-primary"
+                            )}>
+                              {thread.subject}
+                            </p>
+                            {!thread.isRead && <span className="h-2 w-2 rounded-full bg-[#16A34A] shrink-0" />}
+                          </div>
+                          <p className="text-xs text-text-secondary mt-0.5 truncate">
+                            {thread.messages[thread.messages.length - 1].senderType === 'buyer' 
+                              ? thread.messages[thread.messages.length - 1].senderName 
+                              : 'You'}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] text-text-muted">{formatMessageDate(thread.updatedAt)}</span>
+                            <Badge variant="outline" className={cn(
+                              "text-[10px] h-4 px-1",
+                              thread.status === 'awaiting' && "border-amber-300 text-amber-700",
+                              thread.status === 'resolved' && "border-green-300 text-green-700",
+                              thread.status === 'open' && "border-blue-300 text-blue-700"
+                            )}>
+                              {thread.status === 'awaiting' ? 'Awaiting' : thread.status === 'resolved' ? 'Resolved' : 'Open'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => toggleThreadStar(thread.id, e)}
+                          className="shrink-0 p-1 hover:bg-surface rounded"
+                        >
+                          <Star className={cn(
+                            "h-3.5 w-3.5",
+                            thread.isStarred ? "fill-amber-400 text-amber-400" : "text-text-muted"
+                          )} />
+                        </button>
+                      </div>
+                    ))}
+                    {messageThreads.length === 0 && (
+                      <div className="p-6 text-center">
+                        <MessageSquare className="h-8 w-8 text-text-muted mx-auto mb-2" />
+                        <p className="text-sm text-text-secondary">No messages yet</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Message Detail (right panel) */}
+              <Card className="flex-1 flex flex-col min-w-0">
+                {selectedThread ? (
+                  <>
+                    {/* Thread Header */}
+                    <CardHeader className="border-b border-border pb-3 shrink-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-base truncate">{selectedThread.subject}</CardTitle>
+                            <Badge variant="outline" className={cn(
+                              "text-xs shrink-0",
+                              selectedThread.visibility === 'public' ? "border-blue-300 text-blue-700" : "border-gray-300 text-gray-600"
+                            )}>
+                              {selectedThread.visibility === 'public' ? (
+                                <><Globe className="h-3 w-3 mr-1" />Public</>
+                              ) : (
+                                <><Lock className="h-3 w-3 mr-1" />Private</>
+                              )}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-text-secondary mt-1">
+                            {selectedThread.messages.length} message{selectedThread.messages.length !== 1 && 's'} • 
+                            Started {new Date(selectedThread.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+                        <Badge className={cn(
+                          "text-xs shrink-0",
+                          selectedThread.status === 'awaiting' && "bg-amber-100 text-amber-800",
+                          selectedThread.status === 'resolved' && "bg-green-100 text-green-800",
+                          selectedThread.status === 'open' && "bg-blue-100 text-blue-800"
+                        )}>
+                          {selectedThread.status === 'awaiting' ? 'Awaiting Response' : selectedThread.status === 'resolved' ? 'Resolved' : 'Open'}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+
+                    {/* Messages */}
+                    <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+                      {selectedThread.messages.map((message) => (
+                        <div
+                          key={message.id}
+                          className={cn(
+                            "flex gap-3",
+                            message.senderType === 'supplier' && "flex-row-reverse"
+                          )}
+                        >
+                          <div className={cn(
+                            "flex h-8 w-8 items-center justify-center rounded-full shrink-0 text-xs font-semibold",
+                            message.senderType === 'buyer' ? "bg-blue-100 text-blue-700" : "bg-[#16A34A] text-white"
+                          )}>
+                            {message.senderName.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div className={cn(
+                            "flex-1 max-w-[75%]",
+                            message.senderType === 'supplier' && "flex flex-col items-end"
+                          )}>
+                            <div className={cn(
+                              "rounded-lg p-3",
+                              message.senderType === 'buyer' ? "bg-surface border border-border" : "bg-[#F0FDF4] border border-[#16A34A]/20"
+                            )}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-medium text-text-primary">
+                                  {message.senderType === 'buyer' ? `${message.senderName} (Buyer)` : 'You'}
+                                </span>
+                                <span className="text-[10px] text-text-muted">
+                                  {new Date(message.timestamp).toLocaleString('en-GB', { 
+                                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+                                  })}
+                                </span>
+                              </div>
+                              <p className="text-sm text-text-primary whitespace-pre-wrap">{message.content}</p>
+                              {message.attachments.length > 0 && (
+                                <div className="mt-2 pt-2 border-t border-border/50 space-y-1">
+                                  {message.attachments.map((att, idx) => (
+                                    <a
+                                      key={idx}
+                                      href={att.url}
+                                      className="flex items-center gap-2 text-xs text-[#16A34A] hover:underline"
+                                    >
+                                      <Paperclip className="h-3 w-3" />
+                                      {att.name} ({att.size})
+                                    </a>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+
+                    {/* Reply Box */}
+                    <div className="border-t border-border p-4 shrink-0">
+                      <div className="flex gap-3">
+                        <Textarea
+                          placeholder="Type your reply..."
+                          value={replyMessage}
+                          onChange={(e) => setReplyMessage(e.target.value)}
+                          className="flex-1 min-h-[80px] resize-none"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between mt-3">
+                        <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                          <Paperclip className="h-3.5 w-3.5" />
+                          Attach
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleSendReply}
+                          disabled={!replyMessage.trim()}
+                          className="bg-[#16A34A] hover:bg-[#15803D] gap-1.5"
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                          Send Reply
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <MessageSquare className="h-12 w-12 text-text-muted mx-auto mb-3" />
+                      <p className="text-sm text-text-secondary">Select a conversation to view</p>
+                      <p className="text-xs text-text-muted mt-1">Or start a new message to the buyer</p>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            </div>
           )}
+
+          {/* Compose Message Modal */}
+          <Dialog open={showComposeModal} onOpenChange={setShowComposeModal}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>New Message to Buyer</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div className="space-y-2">
+                  <Label>Subject</Label>
+                  <Input
+                    placeholder="Enter message subject..."
+                    value={composeSubject}
+                    onChange={(e) => setComposeSubject(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Visibility</Label>
+                  <Select value={composeVisibility} onValueChange={(v) => setComposeVisibility(v as 'public' | 'private')}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="private">
+                        <span className="flex items-center gap-2">
+                          <Lock className="h-3.5 w-3.5" />
+                          Private — Only visible to you and the buyer
+                        </span>
+                      </SelectItem>
+                      <SelectItem value="public">
+                        <span className="flex items-center gap-2">
+                          <Globe className="h-3.5 w-3.5" />
+                          Public — Visible to all suppliers
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Message</Label>
+                  <Textarea
+                    placeholder="Type your message..."
+                    value={composeMessage}
+                    onChange={(e) => setComposeMessage(e.target.value)}
+                    className="min-h-[120px]"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowComposeModal(false)}>Cancel</Button>
+                <Button
+                  onClick={handleSendNewMessage}
+                  disabled={!composeSubject.trim() || !composeMessage.trim()}
+                  className="bg-[#16A34A] hover:bg-[#15803D] gap-1.5"
+                >
+                  <Send className="h-4 w-4" />
+                  Send Message
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {activeTab === 'team' && (
             <Card>
