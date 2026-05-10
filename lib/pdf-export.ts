@@ -1,11 +1,11 @@
-import { RFP } from '@/types/rfp';
+import type { RFPDocument } from '@/types/rfp';
 
 /**
  * Generate PDF from RFP using print-to-PDF or external service
  * For now, this provides helper functions for PDF generation
  */
 
-export async function downloadRFPAsPDF(rfp: RFP, filename?: string) {
+export async function downloadRFPAsPDF(rfp: RFPDocument, filename?: string) {
   const name = filename || `${rfp.title.replace(/\s+/g, '-')}-${rfp.id}.pdf`;
   
   try {
@@ -53,7 +53,7 @@ export async function generateRFPPDFServer(rfpId: string) {
 /**
  * Helper to format RFP content for PDF
  */
-export function formatRFPForPDF(rfp: RFP): string {
+export function formatRFPForPDF(rfp: RFPDocument): string {
   let html = `
     <!DOCTYPE html>
     <html>
@@ -136,13 +136,13 @@ export function formatRFPForPDF(rfp: RFP): string {
       <h2>Table of Contents</h2>
       <ol>
   `;
-  rfp.sections.forEach((section) => {
+  rfp.sections.forEach((section: { title: string; content?: string; subsections?: { title: string; content: string }[] }) => {
     html += `<li>${section.title}</li>`;
   });
   html += `</ol></div>`;
 
   // Content sections
-  rfp.sections.forEach((section, index) => {
+  rfp.sections.forEach((section: { title: string; content?: string; subsections?: { title: string; content: string }[] }, index: number) => {
     html += `
       <div class="section">
         <h2>${index + 1}. ${section.title}</h2>
@@ -150,7 +150,7 @@ export function formatRFPForPDF(rfp: RFP): string {
     `;
 
     if (section.subsections && section.subsections.length > 0) {
-      section.subsections.forEach((subsection, subIndex) => {
+      section.subsections.forEach((subsection: { title: string; content: string }, subIndex: number) => {
         html += `
           <h3>${index + 1}.${subIndex + 1} ${subsection.title}</h3>
           <div>${subsection.content}</div>

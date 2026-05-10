@@ -493,7 +493,7 @@ export default function SupplierRFPsPage() {
                                 View Details
                               </Link>
                             </DropdownMenuItem>
-                            {rfp.status === 'in_progress' && (
+                            {rfp.currentPhase === 'in_progress' && (
                               <DropdownMenuItem>
                                 <FileText className="h-4 w-4 mr-2" />
                                 Continue Response

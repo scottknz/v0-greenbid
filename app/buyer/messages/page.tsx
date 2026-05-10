@@ -1024,7 +1024,7 @@ export default function MessagesPage() {
                           <span className={`text-sm truncate ${!thread.isRead ? "font-medium text-[#111827]" : "text-[#4B5563]"}`}>
                             {thread.subject}
                           </span>
-                          {thread.messages.some(m => m.attachments.length > 0) && (
+                          {thread.messages.some((m: { attachments: { name: string; size: string; url: string }[] }) => m.attachments.length > 0) && (
                             <Paperclip className="size-3 text-[#9CA3AF] shrink-0" />
                           )}
                         </div>
@@ -1127,7 +1127,7 @@ export default function MessagesPage() {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                  {selectedThread.messages.map((message, idx) => (
+                  {selectedThread.messages.map((message: { id: string; senderId: string; senderName: string; senderCompany?: string; senderType: 'buyer' | 'supplier'; content: string; attachments: { name: string; size: string; url: string }[]; timestamp: string }, idx: number) => (
                     <div key={message.id} className="flex gap-4">
                       <Avatar className="size-10 shrink-0">
                         <AvatarFallback className={`text-sm ${message.senderType === "buyer" ? "bg-[#16A34A] text-white" : "bg-[#E5E7EB] text-[#4B5563]"}`}>
@@ -1147,7 +1147,7 @@ export default function MessagesPage() {
                         <div className="text-sm text-[#374151] whitespace-pre-wrap">{message.content}</div>
                         {message.attachments.length > 0 && (
                           <div className="flex flex-wrap gap-2 mt-3">
-                            {message.attachments.map((att, i) => (
+                            {message.attachments.map((att: { name: string; size: string; url: string }, i: number) => (
                               <a
                                 key={i}
                                 href={att.url}

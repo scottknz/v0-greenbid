@@ -1,5 +1,14 @@
 export type SupplierTier = 'preferred' | 'standard' | 'new'
 
+// Supplier RFP Interest - tracks registered interest in responding to an RFP
+export interface RFPInterest {
+  supplierId: string
+  supplierName: string
+  registeredAt: string
+  status: 'registered' | 'submitted' | 'withdrawn'
+  contactEmail?: string
+}
+
 export interface SustainabilityCredentials {
   ecovadisScore?: number
   ecovadisRating?: 'gold' | 'silver' | 'bronze'

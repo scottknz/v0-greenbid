@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { jsPDF } from 'jspdf'
-import { LibraryDocument, LibraryList } from '@/components/library/LibraryList'
+import { LibraryList } from '@/components/library/LibraryList'
+import type { LibraryDocument } from '@/types/library'
 import { DocumentUploadForm } from '@/components/library/DocumentUploadForm'
 import { DocumentDetailsModal } from '@/components/library/DocumentDetailsModal'
 import { PageHeader } from '@/components/shared'

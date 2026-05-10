@@ -49,10 +49,6 @@ export function ProjectSetupForm({
   useEffect(() => {
     const refId = generateReferenceId(getCompanyName(), 1);
     setGeneratedRefId(refId);
-    // Auto-update projectInfo with generated reference ID
-    if (!projectInfo.referenceId) {
-      onUpdateProjectInfo({ ...projectInfo, referenceId: refId });
-    }
   }, []);
 
   const handleAddMilestone = () => {
@@ -182,7 +178,7 @@ export function ProjectSetupForm({
               <div className="relative">
                 <Input
                   id="referenceId"
-                  value={generatedRefId || projectInfo.referenceId || ''}
+                  value={generatedRefId || ''}
                   disabled
                   className="border-border bg-surface-hover text-text-secondary cursor-not-allowed"
                 />

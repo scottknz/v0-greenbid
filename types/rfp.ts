@@ -123,6 +123,11 @@ export interface RFPProjectInfo {
   primaryContact: string;
   primaryContactEmail: string;
   department: string;
+  
+  // Classification
+  contractType?: string;
+  confidentiality?: string;
+  submissionLanguage?: string;
 }
 
 export interface RFPMilestone {
@@ -134,6 +139,7 @@ export interface RFPMilestone {
 
 // Version history
 export interface RFPVersion {
+  id: string;
   version: number;
   savedAt: string;
   savedBy: string;

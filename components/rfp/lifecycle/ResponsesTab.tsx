@@ -423,7 +423,7 @@ export function ResponsesTab({
                 <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="outline"
-                    size="xs"
+                    size="sm"
                     className="text-xs h-7 px-2 border-green-200 text-green-700 hover:bg-green-50"
                     onClick={() => onTriageResponse?.(response.id, 'consider')}
                     title="Move to consideration"
@@ -432,7 +432,7 @@ export function ResponsesTab({
                   </Button>
                   <Button
                     variant="outline"
-                    size="xs"
+                    size="sm"
                     className="text-xs h-7 px-2 border-amber-200 text-amber-700 hover:bg-amber-50"
                     onClick={() => onTriageResponse?.(response.id, 'follow_up')}
                     title="Follow up with supplier"
@@ -441,7 +441,7 @@ export function ResponsesTab({
                   </Button>
                   <Button
                     variant="outline"
-                    size="xs"
+                    size="sm"
                     className="text-xs h-7 px-2 border-red-200 text-red-700 hover:bg-red-50"
                     onClick={() => onTriageResponse?.(response.id, 'reject')}
                     title="Reject response"

@@ -1,6 +1,6 @@
 'use client';
 
-import { RFP, RFPVersion } from '@/types/rfp';
+import type { RFPDocument, RFPVersion } from '@/types/rfp';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { Clock, RotateCcw, Trash2, ChevronDown } from 'lucide-react';
 
 interface VersionHistoryProps {
-  rfp: RFP;
+  rfp: RFPDocument;
   onRestore: (version: RFPVersion) => void;
 }
 
@@ -30,7 +30,7 @@ export function VersionHistory({ rfp, onRestore }: VersionHistoryProps) {
         Version History ({rfp.versions.length} / 3 saved)
       </div>
       
-      {rfp.versions.map((version, index) => (
+      {rfp.versions.map((version: RFPVersion, index: number) => (
         <Card key={version.id} className="p-4">
           <button
             onClick={() => setExpandedVersion(
