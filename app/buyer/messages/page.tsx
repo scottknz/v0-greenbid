@@ -664,7 +664,7 @@ export default function MessagesPage() {
                     <div className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg border border-orange-200 bg-orange-50 text-orange-800">
                       <Globe className="size-4 shrink-0 mt-0.5 text-orange-600" />
                       <div className="text-xs leading-relaxed">
-                        <span className="font-semibold">Broadcast to all {suppliersData.length} suppliers:</span> All recipients will see this message publicly. Use for announcements, deadline changes, or clarifications intended for all participants. Your replies will also be visible to all.
+                        <span className="font-semibold">Broadcast to all {suppliersData.length} suppliers:</span> All recipients will see this message publicly. Use for announcements, deadline changes, or clarifications. Your replies will also be visible to all.
                       </div>
                     </div>
                   )}
@@ -794,49 +794,7 @@ export default function MessagesPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
-          {/* Broadcast Confirmation Modal */}
-          <Dialog open={showBroadcastConfirm} onOpenChange={setShowBroadcastConfirm}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Broadcast to All Suppliers?</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 p-3 rounded-lg border border-orange-200 bg-orange-50">
-                  <Globe className="size-5 text-orange-600 shrink-0 mt-0.5" />
-                  <div className="text-sm text-orange-800">
-                    <p className="font-semibold mb-1">This will send your message to ALL {suppliersData.length} suppliers</p>
-                    <p className="text-xs">All suppliers will see this message and your responses to their questions. This action is visible in the audit log.</p>
-                  </div>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <p className="font-medium text-gray-900">Use broadcast for:</p>
-                  <ul className="text-xs text-gray-600 space-y-1 ml-3">
-                    <li>• Deadline extensions or changes</li>
-                    <li>• Clarifications to RFP terms</li>
-                    <li>• Announcements relevant to all participants</li>
-                  </ul>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setShowBroadcastConfirm(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  className="bg-orange-600 hover:bg-orange-700 text-white"
-                  onClick={() => {
-                    setComposeVisibility("all")
-                    setComposeRecipients(suppliersData.map(s => s.id))
-                    setShowBroadcastConfirm(false)
-                  }}
-                >
-                  <Globe className="size-4 mr-1" />
-                  Broadcast Message
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          
+          </div>
           {/* Filter Pills */}
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={rfpFilter || "all"} onValueChange={(v) => setRfpFilter(v === "all" ? null : v)}>
@@ -1267,6 +1225,48 @@ export default function MessagesPage() {
             )}
           </div>
         </div>
+
+        {/* Broadcast Confirmation Modal */}
+        <Dialog open={showBroadcastConfirm} onOpenChange={setShowBroadcastConfirm}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Broadcast to All Suppliers?</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-orange-200 bg-orange-50">
+                <Globe className="size-5 text-orange-600 shrink-0 mt-0.5" />
+                <div className="text-sm text-orange-800">
+                  <p className="font-semibold mb-1">This will send your message to ALL {suppliersData.length} suppliers</p>
+                  <p className="text-xs">All suppliers will see this message and your responses. This action is recorded in the audit log.</p>
+                </div>
+              </div>
+              <div className="space-y-2 text-sm">
+                <p className="font-medium text-gray-900">Use broadcast for:</p>
+                <ul className="text-xs text-gray-600 space-y-1 ml-3">
+                  <li>• Deadline extensions or changes</li>
+                  <li>• Clarifications to RFP terms</li>
+                  <li>• Announcements relevant to all participants</li>
+                </ul>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowBroadcastConfirm(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+                onClick={() => {
+                  setComposeVisibility("all")
+                  setComposeRecipients(suppliersData.map(s => s.id))
+                  setShowBroadcastConfirm(false)
+                }}
+              >
+                <Globe className="size-4 mr-1" />
+                Broadcast Message
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </div>
   )
 }
