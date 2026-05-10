@@ -84,6 +84,7 @@ export function EvaluationTab({
   const [scoreDrafts, setScoreDrafts] = useState<Record<string, { score: number; comment: string }>>({});
   const [activeView, setActiveView] = useState<'evaluate' | 'compare'>('evaluate');
   const [compareSelection, setCompareSelection] = useState<string[]>([]);
+  const [selectedCompareId, setSelectedCompareId] = useState<string | null>(null);
 
   const evaluatableResponses = responses.filter(
     r => r.status === 'shortlisted' || r.status === 'evaluated' || r.status === 'finalist'
@@ -494,8 +495,19 @@ export function EvaluationTab({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {rankings.map((ranking, index) => (
-                    <tr key={ranking.responseId} className="hover:bg-surface-hover transition-colors">
+                  {rankings.map((ranking, index) => {
+                    const isSelectedRow = selectedCompareId === ranking.responseId;
+                    return (
+                    <tr
+                      key={ranking.responseId}
+                      onClick={() => setSelectedCompareId(isSelectedRow ? null : ranking.responseId)}
+                      className={cn(
+                        'cursor-pointer transition-colors',
+                        isSelectedRow
+                          ? 'bg-brand-green-light ring-2 ring-inset ring-brand-green'
+                          : 'hover:bg-surface-hover'
+                      )}
+                    >
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
                           {index === 0 ? (
@@ -511,14 +523,19 @@ export function EvaluationTab({
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-9 w-9 border border-border">
-                            <AvatarFallback className="text-sm bg-surface">
+                          <Avatar className={cn('h-9 w-9 border', isSelectedRow ? 'border-brand-green' : 'border-border')}>
+                            <AvatarFallback className={cn('text-sm', isSelectedRow ? 'bg-brand-green-light text-brand-green' : 'bg-surface')}>
                               {getInitials(ranking.supplierName)}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium text-text-primary">
-                            {ranking.supplierName}
-                          </span>
+                          <div>
+                            <span className="font-medium text-text-primary">
+                              {ranking.supplierName}
+                            </span>
+                            {isSelectedRow && (
+                              <p className="text-xs text-brand-green font-medium">Score breakdown shown below</p>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="px-4 py-4 text-center">
@@ -567,66 +584,184 @@ export function EvaluationTab({
                         </Badge>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </CardContent>
           </Card>
 
-          {/* Criteria Comparison */}
-          <Card className="border-border bg-background">
-            <CardHeader className="border-b border-border">
-              <CardTitle className="text-lg">Score Breakdown by Criteria</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-surface">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Criteria
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Weight
-                    </th>
-                    {rankings.slice(0, 3).map((ranking) => (
-                      <th key={ranking.responseId} className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                        {ranking.supplierName.split(' ')[0]}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {criteria.map((criterion) => (
-                    <tr key={criterion.id} className="hover:bg-surface-hover transition-colors">
-                      <td className="px-4 py-3">
-                        <span className="font-medium text-text-primary">{criterion.name}</span>
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <Badge variant="outline" className="text-xs border-border">
-                          {criterion.weight}%
-                        </Badge>
-                      </td>
-                      {rankings.slice(0, 3).map((ranking) => {
-                        const evaluation = evaluations.find(e => e.responseId === ranking.responseId);
-                        const score = evaluation?.scores.find(s => s.criteriaId === criterion.id);
-                        return (
-                          <td key={ranking.responseId} className="px-4 py-3 text-center">
-                            {score ? (
-                              <span className={cn('font-semibold', getScoreColor(score.score, criterion.maxScore))}>
-                                {score.score}/{criterion.maxScore}
-                              </span>
-                            ) : (
-                              <span className="text-text-muted">-</span>
-                            )}
+          {/* Criteria Breakdown — updates when a supplier row is selected above */}
+          {(() => {
+            const selectedRanking = selectedCompareId
+              ? rankings.find(r => r.responseId === selectedCompareId)
+              : null;
+            const selectedBreakdownEval = selectedCompareId
+              ? evaluations.find(e => e.responseId === selectedCompareId)
+              : null;
+
+            return (
+              <Card className="border-border bg-background">
+                <CardHeader className="border-b border-border pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg">Score Breakdown by Criteria</CardTitle>
+                      {selectedRanking ? (
+                        <p className="text-sm text-text-muted mt-0.5">
+                          Showing scores for{' '}
+                          <span className="font-semibold text-brand-green">
+                            {selectedRanking.supplierName}
+                          </span>
+                          {' '}— click a different row above to switch, or click again to deselect.
+                        </p>
+                      ) : (
+                        <p className="text-sm text-text-muted mt-0.5">
+                          Click a supplier row above to see their detailed score breakdown.
+                        </p>
+                      )}
+                    </div>
+                    {selectedRanking && (
+                      <div className="text-right shrink-0">
+                        <p className="text-2xl font-bold text-text-primary">
+                          {selectedRanking.percentageScore}%
+                        </p>
+                        <p className="text-xs text-text-muted">Overall score</p>
+                      </div>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {!selectedRanking ? (
+                    <div className="flex flex-col items-center justify-center py-14 gap-3">
+                      <div className="h-12 w-12 rounded-full bg-surface flex items-center justify-center">
+                        <BarChart3 className="h-6 w-6 text-text-muted" />
+                      </div>
+                      <p className="text-sm font-medium text-text-secondary">No supplier selected</p>
+                      <p className="text-xs text-text-muted">
+                        Click a supplier in the rankings table above to view their score breakdown.
+                      </p>
+                    </div>
+                  ) : (
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border bg-surface">
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                            Criteria
+                          </th>
+                          <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                            Weight
+                          </th>
+                          <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                            Score
+                          </th>
+                          <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                            Weighted
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                            Breakdown
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                            Comment
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {criteria.map((criterion) => {
+                          const score = selectedBreakdownEval?.scores.find(
+                            s => s.criteriaId === criterion.id
+                          );
+                          const rawScore = score?.score ?? null;
+                          const weightedScore =
+                            rawScore !== null
+                              ? ((rawScore / criterion.maxScore) * criterion.weight).toFixed(1)
+                              : null;
+                          const barPct =
+                            rawScore !== null ? (rawScore / criterion.maxScore) * 100 : 0;
+
+                          return (
+                            <tr key={criterion.id} className="hover:bg-surface-hover transition-colors">
+                              <td className="px-4 py-3">
+                                <p className="font-medium text-text-primary">{criterion.name}</p>
+                                <p className="text-xs text-text-muted mt-0.5">{criterion.description}</p>
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <Badge variant="outline" className="text-xs border-border">
+                                  {criterion.weight}%
+                                </Badge>
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                {rawScore !== null ? (
+                                  <span className={cn('text-base font-bold', getScoreColor(rawScore, criterion.maxScore))}>
+                                    {rawScore}
+                                    <span className="text-xs font-normal text-text-muted">
+                                      /{criterion.maxScore}
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-text-muted text-sm">Not scored</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                {weightedScore !== null ? (
+                                  <span className="font-semibold text-text-primary">
+                                    {weightedScore}
+                                  </span>
+                                ) : (
+                                  <span className="text-text-muted">-</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 w-40">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1 h-2 bg-border rounded-full overflow-hidden">
+                                    <div
+                                      className={cn(
+                                        'h-full rounded-full transition-all',
+                                        getProgressColor(barPct, 100)
+                                      )}
+                                      style={{ width: `${barPct}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-xs text-text-muted w-8 text-right tabular-nums">
+                                    {Math.round(barPct)}%
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 max-w-xs">
+                                {score?.comment ? (
+                                  <p className="text-sm text-text-secondary line-clamp-2">
+                                    {score.comment}
+                                  </p>
+                                ) : (
+                                  <span className="text-xs text-text-muted italic">No comment</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                      {/* Footer totals */}
+                      <tfoot>
+                        <tr className="border-t-2 border-border bg-surface">
+                          <td className="px-4 py-3 font-semibold text-text-primary">Total</td>
+                          <td className="px-4 py-3 text-center">
+                            <Badge variant="outline" className="text-xs border-border">100%</Badge>
                           </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
+                          <td className="px-4 py-3 text-center">—</td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={cn('text-base font-bold', getScoreColor(selectedRanking.percentageScore, 100))}>
+                              {selectedRanking.percentageScore}%
+                            </span>
+                          </td>
+                          <td colSpan={2} className="px-4 py-3" />
+                        </tr>
+                      </tfoot>
+                    </table>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })()}
+
         </div>
       )}
     </div>
