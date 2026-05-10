@@ -39,6 +39,8 @@ import {
   MapPin,
   TrendingUp,
   ExternalLink,
+  Globe,
+  Lock,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { 
@@ -52,6 +54,7 @@ import { mockMarketplaceRFPs } from '@/lib/mock-marketplace'
 const SAVED_MARKETPLACE_IDS = ['mkt-001', 'mkt-004']
 
 export default function SupplierRFPsPage() {
+  const [marketView, setMarketView] = useState<'public' | 'private'>('public')
   const [searchTerm, setSearchTerm] = useState('')
   const [phaseFilter, setPhaseFilter] = useState('all')
   const [activeTab, setActiveTab] = useState('all')
@@ -86,12 +89,181 @@ export default function SupplierRFPsPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <PageHeader
-        title="RFPs"
-        description="Manage your RFP responses and track submission status"
-      />
+      <div className="flex items-start justify-between gap-4">
+        <PageHeader
+          title="RFP Marketplace"
+          description={
+            marketView === 'public'
+              ? 'Browse open opportunities across the public marketplace'
+              : 'Manage your private invitations and active RFP responses'
+          }
+        />
 
-      {/* Tabs */}
+        {/* Public / Private toggle */}
+        <div className="flex items-center shrink-0 bg-surface border border-border rounded-lg p-1 gap-1 mt-1">
+          <button
+            onClick={() => setMarketView('public')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
+              marketView === 'public'
+                ? 'bg-brand-green text-white shadow-sm'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+            )}
+          >
+            <Globe className="h-4 w-4" />
+            Public Marketplace
+          </button>
+          <button
+            onClick={() => setMarketView('private')}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
+              marketView === 'private'
+                ? 'bg-brand-green text-white shadow-sm'
+                : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+            )}
+          >
+            <Lock className="h-4 w-4" />
+            Private / Invited
+            {counts.all > 0 && (
+              <span className={cn(
+                'inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full text-xs font-semibold',
+                marketView === 'private' ? 'bg-white/20 text-white' : 'bg-brand-green-light text-brand-green'
+              )}>
+                {counts.all}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Public Marketplace ── */}
+      {marketView === 'public' && (
+        <div className="space-y-4">
+          {/* Search + filters */}
+          <div className="flex items-center gap-3">
+            <div className="flex flex-1 items-center gap-2 bg-background rounded-md border border-border px-3 py-2">
+              <Search className="h-4 w-4 text-text-secondary shrink-0" />
+              <input
+                placeholder="Search opportunities by title, company or tag..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted focus:outline-none"
+              />
+            </div>
+            <Button variant="outline" className="gap-2 shrink-0">
+              <Filter className="h-4 w-4" />
+              Filter
+            </Button>
+          </div>
+
+          {/* Stats row */}
+          <div className="flex items-center gap-4 text-sm text-text-muted">
+            <span className="font-medium text-text-primary">{mockMarketplaceRFPs.filter(r => r.status !== 'closed').length} open opportunities</span>
+            <span>&middot;</span>
+            <span>{savedPipelineIds.size} saved to pipeline</span>
+          </div>
+
+          {/* Marketplace cards */}
+          <div className="space-y-3">
+            {mockMarketplaceRFPs
+              .filter(r => {
+                if (!searchTerm) return true
+                const q = searchTerm.toLowerCase()
+                return (
+                  r.title.toLowerCase().includes(q) ||
+                  r.buyerCompany.toLowerCase().includes(q) ||
+                  r.tags.some(t => t.toLowerCase().includes(q))
+                )
+              })
+              .map(rfp => {
+                const days = Math.ceil((new Date(rfp.deadline).getTime() - Date.now()) / 86400000)
+                const urgent = days <= 14
+                const critical = days <= 7
+                const isSaved = savedPipelineIds.has(rfp.id)
+                return (
+                  <div key={rfp.id} className={cn(
+                    'bg-background border rounded-xl p-5 flex flex-col sm:flex-row sm:items-start gap-4 hover:shadow-sm transition-shadow',
+                    rfp.featured ? 'border-brand-green/30' : 'border-border'
+                  )}>
+                    <div className={cn('h-11 w-11 rounded-lg shrink-0 flex items-center justify-center text-white text-xs font-bold', rfp.buyerColor)}>
+                      {rfp.buyerInitials}
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <div className="space-y-0.5 min-w-0">
+                          <p className="text-xs text-text-muted font-medium">{rfp.buyerCompany}</p>
+                          <Link href={`/marketplace/${rfp.id}`} className="font-semibold text-sm text-text-primary hover:text-brand-green transition-colors line-clamp-1">
+                            {rfp.title}
+                          </Link>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {rfp.featured && (
+                            <Badge className="bg-amber-100 text-amber-700 border border-amber-200 text-[10px]">Featured</Badge>
+                          )}
+                          <Badge className={cn('text-[10px] border', rfp.status === 'closing-soon' ? 'bg-amber-50 text-amber-700 border-amber-200' : rfp.status === 'closed' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-brand-green-light text-brand-green border-brand-green/20')}>
+                            {rfp.status === 'closing-soon' ? 'Closing Soon' : rfp.status === 'closed' ? 'Closed' : 'Open'}
+                          </Badge>
+                        </div>
+                      </div>
+                      <p className="text-xs text-text-secondary line-clamp-2">{rfp.summary}</p>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-text-muted">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />{rfp.country}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          <span className={cn(critical ? 'text-red-600 font-medium' : urgent ? 'text-amber-600 font-medium' : '')}>
+                            {days > 0 ? `${days} days left` : 'Deadline passed'}
+                          </span>
+                        </span>
+                        {rfp.budget && (
+                          <span className="flex items-center gap-1">
+                            <TrendingUp className="h-3 w-3 text-brand-green" />{rfp.budget}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <Building2 className="h-3 w-3" />{rfp.registeredSuppliers} registered
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {rfp.tags.slice(0, 4).map(tag => (
+                          <span key={tag} className="px-2 py-0.5 rounded-full bg-surface border border-border text-[10px] text-text-secondary">{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex sm:flex-col items-center gap-2 shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          'h-8 gap-1.5 text-xs',
+                          isSaved ? 'border-brand-green text-brand-green hover:bg-brand-green-light' : 'border-border'
+                        )}
+                        onClick={() => setSavedPipelineIds(prev => {
+                          const s = new Set(prev)
+                          isSaved ? s.delete(rfp.id) : s.add(rfp.id)
+                          return s
+                        })}
+                      >
+                        <Bookmark className={cn('h-3.5 w-3.5', isSaved && 'fill-brand-green')} />
+                        {isSaved ? 'Saved' : 'Save'}
+                      </Button>
+                      <Link href={`/marketplace/${rfp.id}`}>
+                        <Button size="sm" className="h-8 text-xs bg-brand-green hover:bg-brand-green-mid text-white gap-1.5">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          View RFP
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Private / Invited Marketplace ── */}
+      {marketView === 'private' && (
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-background border border-border">
           <TabsTrigger value="all">All ({counts.all})</TabsTrigger>
@@ -349,6 +521,7 @@ export default function SupplierRFPsPage() {
           </div>
         </TabsContent>
       </Tabs>
+      )}
     </div>
   )
 }
