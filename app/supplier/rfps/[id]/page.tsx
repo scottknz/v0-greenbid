@@ -406,6 +406,28 @@ export default function RFPDetailPage() {
     }
   }
   
+  const handleSaveDraftQuestionnaire = () => {
+    console.log('[v0] Saved questionnaire draft:', questionResponses)
+  }
+
+  const handleSaveAndContinueQuestionnaire = () => {
+    // Check if all required questions are answered
+    const requiredUnanswered = rfp.buyerQuestions.filter(
+      q => q.required && (!questionResponses[q.id] || questionResponses[q.id].trim() === '')
+    )
+    
+    if (requiredUnanswered.length > 0) {
+      console.log('[v0] Cannot continue - missing required answers:', requiredUnanswered.map(q => q.id))
+      alert(`Please answer all required questions (${requiredUnanswered.length} remaining)`)
+      return
+    }
+
+    // Save and move to next tab
+    console.log('[v0] Saved questionnaire and continuing:', questionResponses)
+    // Move to next tab (Documents)
+    setActiveTab('documents')
+  }
+
   const handleSubmitProposal = () => {
     const submitTransition: SupplierRFPPhaseTransition = {
       phase: 'submitted',
@@ -1187,8 +1209,17 @@ export default function RFPDetailPage() {
                 ))}
 
                 <div className="flex justify-end gap-3 pt-4 border-t">
-                  <Button variant="outline">Save Draft</Button>
-                  <Button className="bg-[#16A34A] hover:bg-[#15803D]">
+                  <Button 
+                    variant="outline"
+                    onClick={handleSaveDraftQuestionnaire}
+                  >
+                    Save Draft
+                  </Button>
+                  <Button 
+                    className="bg-[#16A34A] hover:bg-[#15803D]"
+                    onClick={handleSaveAndContinueQuestionnaire}
+                    disabled={rfp.buyerQuestions.filter(q => q.required && (!questionResponses[q.id] || questionResponses[q.id].trim() === '')).length > 0}
+                  >
                     Save & Continue
                   </Button>
                 </div>
