@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -103,23 +104,20 @@ export default function BuyerActivityPage() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">Activity Log</h1>
-          <p className="text-sm text-text-secondary mt-1">
-            Track all procurement activities across your RFPs
-          </p>
-        </div>
-        <Button onClick={handleExportCSV} variant="outline" className="gap-2">
-          <Download className="h-4 w-4" />
-          Export {selectedActivities.size > 0 ? `(${selectedActivities.size})` : 'All'}
-        </Button>
-      </div>
+      <PageHeader
+        title="Activity Log"
+        description="Track all procurement activities across your RFPs"
+        actions={
+          <Button onClick={handleExportCSV} variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Export {selectedActivities.size > 0 ? `(${selectedActivities.size})` : 'All'}
+          </Button>
+        }
+      />
 
       {/* Filters */}
-      <div className="flex items-center gap-4 bg-background p-4 rounded-lg border border-border">
-        <div className="flex flex-1 items-center gap-2 bg-white rounded-md border border-border px-3 py-2">
+      <div className="flex items-center gap-4 bg-surface p-4 rounded-lg border border-border">
+        <div className="flex flex-1 items-center gap-2 bg-background rounded-md border border-border px-3 py-2">
           <Search className="h-4 w-4 text-text-secondary" />
           <Input
             placeholder="Search activities, RFPs, or suppliers..."
@@ -169,8 +167,8 @@ export default function BuyerActivityPage() {
       </div>
 
       {/* Activity List */}
-      <div className="border border-border rounded-lg overflow-hidden bg-white">
-        <div className="flex items-center gap-4 px-6 py-3 bg-background border-b border-border">
+      <div className="border border-border rounded-lg overflow-hidden bg-background">
+        <div className="flex items-center gap-4 px-6 py-3 bg-surface border-b border-border">
           <input
             type="checkbox"
             checked={selectedActivities.size === filteredActivities.length && filteredActivities.length > 0}
@@ -190,7 +188,7 @@ export default function BuyerActivityPage() {
             return (
               <div
                 key={activity.id}
-                className="flex items-start gap-4 px-6 py-4 hover:bg-background/50 transition-colors"
+                className="flex items-start gap-4 px-6 py-4 hover:bg-surface-hover transition-colors"
               >
                 <input
                   type="checkbox"

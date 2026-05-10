@@ -5,9 +5,10 @@ import { getAllTeamMembers, deleteTeamMember, logTeamMemberActivity, createTeamM
 import { TeamMember } from '@/types/team'
 import { TeamMemberModal } from '@/components/team/TeamMemberModal'
 import { TeamMemberProfile } from '@/components/team/TeamMemberProfile'
+import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { MoreHorizontal, Eye, Pencil, Trash2, Search, Users } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash2, Search, Users, Plus } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
@@ -79,20 +80,27 @@ export default function SupplierTeamPage() {
   const activeCount = teamMembers.filter(m => !m.deletedAt).length
 
   return (
-    <div className="space-y-6 p-5">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-          Team Members
-        </h1>
-        <p className="text-sm text-text-secondary mt-1">
-          Manage internal team members and their RFP assignments ({activeCount} active)
-        </p>
-      </div>
+    <div className="space-y-6 p-6">
+      <PageHeader
+        title="Team Members"
+        description={`Manage internal team members and their RFP assignments (${activeCount} active)`}
+        actions={
+          <Button 
+            onClick={() => {
+              setSelectedMember(null)
+              setShowModal(true)
+            }}
+            className="bg-brand-green hover:bg-brand-green-mid text-white gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add Team Member
+          </Button>
+        }
+      />
 
       {/* Action Bar */}
-      <div className="flex items-center justify-between gap-4 bg-background p-4 rounded-lg border border-border">
-        <div className="flex flex-1 items-center gap-2 bg-white rounded-md border border-border px-3 py-2">
+      <div className="flex items-center justify-between gap-4 bg-surface p-4 rounded-lg border border-border">
+        <div className="flex flex-1 items-center gap-2 bg-background rounded-md border border-border px-3 py-2">
           <Search className="h-4 w-4 text-text-secondary" />
           <Input
             placeholder="Search by name, email, or role..."
@@ -127,22 +135,12 @@ export default function SupplierTeamPage() {
           </SelectContent>
         </Select>
 
-        <Button 
-          onClick={() => {
-            setSelectedMember(null)
-            setShowModal(true)
-          }}
-          className="bg-brand-green hover:bg-brand-green/90 text-white"
-        >
-          <Users className="h-4 w-4 mr-2" />
-          Add Team Member
-        </Button>
       </div>
 
       {/* Team Members Table */}
-      <div className="border border-border rounded-lg overflow-hidden bg-white">
+      <div className="border border-border rounded-lg overflow-hidden bg-background">
         <table className="w-full table-fixed">
-          <thead className="bg-background border-b border-border">
+          <thead className="bg-surface border-b border-border">
             <tr>
               <th className="w-[220px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Name
@@ -176,7 +174,7 @@ export default function SupplierTeamPage() {
                   setShowProfile(true)
                 }}
                 className={cn(
-                  'hover:bg-background/50 transition-colors cursor-pointer',
+                  'hover:bg-surface-hover transition-colors cursor-pointer',
                   member.deletedAt && 'opacity-60'
                 )}
               >

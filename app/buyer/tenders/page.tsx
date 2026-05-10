@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PageHeader } from "@/components/shared"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -250,19 +251,14 @@ export default function TendersPage() {
   }, [activeTab, searchQuery, sortField, sortDirection])
 
   return (
-    <div className="space-y-6 p-5">
-        {/* Page Header */}
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#111827]">
-            RFPs
-          </h1>
-          <p className="text-sm text-[#6B7280]">
-            Manage and track all your procurement RFPs
-          </p>
-        </div>
+    <div className="space-y-6 p-6">
+        <PageHeader
+          title="RFPs"
+          description="Manage and track all your procurement RFPs"
+        />
 
         {/* Tabs */}
-        <div className="border-b border-[#E5E7EB]">
+        <div className="border-b border-border">
           <nav className="flex gap-6" aria-label="Tabs">
             {statusTabs.map(tab => (
               <button
@@ -270,8 +266,8 @@ export default function TendersPage() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative pb-3 text-sm font-medium transition-colors ${
                   activeTab === tab.key
-                    ? "text-[#16A34A]"
-                    : "text-[#6B7280] hover:text-[#111827]"
+                    ? "text-brand-green"
+                    : "text-text-secondary hover:text-text-primary"
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -279,15 +275,15 @@ export default function TendersPage() {
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs ${
                       activeTab === tab.key
-                        ? "bg-[#F0FDF4] text-[#16A34A]"
-                        : "bg-[#F3F4F6] text-[#6B7280]"
+                        ? "bg-brand-green-light text-brand-green"
+                        : "bg-surface-hover text-text-secondary"
                     }`}
                   >
                     {tab.count}
                   </span>
                 </span>
                 {activeTab === tab.key && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#16A34A]" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-green" />
                 )}
               </button>
             ))}
@@ -297,25 +293,25 @@ export default function TendersPage() {
         {/* Search and Filters */}
         <div className="flex items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#9CA3AF]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-text-muted" />
             <Input
               placeholder="Search RFPs by name, ID, category, or owner..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-10 border-[#E5E7EB] bg-white"
+              className="pl-10 border-border bg-background"
             />
           </div>
           <div className="flex items-center gap-2">
             {selectedTenders.length > 0 && (
-              <span className="text-sm text-[#6B7280] mr-2">
+              <span className="text-sm text-text-secondary mr-2">
                 {selectedTenders.length} selected
               </span>
             )}
-            <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+            <Button variant="outline" size="sm" className="border-border">
               <Filter className="size-4 mr-2" />
               Filters
             </Button>
-            <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+            <Button variant="outline" size="sm" className="border-border">
               <Download className="size-4 mr-2" />
               Export
             </Button>
@@ -323,18 +319,18 @@ export default function TendersPage() {
         </div>
 
         {/* Table */}
-        <Card className="border-[#E5E7EB] bg-white overflow-hidden pt-0">
+        <Card className="border-border bg-background overflow-hidden pt-0">
           <CardContent className="p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#E5E7EB] bg-[#F8F9FA]">
+                  <tr className="border-b border-border bg-surface">
                     <th className="px-4 py-3 text-left">
                       <input
                         type="checkbox"
                         checked={selectedTenders.length === filteredTenders.length && filteredTenders.length > 0}
                         onChange={handleSelectAll}
-                        className="size-4 rounded border-[#D1D5DB] text-[#16A34A] focus:ring-[#16A34A]"
+                        className="size-4 rounded border-border text-brand-green focus:ring-brand-green"
                       />
                     </th>
                     <SortableHeader
@@ -379,15 +375,15 @@ export default function TendersPage() {
                       direction={sortDirection}
                       onSort={handleSort}
                     />
-                    <th className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                       Owner
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-[#6B7280] uppercase tracking-wide">
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E5E7EB]">
+                <tbody className="divide-y divide-border">
                   {filteredTenders.map(tender => (
                     <TenderRow
                       key={tender.id}
@@ -401,7 +397,7 @@ export default function TendersPage() {
 
               {filteredTenders.length === 0 && (
                 <div className="py-12 text-center">
-                  <p className="text-[#6B7280]">No RFPs found matching your criteria.</p>
+                  <p className="text-text-muted">No RFPs found matching your criteria.</p>
                 </div>
               )}
             </div>
@@ -410,20 +406,20 @@ export default function TendersPage() {
 
         {/* Pagination */}
         <div className="flex items-center justify-between">
-          <p className="text-sm text-[#6B7280]">
+          <p className="text-sm text-text-secondary">
             Showing {filteredTenders.length} of {allTendersData.length} RFPs
           </p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="border-[#E5E7EB]" disabled>
+            <Button variant="outline" size="sm" className="border-border" disabled>
               Previous
             </Button>
-            <Button variant="outline" size="sm" className="border-[#E5E7EB] bg-[#16A34A] text-white hover:bg-[#15803D]">
+            <Button variant="outline" size="sm" className="border-border bg-brand-green text-white hover:bg-brand-green-mid">
               1
             </Button>
-            <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+            <Button variant="outline" size="sm" className="border-border">
               2
             </Button>
-            <Button variant="outline" size="sm" className="border-[#E5E7EB]">
+            <Button variant="outline" size="sm" className="border-border">
               Next
             </Button>
           </div>
@@ -449,7 +445,7 @@ function SortableHeader({
 
   return (
     <th
-      className="px-4 py-3 text-left text-xs font-medium text-[#6B7280] uppercase tracking-wide cursor-pointer hover:bg-[#E5E7EB] transition-colors select-none"
+      className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide cursor-pointer hover:bg-surface-hover transition-colors select-none"
       onClick={() => onSort(field)}
     >
       <div className="flex items-center gap-1">
@@ -488,11 +484,11 @@ function TenderRow({
   }
 
   const statusConfig: Record<TenderStatus, { label: string; className: string }> = {
-    draft: { label: "Draft", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
-    published: { label: "Published", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
+    draft: { label: "Draft", className: "bg-surface-hover text-text-secondary border-border" },
+    published: { label: "Published", className: "bg-brand-green-light text-brand-green border-brand-green/20" },
     accepting_bids: { label: "Accepting Bids", className: "bg-blue-50 text-blue-700 border-blue-200" },
     evaluating: { label: "Evaluating", className: "bg-amber-50 text-amber-700 border-amber-200" },
-    closed: { label: "Closed", className: "bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]" },
+    closed: { label: "Closed", className: "bg-surface-hover text-text-muted border-border" },
   }
 
   const { label, className } = statusConfig[tender.status]
@@ -506,7 +502,7 @@ function TenderRow({
 
   return (
     <tr 
-      className={`hover:bg-[#F3F4F6] transition-colors cursor-pointer ${isSelected ? "bg-[#F0FDF4]" : ""}`}
+      className={`hover:bg-surface-hover transition-colors cursor-pointer ${isSelected ? "bg-brand-green-light" : ""}`}
       onClick={handleRowClick}
     >
       <td className="px-4 py-3">
@@ -514,13 +510,13 @@ function TenderRow({
           type="checkbox"
           checked={isSelected}
           onChange={() => onSelect(tender.id)}
-          className="size-4 rounded border-[#D1D5DB] text-[#16A34A] focus:ring-[#16A34A]"
+          className="size-4 rounded border-border text-brand-green focus:ring-brand-green"
         />
       </td>
       <td className="px-4 py-3">
         <div>
-          <p className="font-medium text-[#111827]">{tender.name}</p>
-          <p className="text-xs text-[#6B7280]">{tender.referenceId}</p>
+          <p className="font-medium text-text-primary">{tender.name}</p>
+          <p className="text-xs text-text-muted">{tender.referenceId}</p>
         </div>
       </td>
       <td className="px-4 py-3">
@@ -531,11 +527,11 @@ function TenderRow({
           {label}
         </Badge>
       </td>
-      <td className="px-4 py-3 text-[#6B7280]">{tender.category}</td>
-      <td className="px-4 py-3 text-[#6B7280] tabular-nums text-center">{tender.submissions}</td>
-      <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">{tender.deadline}</td>
-      <td className="px-4 py-3 text-[#6B7280] tabular-nums whitespace-nowrap">{formatBudget(tender.budget)}</td>
-      <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">{tender.owner}</td>
+      <td className="px-4 py-3 text-text-secondary">{tender.category}</td>
+      <td className="px-4 py-3 text-text-secondary tabular-nums text-center">{tender.submissions}</td>
+      <td className="px-4 py-3 text-text-secondary whitespace-nowrap">{tender.deadline}</td>
+      <td className="px-4 py-3 text-text-secondary tabular-nums whitespace-nowrap">{formatBudget(tender.budget)}</td>
+      <td className="px-4 py-3 text-text-secondary whitespace-nowrap">{tender.owner}</td>
       <td className="px-4 py-3 text-right">
         <div className="flex items-center justify-end gap-1">
           <Button 

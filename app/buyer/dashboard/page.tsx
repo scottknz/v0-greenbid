@@ -6,10 +6,11 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { DataTable } from '@/components/dashboard/DataTable';
 import { StatusBadge } from '@/components/dashboard/StatusBadge';
+import { PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   FileText, AlertCircle, Users, Award, Clock,
-  MoreHorizontal
+  MoreHorizontal, Plus
 } from 'lucide-react';
 import { 
   mockDashboardTenders, 
@@ -70,17 +71,18 @@ const tenderColumns = [
 
 export default function BuyerDashboardPage() {
   return (
-    <div className="flex flex-col min-h-full">
-      <div className="sticky top-0 z-10 flex h-14 shrink-0 items-center justify-between border-b border-border bg-background px-6">
-        <h1 className="text-lg font-semibold text-text-primary">Dashboard</h1>
-        <Link href="/buyer/rfp/create">
-          <Button className="bg-brand-green hover:bg-brand-green-mid text-white h-9 px-4 rounded-md">
-            + Create RFP
-          </Button>
-        </Link>
-      </div>
-
-      <div className="flex-1 p-6 space-y-6">
+    <div className="flex flex-col min-h-full p-6 space-y-6">
+      <PageHeader
+        title="Dashboard"
+        actions={
+          <Link href="/buyer/rfp/create">
+            <Button className="bg-brand-green hover:bg-brand-green-mid text-white gap-2">
+              <Plus className="h-4 w-4" />
+              Create RFP
+            </Button>
+          </Link>
+        }
+      />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard title="Active RFPs" value={mockDashboardStats.activeRFPs} icon={FileText} valueColor="text-brand-green" />
           <StatCard title="Awaiting Review" value={mockDashboardStats.awaitingReview} icon={AlertCircle} valueColor="text-warning" trend="up" trendValue={`+${mockDashboardStats.awaitingReviewChange}`} trendLabel="since yesterday" />

@@ -3,6 +3,7 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/shared'
 import { TrendingUp, FileText, Clock, CheckCircle2, AlertCircle, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 
@@ -31,16 +32,15 @@ export default function SupplierDashboard() {
   ]
 
   return (
-    <div className="space-y-6 p-5">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-text-primary">Dashboard</h1>
-        <p className="text-text-muted mt-2">Welcome back. Here's your RFP overview.</p>
-      </div>
+    <div className="space-y-6 p-6">
+      <PageHeader
+        title="Dashboard"
+        description="Welcome back. Here's your RFP overview."
+      />
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="bg-white border-border">
+        <Card className="bg-background border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-text-secondary flex items-center gap-2">
               <FileText className="h-4 w-4 text-brand-green" />
@@ -53,7 +53,7 @@ export default function SupplierDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-border">
+        <Card className="bg-background border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-text-secondary flex items-center gap-2">
               <Clock className="h-4 w-4 text-orange-500" />
@@ -66,7 +66,7 @@ export default function SupplierDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-border">
+        <Card className="bg-background border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-text-secondary flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-red-500" />
@@ -79,7 +79,7 @@ export default function SupplierDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-border">
+        <Card className="bg-background border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-text-secondary flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-brand-green" />
@@ -92,7 +92,7 @@ export default function SupplierDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-border">
+        <Card className="bg-background border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-text-secondary flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-brand-green" />
@@ -105,7 +105,7 @@ export default function SupplierDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-border">
+        <Card className="bg-background border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-text-secondary flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-blue-500" />
@@ -123,7 +123,7 @@ export default function SupplierDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Upcoming Deadlines */}
         <div className="lg:col-span-2">
-          <Card className="bg-white border-border">
+          <Card className="bg-background border-border">
             <CardHeader>
               <CardTitle>Upcoming Deadlines</CardTitle>
               <CardDescription>RFPs with approaching submission dates</CardDescription>
@@ -131,7 +131,7 @@ export default function SupplierDashboard() {
             <CardContent>
               <div className="space-y-4">
                 {upcomingDeadlines.map((item) => (
-                  <div key={item.id} className="flex items-start justify-between p-4 border border-border rounded-lg hover:bg-surface transition-colors">
+                  <div key={item.id} className="flex items-start justify-between p-4 border border-border rounded-lg hover:bg-surface-hover transition-colors">
                     <div className="flex-1">
                       <h4 className="font-medium text-text-primary">{item.title}</h4>
                       <p className="text-sm text-text-muted mt-1">{item.buyer}</p>
@@ -153,7 +153,7 @@ export default function SupplierDashboard() {
 
         {/* Quick Actions */}
         <div>
-          <Card className="bg-white border-border">
+          <Card className="bg-background border-border">
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
@@ -184,7 +184,7 @@ export default function SupplierDashboard() {
       </div>
 
       {/* Recent Activity */}
-      <Card className="bg-white border-border">
+      <Card className="bg-background border-border">
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
           <CardDescription>Your latest platform actions</CardDescription>

@@ -5,6 +5,7 @@ import { jsPDF } from 'jspdf'
 import { LibraryDocument, LibraryList } from '@/components/library/LibraryList'
 import { DocumentUploadForm } from '@/components/library/DocumentUploadForm'
 import { DocumentDetailsModal } from '@/components/library/DocumentDetailsModal'
+import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { mockLibraryDocuments } from '@/lib/mock-library'
 import { Plus } from 'lucide-react'
@@ -63,24 +64,20 @@ export default function LibraryPage() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-4">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground">Document Library</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Manage company documents for RFP proposals
-          </p>
-        </div>
-        <Button
-          onClick={() => setShowUploadForm(!showUploadForm)}
-          size="sm"
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Upload Document
-        </Button>
-      </div>
+    <div className="flex flex-col min-h-full bg-background p-6 space-y-6">
+      <PageHeader
+        title="Document Library"
+        description="Manage company documents for RFP proposals"
+        actions={
+          <Button
+            onClick={() => setShowUploadForm(!showUploadForm)}
+            className="bg-brand-green hover:bg-brand-green-mid text-white gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Upload Document
+          </Button>
+        }
+      />
 
       {/* Upload Form Modal */}
       {showUploadForm && (
@@ -106,7 +103,7 @@ export default function LibraryPage() {
       )}
 
       {/* Documents List */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1">
         <LibraryList
           documents={documents}
           onDownload={handleDownload}

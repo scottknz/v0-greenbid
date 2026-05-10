@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PageHeader } from '@/components/shared'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -85,13 +86,10 @@ export default function SupplierRFPsPage() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-text-primary">RFPs</h1>
-        <p className="text-sm text-text-secondary mt-1">
-          Manage your RFP responses and track submission status
-        </p>
-      </div>
+      <PageHeader
+        title="RFPs"
+        description="Manage your RFP responses and track submission status"
+      />
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -109,7 +107,7 @@ export default function SupplierRFPsPage() {
 
         {/* Filters */}
         <div className="flex items-center gap-4 mt-4">
-          <div className="flex flex-1 items-center gap-2 bg-white rounded-md border border-border px-3 py-2">
+          <div className="flex flex-1 items-center gap-2 bg-background rounded-md border border-border px-3 py-2">
             <Search className="h-4 w-4 text-text-secondary" />
             <Input
               placeholder="Search RFPs by title or buyer..."
@@ -146,7 +144,7 @@ export default function SupplierRFPsPage() {
         {/* My Pipeline tab — saved marketplace opportunities */}
         <TabsContent value="pipeline" className="mt-4">
           {savedMarketplaceRFPs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 border border-border rounded-lg bg-white">
+            <div className="flex flex-col items-center justify-center py-20 gap-3 border border-border rounded-lg bg-background">
               <Bookmark className="h-10 w-10 text-text-muted" />
               <p className="text-sm font-medium text-text-primary">No opportunities saved yet</p>
               <p className="text-xs text-text-muted">Browse the marketplace and add opportunities to your pipeline.</p>
@@ -163,8 +161,8 @@ export default function SupplierRFPsPage() {
                 const days = Math.ceil((new Date(rfp.deadline).getTime() - Date.now()) / 86400000)
                 const urgent = days <= 14
                 const critical = days <= 7
-                return (
-                  <div key={rfp.id} className="bg-white border border-border rounded-xl p-5 flex flex-col sm:flex-row sm:items-start gap-4 hover:shadow-sm transition-shadow">
+                  return (
+                  <div key={rfp.id} className="bg-background border border-border rounded-xl p-5 flex flex-col sm:flex-row sm:items-start gap-4 hover:shadow-sm transition-shadow">
                     <div className={cn('h-10 w-10 rounded-lg shrink-0 flex items-center justify-center text-white text-xs font-bold', rfp.buyerColor)}>
                       {rfp.buyerInitials}
                     </div>
@@ -220,9 +218,9 @@ export default function SupplierRFPsPage() {
 
         <TabsContent value={activeTab} className="mt-4">
           {/* RFPs Table */}
-          <div className="border border-border rounded-lg overflow-hidden bg-white">
+          <div className="border border-border rounded-lg overflow-hidden bg-background">
             <table className="w-full">
-              <thead className="bg-background border-b border-border">
+              <thead className="bg-surface border-b border-border">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                     RFP Title
@@ -254,8 +252,8 @@ export default function SupplierRFPsPage() {
                   const isDeadlineSoon = daysDue <= 7 && daysDue > 0
                   const isOverdue = daysDue < 0
 
-                  return (
-                    <tr key={rfp.id} className="hover:bg-background/50 transition-colors">
+                    return (
+                    <tr key={rfp.id} className="hover:bg-surface-hover transition-colors">
                       <td className="px-6 py-4">
                         <div>
                           <Link
