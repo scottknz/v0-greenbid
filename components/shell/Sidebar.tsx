@@ -165,7 +165,7 @@ export function Sidebar({ variant }: SidebarProps) {
       <div className="px-2 py-4 border-t border-border">
         <nav className="space-y-1">
           {/* Notifications as a nav-style row, above secondary items */}
-          <NotificationBell collapsed={isSidebarCollapsed} />
+          <NotificationBell collapsed={isSidebarCollapsed} variant={variant} />
           {renderNavItems(secondaryItems)}
         </nav>
       </div>

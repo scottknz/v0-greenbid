@@ -42,9 +42,10 @@ interface TeamMemberProfileProps {
   member: TeamMember | null
   onClose: () => void
   onEdit?: (member: TeamMember) => void
+  variant?: 'buyer' | 'supplier'
 }
 
-export function TeamMemberProfile({ isOpen, member, onClose, onEdit }: TeamMemberProfileProps) {
+export function TeamMemberProfile({ isOpen, member, onClose, onEdit, variant = 'buyer' }: TeamMemberProfileProps) {
   const router = useRouter()
   const [notes, setNotes] = useState<Note[]>([])
   const [newNote, setNewNote] = useState('')
@@ -132,7 +133,7 @@ export function TeamMemberProfile({ isOpen, member, onClose, onEdit }: TeamMembe
                 <button
                   onClick={() => {
                     onClose()
-                    router.push(`/buyer/messages?compose=true&to=${encodeURIComponent(member.name)}&email=${encodeURIComponent(member.email)}`)
+                    router.push(`/${variant}/messages?compose=true&to=${encodeURIComponent(member.name)}&email=${encodeURIComponent(member.email)}`)
                   }}
                   className="text-sm font-medium text-[#16A34A] hover:underline text-left flex items-center gap-1"
                 >

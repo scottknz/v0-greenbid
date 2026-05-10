@@ -21,38 +21,75 @@ interface Notification {
 
 interface NotificationBellProps {
   collapsed?: boolean;
+  variant?: 'buyer' | 'supplier';
 }
 
-export function NotificationBell({ collapsed = false }: NotificationBellProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'qa',
-      title: 'Pending Q&A',
-      description: 'Sustainable Office Furniture: 3 unanswered questions',
-      timestamp: '2 hours ago',
-      read: false,
-      href: '/buyer/tenders/1/manage?tab=q-a',
-    },
-    {
-      id: '2',
-      type: 'approval',
-      title: 'Approval Needed',
-      description: 'Green Energy Consulting proposal awaiting approval',
-      timestamp: '5 hours ago',
-      read: false,
-      href: '/buyer/tenders/2/manage?tab=approvals',
-    },
-    {
-      id: '3',
-      type: 'response',
-      title: 'New Response',
-      description: 'Electric Vehicle Fleet: Response from EcoTransit Solutions',
-      timestamp: '1 day ago',
-      read: true,
-      href: '/buyer/tenders/3/manage?tab=responses',
-    },
-  ]);
+// Buyer-specific notifications
+const buyerNotifications: Notification[] = [
+  {
+    id: '1',
+    type: 'qa',
+    title: 'Pending Q&A',
+    description: 'Sustainable Office Furniture: 3 unanswered questions',
+    timestamp: '2 hours ago',
+    read: false,
+    href: '/buyer/tenders/1/manage?tab=q-a',
+  },
+  {
+    id: '2',
+    type: 'approval',
+    title: 'Approval Needed',
+    description: 'Green Energy Consulting proposal awaiting approval',
+    timestamp: '5 hours ago',
+    read: false,
+    href: '/buyer/tenders/2/manage?tab=approvals',
+  },
+  {
+    id: '3',
+    type: 'response',
+    title: 'New Response',
+    description: 'Electric Vehicle Fleet: Response from EcoTransit Solutions',
+    timestamp: '1 day ago',
+    read: true,
+    href: '/buyer/tenders/3/manage?tab=responses',
+  },
+];
+
+// Supplier-specific notifications
+const supplierNotifications: Notification[] = [
+  {
+    id: '1',
+    type: 'qa',
+    title: 'Question from Buyer',
+    description: 'Sustainable Office Furniture: Buyer requested clarification',
+    timestamp: '2 hours ago',
+    read: false,
+    href: '/supplier/rfps/1?tab=messages',
+  },
+  {
+    id: '2',
+    type: 'approval',
+    title: 'Internal Approval Required',
+    description: 'Green Energy Consulting proposal needs your approval',
+    timestamp: '5 hours ago',
+    read: false,
+    href: '/supplier/rfps/2',
+  },
+  {
+    id: '3',
+    type: 'deadline',
+    title: 'Deadline Approaching',
+    description: 'Electric Vehicle Fleet: Submission due in 3 days',
+    timestamp: '1 day ago',
+    read: true,
+    href: '/supplier/rfps/3',
+  },
+];
+
+export function NotificationBell({ collapsed = false, variant = 'buyer' }: NotificationBellProps) {
+  const [notifications, setNotifications] = useState<Notification[]>(
+    variant === 'supplier' ? supplierNotifications : buyerNotifications
+  );
 
   const unreadCount = notifications.filter(n => !n.read).length;
   const pendingQA = notifications.filter(n => n.type === 'qa').length;
@@ -166,7 +203,7 @@ export function NotificationBell({ collapsed = false }: NotificationBellProps) {
 
         <div className="border-t border-border px-4 py-2 text-center">
           <a
-            href="/notifications"
+            href={variant === 'supplier' ? '/supplier/notifications' : '/buyer/notifications'}
             className="text-xs font-medium text-[#16A34A] hover:underline"
           >
             View all notifications
