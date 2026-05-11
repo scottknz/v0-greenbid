@@ -670,6 +670,59 @@ export function AwardTab({
   }
 
   // ─── Awarded state ───────────────────────────────────────────────────────────
+
+  // Compose new message modal (for awarded state)
+  const [showComposeModal, setShowComposeModal] = useState(false);
+  const [composeSubject, setComposeSubject] = useState('');
+  const [composeMessage, setComposeMessage] = useState('');
+  const [composeRecipient, setComposeRecipient] = useState<string>('all');
+  const [composeSent, setComposeSent] = useState(false);
+
+  const handleOpenCompose = () => {
+    setComposeSubject('');
+    setComposeMessage('');
+    setComposeRecipient('all');
+    setComposeSent(false);
+    setShowComposeModal(true);
+  };
+
+  const handleSendCompose = () => {
+    const now = new Date().toISOString();
+    const recipients = composeRecipient === 'all'
+      ? responses
+      : responses.filter(r => r.id === composeRecipient);
+
+    const threadsToSave: object[] = recipients.map(resp => ({
+      id: `msg-${rfpId}-${resp.id}-${Date.now()}-${Math.random()}`,
+      rfpId,
+      rfpTitle,
+      subject: composeSubject,
+      visibility: 'private',
+      status: 'awaiting',
+      isRead: true,
+      isStarred: false,
+      isArchived: false,
+      tag: 'general',
+      createdAt: now,
+      updatedAt: now,
+      lastSender: 'Procurement Team',
+      lastSenderType: 'buyer',
+      participants: [resp.supplierId],
+      messages: [{
+        id: `msg-body-${resp.id}-${Date.now()}`,
+        senderId: 'buyer',
+        senderName: 'Procurement Team',
+        senderType: 'buyer',
+        content: composeMessage,
+        attachments: [],
+        timestamp: now,
+      }],
+    }));
+
+    saveThreadsToLocalStorage(threadsToSave);
+    setComposeSent(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Award Banner */}
@@ -762,6 +815,18 @@ export function AwardTab({
               </div>
             </div>
 
+            {/* Create message — opens compose modal */}
+            <Button
+              className="w-full justify-between bg-brand-green hover:bg-brand-green-mid text-white"
+              onClick={handleOpenCompose}
+            >
+              <span className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Create Message
+              </span>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+
             {/* View in message centre */}
             <Button
               variant="outline"
@@ -769,7 +834,7 @@ export function AwardTab({
               onClick={() => router.push('/buyer/messages')}
             >
               <span className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
+                <ExternalLink className="h-4 w-4" />
                 View in Message Centre
               </span>
               <ChevronRight className="h-4 w-4 text-text-muted" />
@@ -863,6 +928,99 @@ export function AwardTab({
           </CardContent>
         </Card>
       </div>
+
+      {/* Compose Message Modal */}
+      <Dialog open={showComposeModal} onOpenChange={open => { setShowComposeModal(open); if (!open) setComposeSent(false); }}>
+        <DialogContent className="sm:max-w-[540px] flex flex-col max-h-[85vh] p-0 gap-0">
+          {!composeSent ? (
+            <>
+              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
+                <DialogTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-text-primary" />
+                  Create Message
+                </DialogTitle>
+                <DialogDescription>
+                  Send a message to one or all suppliers on this RFP. It will be saved to the Message Centre.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">To</Label>
+                  <select
+                    value={composeRecipient}
+                    onChange={e => setComposeRecipient(e.target.value)}
+                    className="w-full h-9 rounded-md border border-border bg-background px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-green/30"
+                  >
+                    <option value="all">All suppliers ({responses.length})</option>
+                    {responses.map(r => (
+                      <option key={r.id} value={r.id}>{r.supplierName}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Subject</Label>
+                  <Input
+                    value={composeSubject}
+                    onChange={e => setComposeSubject(e.target.value)}
+                    placeholder="Enter subject"
+                    className="bg-background border-border"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Message</Label>
+                  <Textarea
+                    value={composeMessage}
+                    onChange={e => setComposeMessage(e.target.value)}
+                    placeholder="Write your message here..."
+                    className="min-h-[140px] bg-background border-border resize-none"
+                  />
+                </div>
+              </div>
+              <DialogFooter className="px-6 py-4 border-t border-border shrink-0 gap-2">
+                <Button variant="outline" onClick={() => setShowComposeModal(false)}>Cancel</Button>
+                <Button
+                  onClick={handleSendCompose}
+                  disabled={!composeSubject.trim() || !composeMessage.trim()}
+                  className="bg-brand-green hover:bg-brand-green-mid text-white"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Send Message
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
+                <DialogTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-brand-green" />
+                  Message Sent
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 px-6 py-8 flex flex-col items-center gap-4 text-center">
+                <div className="h-14 w-14 rounded-full bg-brand-green-light flex items-center justify-center">
+                  <Send className="h-7 w-7 text-brand-green" />
+                </div>
+                <div>
+                  <p className="font-semibold text-text-primary text-lg">Message delivered</p>
+                  <p className="text-sm text-text-secondary mt-1">
+                    Your message has been saved to the Message Centre.
+                  </p>
+                </div>
+              </div>
+              <DialogFooter className="px-6 py-4 border-t border-border shrink-0 gap-2">
+                <Button variant="outline" onClick={() => setShowComposeModal(false)}>Close</Button>
+                <Button
+                  onClick={() => router.push('/buyer/messages')}
+                  className="bg-brand-green hover:bg-brand-green-mid text-white"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Go to Message Centre
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Next Step Modal */}
       <Dialog open={showNextStepModal} onOpenChange={setShowNextStepModal}>
