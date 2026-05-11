@@ -208,6 +208,8 @@ const submissionsData = [
     status: "under_review",
     keyContact: "John Smith",
     keyContactEmail: "john.smith@ecosupply.com",
+    keyContactPhone: "+1 (555) 123-4567",
+    companyAddress: "123 Green Street, San Francisco, CA 94102",
     proposedValue: 118500,
     totalHours: 240,
     completionDate: "Jun 30, 2026",
@@ -227,6 +229,13 @@ const submissionsData = [
       { name: "Certifications.pdf", size: "890 KB" },
       { name: "References.pdf", size: "156 KB" },
     ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "EcoSupply has completed over 50 sustainability projects for Fortune 500 companies, including comprehensive carbon footprint assessments, supply chain sustainability audits, and sustainability reporting implementations. Notable clients include Tesla, Patagonia, and Unilever." },
+      { question: "What certifications does your organization currently hold?", answer: "We hold ISO 14001:2015 Environmental Management, ISO 9001:2015 Quality Management, B Corp Certification (Score: 142), and are a certified Science Based Targets initiative (SBTi) partner." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We employ a three-tier verification process: automated data validation at collection, independent third-party audits, and continuous monitoring with real-time anomaly detection. All data is traceable to source documentation." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We facilitate multi-stakeholder workshops, conduct materiality assessments with both internal and external stakeholders, and provide regular progress reporting through dedicated dashboards and quarterly reviews." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "We propose a 6-week initial assessment phase: Weeks 1-2 for data gathering and stakeholder interviews, Weeks 3-4 for analysis and benchmarking, and Weeks 5-6 for developing recommendations and presenting findings." },
+    ],
   },
   {
     id: "s2",
@@ -235,6 +244,8 @@ const submissionsData = [
     status: "evaluated",
     keyContact: "Emma Davis",
     keyContactEmail: "emma.davis@greenoffice.com",
+    keyContactPhone: "+1 (555) 234-5678",
+    companyAddress: "456 Eco Avenue, Portland, OR 97201",
     proposedValue: 112000,
     totalHours: 220,
     completionDate: "Jul 15, 2026",
@@ -253,6 +264,13 @@ const submissionsData = [
       { name: "Cost Breakdown.xlsx", size: "312 KB" },
       { name: "ISO Certificates.pdf", size: "1.1 MB" },
     ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "GreenOffice has delivered 35+ sustainability transformation projects across manufacturing, retail, and technology sectors. Our team has helped companies achieve average emissions reductions of 28% within the first year." },
+      { question: "What certifications does your organization currently hold?", answer: "ISO 14001:2015, ISO 50001:2018 Energy Management, CDP Supply Chain Member, GRI Certified Training Partner, and we maintain LEED AP credentials across our consulting team." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We use industry-standard GHG Protocol methodologies with built-in validation rules. All data undergoes peer review and we maintain full audit trails. Our reporting platform integrates directly with client ERP systems to minimize manual data entry errors." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We implement a comprehensive engagement framework including executive briefings, department-level working sessions, employee awareness programs, and external stakeholder surveys. We believe sustainable change requires buy-in at all levels." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "Our accelerated assessment methodology delivers initial findings in 4 weeks: Week 1 for rapid data collection and system access, Weeks 2-3 for deep-dive analysis, and Week 4 for recommendations workshop and roadmap development." },
+    ],
   },
   {
     id: "s3",
@@ -261,6 +279,8 @@ const submissionsData = [
     status: "under_review",
     keyContact: "Michael Brown",
     keyContactEmail: "m.brown@sustainablesolutions.com",
+    keyContactPhone: "+1 (555) 345-6789",
+    companyAddress: "789 Sustainability Blvd, Seattle, WA 98101",
     proposedValue: 135000,
     totalHours: 280,
     completionDate: "Aug 1, 2026",
@@ -280,6 +300,13 @@ const submissionsData = [
       { name: "Case Studies.pdf", size: "3.2 MB" },
       { name: "Team CVs.pdf", size: "2.4 MB" },
       { name: "Quality Certifications.pdf", size: "1.8 MB" },
+    ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "Sustainable Solutions Inc has been a leader in corporate sustainability for over 15 years, with 200+ completed projects. We specialize in complex, multi-site implementations and have particular expertise in Scope 3 emissions accounting and science-based target setting." },
+      { question: "What certifications does your organization currently hold?", answer: "We maintain ISO 14001, ISO 14064-1 (GHG verification), and are CDP Gold Partner. Our team includes 12 certified GHG Lead Verifiers and 8 SASB FSA credential holders. We're also an official SBTi consulting partner." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "Our proprietary SustainTrack platform provides automated data collection with 99.7% accuracy rates. We implement multi-level verification including AI-powered anomaly detection, cross-reference validation with utility data, and independent third-party limited assurance engagements." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We deploy our proven 'Sustainability Champions' model, identifying and training internal advocates across departments. This is complemented by regular town halls, interactive sustainability dashboards, and gamified engagement programs that have achieved 85%+ employee participation rates." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "Given the comprehensive scope, we recommend an 8-week assessment: Weeks 1-3 for thorough data gathering across all value chain categories, Weeks 4-6 for detailed analysis and scenario modeling, and Weeks 7-8 for strategic recommendations and implementation roadmap with board-ready deliverables." },
     ],
   },
   {
@@ -957,6 +984,17 @@ export default function TenderDetailPage() {
   const [replyMessage, setReplyMessage] = useState("")
   const [replyAttachments, setReplyAttachments] = useState<{ name: string; size: string }[]>([])
   const [showGlobalSuppliers, setShowGlobalSuppliers] = useState(false)
+  
+  // Submission detail modal
+  const [submissionModalOpen, setSubmissionModalOpen] = useState(false)
+  const [selectedSubmission, setSelectedSubmission] = useState<typeof submissionsData[0] | null>(null)
+  const [submissionModalTab, setSubmissionModalTab] = useState<'overview' | 'documents' | 'questionnaire' | 'scores'>('overview')
+  
+  const handleOpenSubmission = (submission: typeof submissionsData[0]) => {
+    setSelectedSubmission(submission)
+    setSubmissionModalTab('overview')
+    setSubmissionModalOpen(true)
+  }
 
   // RFP Lifecycle phases configuration
   const lifecyclePhases = [
@@ -2517,7 +2555,7 @@ export default function TenderDetailPage() {
                             variant="outline" 
                             size="sm" 
                             className="h-7 px-3 text-xs border-[#E5E7EB]"
-                            onClick={() => router.push(`/buyer/tenders/${tenderData.id}/submissions/${submission.id}`)}
+                            onClick={() => handleOpenSubmission(submission)}
                           >
                             <ExternalLink className="size-3 mr-1" />
                             Open
