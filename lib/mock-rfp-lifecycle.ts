@@ -1,3 +1,29 @@
+/**
+ * Mock RFP Lifecycle Data
+ * 
+ * This file contains all mock data for the RFP evaluation and lifecycle stages:
+ * - Responses: Supplier submissions/proposals for an RFP
+ * - Evaluations: Scoring and feedback for each response
+ * - Criteria: Evaluation criteria with weights and rubrics
+ * - Rankings: Ranked list of suppliers based on scores
+ * 
+ * Used by:
+ * - /buyer/tenders/[id]/manage - For viewing submissions and evaluations
+ * - /components/rfp/lifecycle/EvaluationTab.tsx - For scoring and comparison
+ * 
+ * DB Integration:
+ * Replace these arrays with API calls:
+ *   - /api/rfp/[id]/responses (GET)
+ *   - /api/rfp/[id]/evaluations (GET, POST)
+ *   - /api/rfp/[id]/criteria (GET)
+ * 
+ * Data Structure:
+ * - RFPResponse: One supplier's response to an RFP (price answers, question answers, attachments)
+ * - ProposalEvaluation: Scores and comments for each response (array of criterion scores)
+ * - EvaluationCriteria: Scoring rubrics with weights (0-100 scale)
+ * - SupplierRanking: Final ranked list with overall scores
+ */
+
 import type {
   RFPResponse,
   RFPInterview,

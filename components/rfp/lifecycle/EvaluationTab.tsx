@@ -1,3 +1,25 @@
+/**
+ * EvaluationTab Component
+ * 
+ * Manages the evaluation and scoring stage of the RFP lifecycle (Stage 4/5).
+ * This is where buyers score supplier responses against predefined criteria.
+ * 
+ * Two Views:
+ * 1. EVALUATE - Score individual suppliers
+ *    - Expandable supplier header showing all suppliers with progress
+ *    - Table-based scoring form with sliders and expandable comments
+ *    - Weighted score calculation
+ * 
+ * 2. COMPARE & RANK - Side-by-side comparison (Option A: Transposed Table)
+ *    - Criteria as rows, suppliers as columns (fits on screen)
+ *    - Best scores highlighted in green
+ *    - Supplier selector to choose 2-4 to compare
+ *    - Summary rows: Overall Score, Total Price, Recommendation
+ * 
+ * Mock Data: Uses mock-evaluations.ts and mock-criteria.ts
+ * DB Integration: Replace mock imports with API calls to /api/evaluations
+ */
+
 'use client';
 
 import { useState } from 'react';

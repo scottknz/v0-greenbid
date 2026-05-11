@@ -1,3 +1,32 @@
+/**
+ * SettingsModal Component
+ * 
+ * Modal dialog for user and organization settings.
+ * Shared by both buyer and supplier users.
+ * 
+ * Features:
+ * - Fixed size (1000px × 680px) to prevent resizing when switching tabs
+ * - Four tab sections: Design, Rules, Vars, Settings
+ * - Edit modes for each section with save/cancel
+ * - Form validation and local state management
+ * 
+ * Tab Sections:
+ * 1. Design - UI/theme customization (placeholder)
+ * 2. Rules - Custom instructions/rules (placeholder)
+ * 3. Vars - Environment variables management (placeholder)
+ * 4. Settings - User profile, company info, security, notifications
+ * 
+ * Used by:
+ * - ShellContext - Settings button in navigation
+ * - Both buyer and supplier layouts
+ * 
+ * DB Integration:
+ * Add API calls in save handlers:
+ *   - POST /api/user/profile
+ *   - POST /api/company/info
+ *   - POST /api/user/password
+ */
+
 'use client'
 
 import { useState } from 'react'
