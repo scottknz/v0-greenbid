@@ -3,11 +3,7 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   ArrowLeft,
   FileText,
@@ -15,19 +11,12 @@ import {
   Scale,
   Trophy,
   CheckCircle2,
-  Mail,
-  Phone,
-  Building2,
-  Calendar,
-  DollarSign,
-  Clock,
-  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RFPProgressBar } from '@/components/rfp/RFPProgressBar';
 
 // Import lifecycle components
-import { ResponsesTab } from '@/components/rfp/lifecycle/ResponsesTab';
+import { SubmissionsTab } from '@/components/rfp/lifecycle/SubmissionsTab';
 import { InterviewsTab } from '@/components/rfp/lifecycle/InterviewsTab';
 import { EvaluationTab } from '@/components/rfp/lifecycle/EvaluationTab';
 import { AwardTab } from '@/components/rfp/lifecycle/AwardTab';
@@ -65,20 +54,20 @@ const tenderData = {
 
 // RFP Lifecycle phases configuration
 const lifecyclePhases = [
-  { key: 'responses', label: 'Responses', icon: FileText },
+  { key: 'submissions', label: 'Submissions', icon: FileText },
   { key: 'interviews', label: 'Interviews', icon: Users },
   { key: 'evaluation', label: 'Evaluation', icon: Scale },
   { key: 'award', label: 'Award', icon: Trophy },
   { key: 'closed', label: 'Closed', icon: CheckCircle2 },
 ] as const;
 
-type LifecycleTab = 'responses' | 'interviews' | 'evaluation' | 'award';
+type LifecycleTab = 'submissions' | 'interviews' | 'evaluation' | 'award';
 
 const phaseToTab: Record<RFPPhase, LifecycleTab> = {
-  draft: 'responses',
-  published: 'responses',
-  accepting_responses: 'responses',
-  response_review: 'responses',
+  draft: 'submissions',
+  published: 'submissions',
+  accepting_responses: 'submissions',
+  response_review: 'submissions',
   interviews_in_progress: 'interviews',
   evaluation: 'evaluation',
   final_selection: 'evaluation',
@@ -93,12 +82,10 @@ export default function TenderManagePage() {
   const rfpId = params.id as string;
 
   // State
-  const [activeTab, setActiveTab] = useState<LifecycleTab>('responses');
-  const [currentPhase, setCurrentPhase] = useState<'responses' | 'interviews' | 'evaluation' | 'award' | 'closed'>('responses');
-  const [responses, setResponses] = useState<RFPResponse[]>(mockResponses);
+  const [activeTab, setActiveTab] = useState<LifecycleTab>('submissions');
+  const [currentPhase, setCurrentPhase] = useState<'submissions' | 'interviews' | 'evaluation' | 'award' | 'closed'>('submissions');
+  const [submissions, setSubmissions] = useState<RFPResponse[]>(mockResponses);
   const [interviews, setInterviews] = useState<RFPInterview[]>(mockInterviews);
-  const [selectedResponse, setSelectedResponse] = useState<RFPResponse | null>(null);
-  const [responseModalOpen, setResponseModalOpen] = useState(false);
   const [award, setAward] = useState<RFPAward | undefined>(undefined);
   const [communications, setCommunications] = useState<PostAwardCommunication[]>([]);
 
@@ -106,31 +93,26 @@ export default function TenderManagePage() {
   const stats = mockLifecycleStats;
 
   // Handlers
-  const handleViewResponse = (response: RFPResponse) => {
-    setSelectedResponse(response);
-    setResponseModalOpen(true);
-  };
-
-  const handleShortlist = (responseIds: string[]) => {
-    setResponses(prev =>
+  const handleShortlist = (submissionIds: string[]) => {
+    setSubmissions(prev =>
       prev.map(r =>
-        responseIds.includes(r.id)
+        submissionIds.includes(r.id)
           ? { ...r, status: 'shortlisted' as const, shortlistedAt: new Date().toISOString() }
           : r
       )
     );
-    console.log('[v0] Shortlisted responses:', responseIds);
+    console.log('[v0] Shortlisted submissions:', submissionIds);
   };
 
-  const handleRequestClarification = (responseId: string) => {
-    setResponses(prev =>
+  const handleRequestClarification = (submissionId: string) => {
+    setSubmissions(prev =>
       prev.map(r =>
-        r.id === responseId
+        r.id === submissionId
           ? { ...r, status: 'clarifications_requested' as const }
           : r
       )
     );
-    console.log('[v0] Requested clarification for:', responseId);
+    console.log('[v0] Requested clarification for:', submissionId);
   };
 
   const handleScheduleInterview = (interview: Partial<RFPInterview>) => {
@@ -193,24 +175,24 @@ export default function TenderManagePage() {
     console.log('[v0] Cancelled interview:', id);
   };
 
-  const handleTriageResponse = (responseId: string, action: 'consider' | 'reject' | 'follow_up') => {
-    const response = responses.find(r => r.id === responseId);
-    if (!response) return;
+  const handleTriageSubmission = (submissionId: string, action: 'consider' | 'reject' | 'follow_up') => {
+    const submission = submissions.find(r => r.id === submissionId);
+    if (!submission) return;
 
-    let newStatus: typeof response.status;
+    let newStatus: typeof submission.status;
     if (action === 'consider') {
       newStatus = 'shortlisted';
     } else if (action === 'reject') {
       newStatus = 'rejected';
     } else {
       // follow_up - keep as is but could track this in a separate field
-      newStatus = response.status;
+      newStatus = submission.status;
     }
 
-    setResponses(prev =>
-      prev.map(r => (r.id === responseId ? { ...r, status: newStatus } : r))
+    setSubmissions(prev =>
+      prev.map(r => (r.id === submissionId ? { ...r, status: newStatus } : r))
     );
-    console.log('[v0] Triaged response:', responseId, 'action:', action, 'new status:', newStatus);
+    console.log('[v0] Triaged submission:', submissionId, 'action:', action, 'new status:', newStatus);
   };
 
   const handleSaveScore = (responseId: string, criteriaId: string, score: number, comment: string) => {
@@ -218,11 +200,11 @@ export default function TenderManagePage() {
     // In real implementation, this would update the evaluation
   };
 
-  const handleFinalizeEvaluation = (responseId: string) => {
-    console.log('[v0] Finalized evaluation for:', responseId);
-    setResponses(prev =>
+  const handleFinalizeEvaluation = (submissionId: string) => {
+    console.log('[v0] Finalized evaluation for:', submissionId);
+    setSubmissions(prev =>
       prev.map(r =>
-        r.id === responseId
+        r.id === submissionId
           ? { ...r, status: 'evaluated' as const, evaluationStatus: 'complete' as const, evaluatedAt: new Date().toISOString() }
           : r
       )
@@ -233,16 +215,16 @@ export default function TenderManagePage() {
     console.log('[v0] Updated rankings:', rankings);
   };
 
-  const handleSelectWinner = (responseId: string, contractValue: number) => {
-    const response = responses.find(r => r.id === responseId);
-    if (!response) return;
+  const handleSelectWinner = (submissionId: string, contractValue: number) => {
+    const submission = submissions.find(r => r.id === submissionId);
+    if (!submission) return;
 
     const newAward: RFPAward = {
       id: `award-${Date.now()}`,
       rfpId,
-      awardedResponseId: responseId,
-      awardedSupplierId: response.supplierId,
-      awardedSupplierName: response.supplierName,
+      awardedResponseId: submissionId,
+      awardedSupplierId: submission.supplierId,
+      awardedSupplierName: submission.supplierName,
       status: 'pending',
       awardedAt: new Date().toISOString(),
       awardedBy: 'current-user',
@@ -274,9 +256,9 @@ export default function TenderManagePage() {
     };
 
     setAward(newAward);
-    setResponses(prev =>
+    setSubmissions(prev =>
       prev.map(r =>
-        r.id === responseId
+        r.id === submissionId
           ? { ...r, status: 'awarded' as const }
           : { ...r, status: 'rejected' as const }
       )
@@ -326,9 +308,9 @@ export default function TenderManagePage() {
   const handleUpdateAwardStatus = (status: RFPAward['status']) => {
     if (!award) return;
     setAward({ ...award, status });
-    // When supplier agrees to contract, update the awarded response status too
+    // When supplier agrees to contract, update the awarded submission status too
     if (status === 'contract_agreed') {
-      setResponses(prev =>
+      setSubmissions(prev =>
         prev.map(r =>
           r.id === award.awardedResponseId
             ? { ...r, status: 'contract_agreed' as const }
@@ -358,10 +340,10 @@ export default function TenderManagePage() {
 
   const tabs = [
     {
-      key: 'responses' as const,
-      label: 'Responses',
+      key: 'submissions' as const,
+      label: 'Submissions',
       icon: FileText,
-      count: responses.length,
+      count: submissions.length,
       description: 'Review supplier submissions',
     },
     {
@@ -375,7 +357,7 @@ export default function TenderManagePage() {
       key: 'evaluation' as const,
       label: 'Evaluation',
       icon: Scale,
-      count: responses.filter(r => r.evaluationStatus === 'complete').length,
+      count: submissions.filter(r => r.evaluationStatus === 'complete').length,
       description: 'Score and rank proposals',
     },
     {
@@ -389,9 +371,9 @@ export default function TenderManagePage() {
 
   // Progress calculation
   const progressSteps = [
-    { phase: 'responses', complete: responses.length > 0 },
+    { phase: 'submissions', complete: submissions.length > 0 },
     { phase: 'interviews', complete: interviews.some(i => i.status === 'completed') },
-    { phase: 'evaluation', complete: responses.some(r => r.evaluationStatus === 'complete') },
+    { phase: 'evaluation', complete: submissions.some(r => r.evaluationStatus === 'complete') },
     { phase: 'award', complete: !!award },
   ];
   const completedSteps = progressSteps.filter(s => s.complete).length;
@@ -492,18 +474,17 @@ export default function TenderManagePage() {
 
       {/* Tab Content */}
       <div className="max-w-7xl mx-auto px-6 py-6">
-        {activeTab === 'responses' && (
-          <ResponsesTab
+        {activeTab === 'submissions' && (
+          <SubmissionsTab
             rfpId={rfpId}
-            responses={responses}
-            onViewResponse={handleViewResponse}
+            submissions={submissions}
             onShortlist={handleShortlist}
             onRequestClarification={handleRequestClarification}
-            onScheduleInterview={(responseId) => {
+            onScheduleInterview={(submissionId) => {
               setActiveTab('interviews');
-              // Pre-select the response for interview scheduling
+              // Pre-select the submission for interview scheduling
             }}
-            onTriageResponse={handleTriageResponse}
+            onTriageSubmission={handleTriageSubmission}
           />
         )}
 
@@ -522,7 +503,7 @@ export default function TenderManagePage() {
         {activeTab === 'evaluation' && (
           <EvaluationTab
             rfpId={rfpId}
-            responses={responses.filter(r => r.status === 'shortlisted' || r.status === 'evaluated' || r.status === 'finalist')}
+            responses={submissions.filter(r => r.status === 'shortlisted' || r.status === 'evaluated' || r.status === 'finalist')}
             criteria={mockEvaluationCriteria}
             evaluations={mockEvaluations}
             rankings={mockRankings}
@@ -537,7 +518,7 @@ export default function TenderManagePage() {
           <AwardTab
             rfpId={rfpId}
             rankings={mockRankings}
-            responses={responses}
+            responses={submissions}
             award={award}
             communications={communications}
             onSelectWinner={handleSelectWinner}
@@ -548,210 +529,6 @@ export default function TenderManagePage() {
         )}
       </div>
 
-      {/* Submission Detail Modal */}
-      <Dialog open={responseModalOpen} onOpenChange={setResponseModalOpen}>
-        <DialogContent 
-          className="flex flex-col p-0 gap-0"
-          style={{ width: '900px', maxWidth: '95vw', maxHeight: '85vh' }}
-        >
-          {selectedResponse && (
-            <>
-              <DialogHeader className="px-6 py-4 border-b border-border">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12 border-2 border-brand-green/20">
-                      <AvatarFallback className="bg-brand-green-light text-brand-green font-semibold">
-                        {selectedResponse.supplierName.split(' ').map(w => w[0]).join('').slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <DialogTitle className="text-xl">{selectedResponse.supplierName}</DialogTitle>
-                      <DialogDescription className="mt-1">
-                        Submitted {new Date(selectedResponse.submittedAt).toLocaleDateString('en-US', { 
-                          month: 'short', day: 'numeric', year: 'numeric' 
-                        })}
-                      </DialogDescription>
-                    </div>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      'text-sm',
-                      selectedResponse.status === 'shortlisted' && 'bg-purple-100 text-purple-700 border-purple-200',
-                      selectedResponse.status === 'awarded' && 'bg-green-100 text-green-700 border-green-200',
-                      selectedResponse.status === 'contract_agreed' && 'bg-emerald-100 text-emerald-700 border-emerald-300',
-                      selectedResponse.status === 'submitted' && 'bg-blue-100 text-blue-700 border-blue-200',
-                      selectedResponse.status === 'evaluated' && 'bg-amber-100 text-amber-700 border-amber-200',
-                    )}
-                  >
-                    {selectedResponse.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </Badge>
-                </div>
-              </DialogHeader>
-
-              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-                {/* Contact Information */}
-                <div>
-                  <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Contact Information</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3 text-sm">
-                      <Users className="h-4 w-4 text-text-muted" />
-                      <div>
-                        <p className="text-text-muted text-xs">Key Contact</p>
-                        <p className="font-medium text-text-primary">{selectedResponse.contactName || 'Not provided'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <Mail className="h-4 w-4 text-text-muted" />
-                      <div>
-                        <p className="text-text-muted text-xs">Email</p>
-                        <p className="font-medium text-text-primary">{selectedResponse.contactEmail || 'Not provided'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <Phone className="h-4 w-4 text-text-muted" />
-                      <div>
-                        <p className="text-text-muted text-xs">Phone</p>
-                        <p className="font-medium text-text-primary">{selectedResponse.contactPhone || 'Not provided'}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <Building2 className="h-4 w-4 text-text-muted" />
-                      <div>
-                        <p className="text-text-muted text-xs">Company</p>
-                        <p className="font-medium text-text-primary">{selectedResponse.supplierName}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pricing Summary */}
-                <div>
-                  <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Pricing Summary</h4>
-                  <Card className="border-border">
-                    <CardContent className="p-4">
-                      <div className="grid grid-cols-3 gap-4">
-                        <div>
-                          <p className="text-xs text-text-muted">Total Price</p>
-                          <p className="text-xl font-bold text-text-primary">
-                            ${(selectedResponse.priceItems?.reduce((sum, item) => sum + (item.totalPrice || 0), 0) || 0).toLocaleString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-text-muted">Evaluation Score</p>
-                          <p className="text-xl font-bold text-text-primary">
-                            {selectedResponse.totalScore !== undefined ? `${selectedResponse.totalScore}/100` : 'Not scored'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-text-muted">Price Items</p>
-                          <p className="text-xl font-bold text-text-primary">
-                            {selectedResponse.priceItems?.length || 0}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Price Breakdown */}
-                {selectedResponse.priceItems && selectedResponse.priceItems.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Price Breakdown</h4>
-                    <div className="border border-border rounded-lg overflow-hidden">
-                      <table className="w-full text-sm">
-                        <thead className="bg-surface">
-                          <tr className="border-b border-border">
-                            <th className="px-4 py-2 text-left font-medium text-text-secondary">Item</th>
-                            <th className="px-4 py-2 text-right font-medium text-text-secondary">Qty</th>
-                            <th className="px-4 py-2 text-right font-medium text-text-secondary">Unit Price</th>
-                            <th className="px-4 py-2 text-right font-medium text-text-secondary">Total</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                          {selectedResponse.priceItems.map((item, idx) => (
-                            <tr key={idx} className="hover:bg-surface-hover">
-                              <td className="px-4 py-2 text-text-primary">{item.description || `Item ${idx + 1}`}</td>
-                              <td className="px-4 py-2 text-right text-text-secondary">{item.quantity || 1}</td>
-                              <td className="px-4 py-2 text-right text-text-secondary">${(item.unitPrice || 0).toLocaleString()}</td>
-                              <td className="px-4 py-2 text-right font-medium text-text-primary">${(item.totalPrice || 0).toLocaleString()}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {/* Question Responses */}
-                {selectedResponse.questionResponses && selectedResponse.questionResponses.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Questionnaire Responses</h4>
-                    <div className="space-y-3">
-                      {selectedResponse.questionResponses.slice(0, 5).map((qr, idx) => (
-                        <div key={idx} className="p-3 bg-surface rounded-lg border border-border">
-                          <p className="text-xs text-text-muted mb-1">Question {idx + 1}</p>
-                          <p className="text-sm text-text-primary">{qr.answer}</p>
-                        </div>
-                      ))}
-                      {selectedResponse.questionResponses.length > 5 && (
-                        <p className="text-sm text-text-muted text-center">
-                          + {selectedResponse.questionResponses.length - 5} more responses
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Attachments */}
-                {selectedResponse.attachments && selectedResponse.attachments.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Attachments</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {selectedResponse.attachments.map((att, idx) => (
-                        <div key={idx} className="flex items-center gap-2 p-2 bg-surface rounded border border-border">
-                          <FileText className="h-4 w-4 text-text-muted" />
-                          <span className="text-sm text-text-primary truncate">{att.fileName}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer Actions */}
-              <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-surface">
-                <Button
-                  variant="outline"
-                  onClick={() => setResponseModalOpen(false)}
-                >
-                  Close
-                </Button>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setResponseModalOpen(false);
-                      router.push(`/buyer/tenders/${rfpId}/submissions/${selectedResponse.id}`);
-                    }}
-                  >
-                    View Full Details
-                  </Button>
-                  <Button
-                    className="bg-brand-green hover:bg-brand-green-dark text-white"
-                    onClick={() => {
-                      handleShortlist([selectedResponse.id]);
-                      setResponseModalOpen(false);
-                    }}
-                  >
-                    Add to Shortlist
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
