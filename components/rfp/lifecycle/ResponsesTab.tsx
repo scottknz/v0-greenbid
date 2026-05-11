@@ -277,7 +277,7 @@ export function ResponsesTab({
           </div>
           <div className="flex-1 min-w-0">
             <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
-              Supplier
+              Supplier Name
             </span>
           </div>
           <div className="w-32 text-center">
@@ -300,7 +300,16 @@ export function ResponsesTab({
               Submitted
             </span>
           </div>
-          <div className="w-10" />
+          <div className="w-48 text-center">
+            <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              Quick Action
+            </span>
+          </div>
+          <div className="w-10 text-center">
+            <span className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              Details
+            </span>
+          </div>
         </div>
 
         {/* Responses */}
@@ -370,37 +379,8 @@ export function ResponsesTab({
                     {formatDate(response.submittedAt)}
                   </p>
                 </div>
-                <div className="w-10" onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onViewResponse(response)}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onScheduleInterview(response.id)}>
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Schedule Interview
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onRequestClarification(response.id)}>
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Request Clarification
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => onShortlist([response.id])}>
-                        <Star className="h-4 w-4 mr-2" />
-                        Add to Shortlist
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                
-                {/* Triage Quick Actions */}
-                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                {/* Quick Action triage buttons */}
+                <div className="w-48 flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="outline"
                     size="sm"
@@ -428,6 +408,36 @@ export function ResponsesTab({
                   >
                     Reject
                   </Button>
+                </div>
+
+                {/* Details three-dots menu */}
+                <div className="w-10 flex justify-center" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onViewResponse(response)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onScheduleInterview(response.id)}>
+                        <Calendar className="h-4 w-4 mr-2" />
+                        Schedule Interview
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onRequestClarification(response.id)}>
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Request Clarification
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => onShortlist([response.id])}>
+                        <Star className="h-4 w-4 mr-2" />
+                        Add to Shortlist
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             );
