@@ -465,6 +465,103 @@ export function EvaluationTab({
       ) : (
         /* Compare & Rank View */
         <div className="space-y-6">
+          {/* Criteria Matrix Table */}
+          <Card className="border-border bg-background">
+            <CardHeader className="border-b border-border">
+              <CardTitle className="text-lg">Full Evaluation Matrix</CardTitle>
+              <p className="text-sm text-text-muted mt-1">All assessed suppliers scored against each criterion</p>
+            </CardHeader>
+            <CardContent className="p-0 overflow-x-auto">
+              <table className="w-full min-w-max">
+                <thead>
+                  <tr className="border-b border-border bg-surface">
+                    <th className="sticky left-0 z-10 px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide bg-surface min-w-[180px]">
+                      Supplier
+                    </th>
+                    {criteria.map((criterion) => (
+                      <th
+                        key={criterion.id}
+                        className="px-3 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide whitespace-nowrap"
+                      >
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="line-clamp-2 text-xs">{criterion.name}</span>
+                          <span className="text-xs font-normal opacity-70">W: {criterion.weight}%</span>
+                        </div>
+                      </th>
+                    ))}
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                      Overall
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {evaluatableResponses.map((response) => {
+                    const ranking = rankings.find(r => r.responseId === response.id);
+                    const evaluation = evaluations.find(e => e.responseId === response.id);
+                    const isSelectedRow = selectedCompareId === response.id;
+
+                    return (
+                      <tr
+                        key={response.id}
+                        onClick={() => setSelectedCompareId(isSelectedRow ? null : response.id)}
+                        className={cn(
+                          'cursor-pointer transition-colors',
+                          isSelectedRow
+                            ? 'bg-brand-green-light ring-2 ring-inset ring-brand-green'
+                            : 'hover:bg-surface-hover'
+                        )}
+                      >
+                        <td className="sticky left-0 z-10 px-4 py-3 font-medium text-text-primary bg-inherit">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-7 w-7 border border-border">
+                              <AvatarFallback className="text-xs bg-surface">
+                                {getInitials(response.supplierName)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="truncate">{response.supplierName}</span>
+                          </div>
+                        </td>
+                        {criteria.map((criterion) => {
+                          const score = evaluation?.scores.find(s => s.criteriaId === criterion.id);
+                          const rawScore = score?.score ?? null;
+
+                          return (
+                            <td
+                              key={`${response.id}-${criterion.id}`}
+                              className="px-3 py-3 text-center text-sm font-medium whitespace-nowrap"
+                            >
+                              {rawScore !== null ? (
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className={cn('text-base font-bold', getScoreColor(rawScore, criterion.maxScore))}>
+                                    {rawScore}
+                                  </span>
+                                  <span className="text-xs text-text-muted">
+                                    /{criterion.maxScore}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-text-muted text-xs">—</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                        <td className="px-4 py-3 text-center font-semibold">
+                          {ranking ? (
+                            <span className={cn('text-base', getScoreColor(ranking.percentageScore, 100))}>
+                              {ranking.percentageScore}%
+                            </span>
+                          ) : (
+                            <span className="text-text-muted text-sm">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+
           {/* Rankings Table */}
           <Card className="border-border bg-background">
             <CardHeader className="border-b border-border">
