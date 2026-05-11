@@ -172,7 +172,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-[1800px] max-w-[95vw] flex flex-col h-[680px] p-0 gap-0">
+        <DialogContent className="w-[90vw] max-w-[90vw] flex flex-col h-[80vh] p-0 gap-0">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
             <DialogTitle>Settings</DialogTitle>
             <DialogDescription>Manage your account, organisation, and preferences</DialogDescription>
