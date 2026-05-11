@@ -956,6 +956,20 @@ export default function TenderDetailPage() {
   const [replyAttachments, setReplyAttachments] = useState<{ name: string; size: string }[]>([])
   const [showGlobalSuppliers, setShowGlobalSuppliers] = useState(false)
 
+  // RFP Lifecycle phases configuration
+  const lifecyclePhases = [
+    { key: 'draft', label: 'Preparation', icon: FileText },
+    { key: 'accepting_bids', label: 'Accepting Bids', icon: Users },
+    { key: 'under_review', label: 'Evaluation', icon: Scale },
+    { key: 'completed', label: 'Award', icon: Trophy },
+    { key: 'closed', label: 'Closed', icon: CheckCircle2 },
+  ] as const;
+
+  // Get current phase index based on RFP status
+  const currentPhaseIndex = lifecyclePhases.findIndex(p => p.key === tenderData.status) >= 0 
+    ? lifecyclePhases.findIndex(p => p.key === tenderData.status) 
+    : 0;
+
   // Q&A helpers
   const selectedThread = qaThreads.find(t => t.id === selectedThreadId)
   
@@ -3566,19 +3580,7 @@ export default function TenderDetailPage() {
                       ) : (
                         filteredActivities.map(activity => {
                           const isSelected = selectedActivityRows.has(activity.id)
-  // RFP Lifecycle phases configuration
-  const lifecyclePhases = [
-    { key: 'draft', label: 'Preparation', icon: FileText },
-    { key: 'accepting_bids', label: 'Accepting Bids', icon: Users },
-    { key: 'under_review', label: 'Evaluation', icon: Scale },
-    { key: 'completed', label: 'Award', icon: Trophy },
-    { key: 'closed', label: 'Closed', icon: CheckCircle2 },
-  ] as const;
-
-  // Get current phase index
-  const currentPhaseIndex = lifecyclePhases.findIndex(p => p.key === tenderData.status) || 0;
-
-  return (
+                          return (
                             <tr
                               key={activity.id}
                               className={`transition-colors ${isSelected ? "bg-[#F0FDF4]" : "hover:bg-[#F9FAFB]"}`}
