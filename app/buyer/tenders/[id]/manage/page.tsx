@@ -11,6 +11,8 @@ import {
   Users,
   Scale,
   Trophy,
+  CheckCircle2,
+  CircleDot,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -49,7 +51,17 @@ const tenderData = {
   status: 'accepting_bids' as const,
   deadline: 'Apr 15, 2026',
   budget: 125000,
+  currentPhase: 'responses' as 'responses' | 'interviews' | 'evaluation' | 'award' | 'closed',
 };
+
+// RFP Lifecycle phases configuration
+const lifecyclePhases = [
+  { key: 'responses', label: 'Responses', icon: FileText },
+  { key: 'interviews', label: 'Interviews', icon: Users },
+  { key: 'evaluation', label: 'Evaluation', icon: Scale },
+  { key: 'award', label: 'Award', icon: Trophy },
+  { key: 'closed', label: 'Closed', icon: CheckCircle2 },
+] as const;
 
 type LifecycleTab = 'responses' | 'interviews' | 'evaluation' | 'award';
 
@@ -399,60 +411,98 @@ export default function TenderManagePage() {
         </div>
       </div>
 
-      {/* Progress Steps — matches RFP create flow */}
+      {/* RFP Lifecycle Progress Indicator */}
       <div className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-7xl px-6 py-4">
-          <nav className="flex items-center justify-center gap-0">
-            {tabs.map((step, index) => {
-              const isActive = step.key === activeTab;
-              const stepIndex = tabs.findIndex(t => t.key === activeTab);
-              const isCompleted = index < stepIndex || progressSteps[index]?.complete;
-              const Icon = step.icon;
+        <div className="mx-auto max-w-7xl px-6 py-5">
+          <div className="flex items-center justify-between">
+            {lifecyclePhases.map((phase, index) => {
+              const currentPhaseIndex = lifecyclePhases.findIndex(p => p.key === tenderData.currentPhase);
+              const isCompleted = index < currentPhaseIndex;
+              const isActive = index === currentPhaseIndex;
+              const isUpcoming = index > currentPhaseIndex;
+              const Icon = phase.icon;
+              
               return (
-                <div key={step.key} className="flex items-center">
-                  <button
-                    onClick={() => setActiveTab(step.key)}
-                    className="flex items-center gap-2 group"
-                  >
+                <div key={phase.key} className="flex items-center flex-1 last:flex-none">
+                  {/* Phase indicator */}
+                  <div className="flex flex-col items-center">
                     <div
                       className={cn(
-                        'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-brand-green text-white'
-                          : isCompleted
-                          ? 'bg-brand-green-light text-brand-green'
-                          : 'bg-surface-hover text-text-muted'
+                        'flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200',
+                        isCompleted && 'bg-brand-green text-white',
+                        isActive && 'bg-brand-green text-white ring-4 ring-brand-green/20',
+                        isUpcoming && 'bg-gray-100 text-gray-400 border-2 border-gray-200'
                       )}
                     >
-                      {isCompleted && !isActive ? (
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
+                      {isCompleted ? (
+                        <CheckCircle2 className="h-5 w-5" />
+                      ) : isActive ? (
+                        <CircleDot className="h-5 w-5" />
                       ) : (
-                        <Icon className="h-4 w-4" />
+                        <Icon className="h-5 w-5" />
                       )}
                     </div>
-                    <div className="text-left hidden sm:block">
-                      <p
-                        className={cn(
-                          'text-sm font-medium leading-tight',
-                          isActive ? 'text-text-primary' : 'text-text-muted group-hover:text-text-secondary'
-                        )}
-                      >
-                        {step.label}
-                      </p>
-                      <p className="text-xs text-text-muted leading-tight">{step.description}</p>
-                    </div>
-                  </button>
-                  {index < tabs.length - 1 && (
-                    <div
+                    <span
                       className={cn(
-                        'mx-4 h-px w-12 sm:w-20 transition-colors',
-                        progressSteps[index]?.complete ? 'bg-brand-green' : 'bg-border'
+                        'mt-2 text-xs font-medium text-center',
+                        isCompleted && 'text-brand-green',
+                        isActive && 'text-text-primary',
+                        isUpcoming && 'text-gray-400'
                       )}
-                    />
+                    >
+                      {phase.label}
+                    </span>
+                  </div>
+                  
+                  {/* Connector line */}
+                  {index < lifecyclePhases.length - 1 && (
+                    <div className="flex-1 mx-2 sm:mx-4">
+                      <div
+                        className={cn(
+                          'h-1 rounded-full transition-colors duration-200',
+                          isCompleted ? 'bg-brand-green' : 'bg-gray-200'
+                        )}
+                      />
+                    </div>
                   )}
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="border-b border-border bg-background">
+        <div className="mx-auto max-w-7xl px-6">
+          <nav className="flex gap-6">
+            {tabs.map((tab) => {
+              const isActive = tab.key === activeTab;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={cn(
+                    'flex items-center gap-2 py-3 border-b-2 transition-colors',
+                    isActive
+                      ? 'border-brand-green text-brand-green'
+                      : 'border-transparent text-text-muted hover:text-text-secondary'
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="text-sm font-medium">{tab.label}</span>
+                  {tab.count > 0 && (
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 text-xs rounded-full',
+                        isActive ? 'bg-brand-green/10 text-brand-green' : 'bg-gray-100 text-gray-600'
+                      )}
+                    >
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
               );
             })}
           </nav>
