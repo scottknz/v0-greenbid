@@ -924,16 +924,23 @@ export default function TenderDetailPage() {
     
     // Create approval notification message thread
     const approvalMessage = `Approval requested for RFP: ${tenderData.name}\n\n${data.message || 'No additional message provided.'}`
-    const newThread: QaThread = {
-      id: `t${Date.now()}`,
+    const threadId = `t${Date.now()}`
+    const newThread: QaThread & { approvalData?: { approvalId: string; itemId: string; itemTitle: string; status: 'pending' | 'approved' | 'rejected' } } = {
+      id: threadId,
       subject: `Approval Requested: ${tenderData.name}`,
       visibility: 'private' as const,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       participants: data.approverIds,
+      approvalData: {
+        approvalId: newApproval.id,
+        itemId: tenderData.id,
+        itemTitle: tenderData.name,
+        status: 'pending',
+      },
       messages: [{
         id: `m${Date.now()}`,
-        threadId: `t${Date.now()}`,
+        threadId: threadId,
         senderId: 'user-sarah',
         senderName: 'Sarah Chen',
         senderType: 'buyer' as const,

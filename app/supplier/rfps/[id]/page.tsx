@@ -266,8 +266,9 @@ export default function RFPDetailPage() {
     
     // Create approval notification message thread
     const approvalMessage = `Approval requested for proposal submission: ${rfp.title}\n\n${data.message || 'No additional message provided.'}`
-    const newThread: MessageThread = {
-      id: `t${Date.now()}`,
+    const threadId = `t${Date.now()}`
+    const newThread: MessageThread & { approvalData?: { approvalId: string; itemId: string; itemTitle: string; status: 'pending' | 'approved' | 'rejected' } } = {
+      id: threadId,
       subject: `Approval Requested: ${rfp.title}`,
       visibility: 'private',
       status: 'awaiting',
@@ -279,6 +280,12 @@ export default function RFPDetailPage() {
       lastSender: 'John Smith',
       lastSenderType: 'supplier',
       participants: data.approverIds,
+      approvalData: {
+        approvalId: newApproval.id,
+        itemId: rfp.id,
+        itemTitle: rfp.title,
+        status: 'pending',
+      },
       messages: [{
         id: `m${Date.now()}`,
         senderId: 'supplier',
