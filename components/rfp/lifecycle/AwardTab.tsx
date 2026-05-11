@@ -55,6 +55,7 @@ interface AwardTabProps {
   onSelectWinner: (responseId: string, contractValue: number) => void;
   onSendNotification: (notification: Partial<PostAwardCommunication>) => void;
   onAddNextStep: (step: { title: string; description: string; dueDate?: string }) => void;
+  onUpdateAwardStatus?: (status: RFPAward['status']) => void;
 }
 
 // Step 1 — confirm the winner
@@ -112,6 +113,7 @@ export function AwardTab({
   onSelectWinner,
   onSendNotification,
   onAddNextStep,
+  onUpdateAwardStatus,
 }: AwardTabProps) {
   const router = useRouter();
 
@@ -845,19 +847,35 @@ export function AwardTab({
                 </span>
               </div>
             </div>
-            <Badge
-              variant="outline"
-              className={cn(
-                'text-sm shrink-0',
-                award.status === 'accepted' && 'bg-green-50 text-green-700 border-green-200',
-                award.status === 'pending' && 'bg-amber-50 text-amber-700 border-amber-200',
-                award.status === 'finalized' && 'bg-brand-green-light text-brand-green border-brand-green/20'
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-sm',
+                  award.status === 'contract_agreed' && 'bg-emerald-50 text-emerald-700 border-emerald-300',
+                  award.status === 'accepted' && 'bg-green-50 text-green-700 border-green-200',
+                  award.status === 'pending' && 'bg-amber-50 text-amber-700 border-amber-200',
+                  award.status === 'finalized' && 'bg-brand-green-light text-brand-green border-brand-green/20',
+                  award.status === 'declined' && 'bg-red-50 text-red-700 border-red-200',
+                )}
+              >
+                {award.status === 'contract_agreed' && <CheckCircle className="h-4 w-4 mr-1" />}
+                {award.status === 'accepted' && <CheckCircle className="h-4 w-4 mr-1" />}
+                {award.status === 'pending' && <Clock className="h-4 w-4 mr-1" />}
+                {award.status === 'contract_agreed'
+                  ? 'Contract Agreed'
+                  : award.status.charAt(0).toUpperCase() + award.status.slice(1)}
+              </Badge>
+              {/* Simulate supplier response button — visible only when pending and notification sent */}
+              {award.status === 'pending' && award.awardMessageSent && (
+                <button
+                  onClick={() => onUpdateAwardStatus?.('contract_agreed')}
+                  className="text-xs text-text-muted hover:text-brand-green underline underline-offset-2 transition-colors"
+                >
+                  Simulate: Supplier accepts
+                </button>
               )}
-            >
-              {award.status === 'accepted' && <CheckCircle className="h-4 w-4 mr-1" />}
-              {award.status === 'pending' && <Clock className="h-4 w-4 mr-1" />}
-              {award.status.charAt(0).toUpperCase() + award.status.slice(1)}
-            </Badge>
+            </div>
           </div>
         </CardContent>
       </Card>

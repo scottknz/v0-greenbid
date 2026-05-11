@@ -54,6 +54,7 @@ const statusConfig: Record<ResponseStatus, { color: string; icon: React.ElementT
   evaluated: { color: 'bg-purple-100 text-purple-700 border-purple-200', icon: CheckCircle },
   finalist: { color: 'bg-indigo-100 text-indigo-700 border-indigo-200', icon: Star },
   awarded: { color: 'bg-brand-green-light text-brand-green border-brand-green/20', icon: CheckCircle },
+  contract_agreed: { color: 'bg-emerald-100 text-emerald-700 border-emerald-300', icon: CheckCircle },
   rejected: { color: 'bg-red-100 text-red-700 border-red-200', icon: XCircle },
 };
 

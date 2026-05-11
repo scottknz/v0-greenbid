@@ -313,6 +313,21 @@ export default function TenderManagePage() {
     console.log('[v0] Sent notification:', newComm);
   };
 
+  const handleUpdateAwardStatus = (status: RFPAward['status']) => {
+    if (!award) return;
+    setAward({ ...award, status });
+    // When supplier agrees to contract, update the awarded response status too
+    if (status === 'contract_agreed') {
+      setResponses(prev =>
+        prev.map(r =>
+          r.id === award.awardedResponseId
+            ? { ...r, status: 'contract_agreed' as const }
+            : r
+        )
+      );
+    }
+  };
+
   const handleAddNextStep = (step: { title: string; description: string; dueDate?: string }) => {
     if (!award) return;
 
@@ -518,6 +533,7 @@ export default function TenderManagePage() {
             onSelectWinner={handleSelectWinner}
             onSendNotification={handleSendNotification}
             onAddNextStep={handleAddNextStep}
+            onUpdateAwardStatus={handleUpdateAwardStatus}
           />
         )}
       </div>

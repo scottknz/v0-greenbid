@@ -284,6 +284,7 @@ export type ResponseStatus =
   | 'evaluated'
   | 'finalist'
   | 'awarded'
+  | 'contract_agreed'
   | 'rejected';
 
 // Supplier Response to an RFP
@@ -506,7 +507,13 @@ export interface ComparisonView {
 // AWARD & COMMUNICATION
 // =====================================================
 
-export type AwardStatus = 'pending' | 'announced' | 'accepted' | 'declined' | 'finalized';
+// pending: Award sent, awaiting supplier response
+// announced: Award publicly announced
+// accepted: Supplier has accepted the award
+// contract_agreed: Supplier has formally agreed to the contract terms
+// declined: Supplier declined the award
+// finalized: Contract fully executed
+export type AwardStatus = 'pending' | 'announced' | 'accepted' | 'contract_agreed' | 'declined' | 'finalized';
 
 export interface RFPAward {
   id: string;
@@ -667,5 +674,6 @@ export const RESPONSE_STATUS_LABELS: Record<ResponseStatus, string> = {
   evaluated: 'Evaluated',
   finalist: 'Finalist',
   awarded: 'Awarded',
+  contract_agreed: 'Contract Agreed',
   rejected: 'Not Selected',
 };
