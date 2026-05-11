@@ -191,291 +191,210 @@ export function EvaluationTab({
       </div>
 
       {activeView === 'evaluate' ? (
-        <div className="flex gap-6">
-          {/* Supplier List */}
-          <div className="w-72 shrink-0 space-y-2">
-            <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">
-              Suppliers
-            </h4>
+        <div className="space-y-4">
+          {/* Compact Supplier Chips */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-text-secondary mr-2">Supplier:</span>
             {evaluatableResponses.map((response) => {
               const evaluation = evaluations.find(e => e.responseId === response.id);
               const isSelected = response.id === selectedResponseId;
+              const evalScoredCount = evaluation?.scores.filter(s => s.isFinalized).length || 0;
+              const isComplete = evalScoredCount === criteria.length;
               
               return (
-                <Card
+                <button
                   key={response.id}
-                  className={cn(
-                    'cursor-pointer transition-all border-border bg-background',
-                    isSelected && 'ring-2 ring-brand-green border-brand-green'
-                  )}
                   onClick={() => setSelectedResponseId(response.id)}
+                  className={cn(
+                    'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all border',
+                    isSelected
+                      ? 'bg-brand-green text-white border-brand-green'
+                      : 'bg-background text-text-secondary border-border hover:border-brand-green hover:text-brand-green'
+                  )}
                 >
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10 border border-border">
-                        <AvatarFallback className="bg-surface text-sm">
-                          {getInitials(response.supplierName)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-text-primary truncate">
-                          {response.supplierName}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          {evaluation?.status === 'finalized' ? (
-                            <Badge variant="outline" className="text-xs bg-brand-green-light text-brand-green border-brand-green/20">
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              {evaluation.percentageScore}%
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-xs bg-amber-100 text-amber-700 border-amber-200">
-                              <Clock className="h-3 w-3 mr-1" />
-                              In Progress
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <Avatar className="h-5 w-5 border-0">
+                    <AvatarFallback className={cn('text-[10px]', isSelected ? 'bg-white/20 text-white' : 'bg-surface')}>
+                      {getInitials(response.supplierName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="truncate max-w-[120px]">{response.supplierName}</span>
+                  {isComplete ? (
+                    <CheckCircle className={cn('h-3.5 w-3.5', isSelected ? 'text-white' : 'text-green-600')} />
+                  ) : (
+                    <span className={cn('text-xs', isSelected ? 'text-white/70' : 'text-text-muted')}>
+                      {evalScoredCount}/{criteria.length}
+                    </span>
+                  )}
+                </button>
               );
             })}
           </div>
 
-          {/* Evaluation Panel */}
-          <div className="flex-1 space-y-6">
-            {selectedResponse && (
-              <>
-                {/* Response Header */}
-                <Card className="border-border bg-background">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-14 w-14 border-2 border-border">
-                          <AvatarFallback className="text-lg bg-surface">
-                            {getInitials(selectedResponse.supplierName)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="text-lg font-semibold text-text-primary">
-                            {selectedResponse.supplierName}
-                          </h3>
-                          <p className="text-sm text-text-muted">
-                            Submitted {new Date(selectedResponse.submittedAt).toLocaleDateString()}
-                          </p>
-                          <div className="flex items-center gap-3 mt-2">
-                            <div className="flex items-center gap-1 text-sm">
-                              <FileText className="h-4 w-4 text-text-muted" />
-                              <span className="text-text-secondary">
-                                {selectedResponse.attachments.length} documents
-                              </span>
-                            </div>
-                            {responseInterviews.length > 0 && (
-                              <div className="flex items-center gap-1 text-sm">
-                                <Users className="h-4 w-4 text-text-muted" />
-                                <span className="text-text-secondary">
-                                  {responseInterviews.length} interview{responseInterviews.length !== 1 && 's'}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-text-muted">Total Price</p>
-                        <p className="text-xl font-bold text-text-primary">
-                          {formatCurrency(
-                            selectedResponse.priceAnswers?.reduce((sum, p) => sum + p.value, 0) || 0
-                          )}
-                        </p>
-                      </div>
-                    </div>
+          {selectedResponse && (
+            <>
+              {/* Compact Header Row */}
+              <div className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10 border border-border">
+                    <AvatarFallback className="bg-background text-sm">
+                      {getInitials(selectedResponse.supplierName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-semibold text-text-primary">{selectedResponse.supplierName}</h3>
+                    <p className="text-xs text-text-muted">
+                      Submitted {new Date(selectedResponse.submittedAt).toLocaleDateString()} | {selectedResponse.attachments.length} docs
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="text-right">
+                    <p className="text-xs text-text-muted">Total Price</p>
+                    <p className="font-bold text-text-primary">
+                      {formatCurrency(selectedResponse.priceAnswers?.reduce((sum, p) => sum + p.value, 0) || 0)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-text-muted">Progress</p>
+                    <p className="font-bold text-text-primary">{scoredCriteria}/{totalCriteria}</p>
+                  </div>
+                </div>
+              </div>
 
-                    {/* Progress Bar */}
-                    <div className="mt-4 pt-4 border-t border-border">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-text-secondary">
-                          Evaluation Progress
-                        </span>
-                        <span className="text-sm text-text-muted">
-                          {scoredCriteria} of {totalCriteria} criteria scored
-                        </span>
-                      </div>
-                      <Progress value={evaluationProgress} className="h-2" />
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Table-Based Scoring Form */}
+              <Card className="border-border bg-background">
+                <CardContent className="p-0">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-surface">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide w-[200px]">
+                          Criteria
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide w-[80px]">
+                          Weight
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide w-[200px]">
+                          Score
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                          Comment
+                        </th>
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide w-[80px]">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {criteria.map((criterion) => {
+                        const existingScore = getScoreForCriteria(criterion.id);
+                        const draft = getDraftScore(criterion.id);
+                        const isSaved = existingScore?.isFinalized;
 
-                {/* Criteria Scoring */}
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide">
-                    Evaluation Criteria
-                  </h4>
-                  
-                  {criteria.map((criterion) => {
-                    const existingScore = getScoreForCriteria(criterion.id);
-                    const draft = getDraftScore(criterion.id);
-                    const isExpanded = expandedCriteria.has(criterion.id);
-
-                    return (
-                      <Card key={criterion.id} className="border-border bg-background">
-                        <CardContent className="p-0">
-                          {/* Criteria Header */}
-                          <div
-                            className="flex items-center gap-4 p-4 cursor-pointer hover:bg-surface-hover transition-colors"
-                            onClick={() => toggleCriteria(criterion.id)}
-                          >
-                            <div className="flex-1">
+                        return (
+                          <tr key={criterion.id} className="hover:bg-surface-hover transition-colors">
+                            <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
-                                <h5 className="font-medium text-text-primary">
-                                  {criterion.name}
-                                </h5>
-                                <Badge variant="outline" className="text-xs border-border">
-                                  {criterion.weight}% weight
-                                </Badge>
+                                <span className="font-medium text-text-primary">{criterion.name}</span>
                                 <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger>
-                                      <HelpCircle className="h-4 w-4 text-text-muted" />
+                                      <HelpCircle className="h-3.5 w-3.5 text-text-muted" />
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-xs">
-                                      <p className="text-sm">{criterion.description}</p>
+                                      <p className="text-sm font-medium mb-1">{criterion.description}</p>
+                                      <p className="text-xs text-text-muted whitespace-pre-line">{criterion.rubric}</p>
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>
                               </div>
-                              <p className="text-sm text-text-muted mt-1">
-                                {criterion.description}
-                              </p>
-                            </div>
-                            
-                            <div className="flex items-center gap-4">
-                              {existingScore?.isFinalized && (
-                                <div className="text-right">
-                                  <span className={cn('text-2xl font-bold', getScoreColor(existingScore.score, criterion.maxScore))}>
-                                    {existingScore.score}
-                                  </span>
-                                  <span className="text-text-muted">/{criterion.maxScore}</span>
-                                </div>
-                              )}
-                              {isExpanded ? (
-                                <ChevronDown className="h-5 w-5 text-text-muted" />
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <Badge variant="outline" className="text-xs border-border">
+                                {criterion.weight}%
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <Slider
+                                  value={[draft.score]}
+                                  onValueChange={([value]) => updateDraftScore(criterion.id, { score: value })}
+                                  max={criterion.maxScore}
+                                  step={1}
+                                  className="flex-1"
+                                />
+                                <span className={cn('w-12 text-center font-bold text-sm', getScoreColor(draft.score, criterion.maxScore))}>
+                                  {draft.score}/{criterion.maxScore}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <input
+                                type="text"
+                                value={draft.comment}
+                                onChange={(e) => updateDraftScore(criterion.id, { comment: e.target.value })}
+                                onBlur={() => handleSaveScore(criterion.id)}
+                                placeholder="Add comment..."
+                                className="w-full px-2 py-1.5 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-brand-green/30"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              {isSaved ? (
+                                <CheckCircle className="h-5 w-5 text-green-600 mx-auto" />
                               ) : (
-                                <ChevronRight className="h-5 w-5 text-text-muted" />
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleSaveScore(criterion.id)}
+                                  className="h-7 px-2 text-xs"
+                                >
+                                  <Save className="h-3.5 w-3.5" />
+                                </Button>
                               )}
-                            </div>
-                          </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
 
-                          {/* Expanded Scoring Panel */}
-                          {isExpanded && (
-                            <div className="p-4 pt-0 border-t border-border mt-0">
-                              {/* Rubric */}
-                              <div className="mb-4 p-3 bg-surface rounded-lg">
-                                <p className="text-xs font-semibold text-text-secondary uppercase mb-2">
-                                  Scoring Guide
-                                </p>
-                                <p className="text-sm text-text-muted whitespace-pre-line">
-                                  {criterion.rubric}
-                                </p>
-                              </div>
-
-                              {/* Score Slider */}
-                              <div className="space-y-4">
-                                <div>
-                                  <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm font-medium text-text-secondary">
-                                      Score
-                                    </span>
-                                    <span className={cn('text-lg font-bold', getScoreColor(draft.score, criterion.maxScore))}>
-                                      {draft.score}/{criterion.maxScore}
-                                    </span>
-                                  </div>
-                                  <Slider
-                                    value={[draft.score]}
-                                    onValueChange={([value]) => updateDraftScore(criterion.id, { score: value })}
-                                    max={criterion.maxScore}
-                                    step={1}
-                                    className="w-full"
-                                  />
-                                  <div className="flex justify-between mt-1 text-xs text-text-muted">
-                                    <span>0</span>
-                                    <span>{criterion.maxScore}</span>
-                                  </div>
-                                </div>
-
-                                <div>
-                                  <label className="text-sm font-medium text-text-secondary mb-2 block">
-                                    Comments
-                                  </label>
-                                  <Textarea
-                                    value={draft.comment}
-                                    onChange={(e) => updateDraftScore(criterion.id, { comment: e.target.value })}
-                                    placeholder="Add your evaluation comments..."
-                                    className="min-h-[80px] bg-background border-border"
-                                  />
-                                </div>
-
-                                <div className="flex items-center justify-end gap-2">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleSaveScore(criterion.id)}
-                                    className="bg-brand-green hover:bg-brand-green-mid text-white"
-                                  >
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Save Score
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+              {/* Finalize Button */}
+              {evaluationProgress === 100 && selectedEvaluation?.status !== 'finalized' && (
+                <div className="flex items-center justify-between p-4 bg-brand-green-light/30 border border-brand-green rounded-lg">
+                  <div>
+                    <p className="font-medium text-text-primary">Evaluation Complete</p>
+                    <p className="text-sm text-text-muted">All criteria scored. Finalize to lock in your evaluation.</p>
+                  </div>
+                  <Button
+                    onClick={() => onFinalizeEvaluation(selectedResponseId!)}
+                    className="bg-brand-green hover:bg-brand-green-mid text-white"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Finalize Evaluation
+                  </Button>
                 </div>
-
-                {/* Finalize Button */}
-                {evaluationProgress === 100 && selectedEvaluation?.status !== 'finalized' && (
-                  <Card className="border-brand-green bg-brand-green-light/30">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-text-primary">
-                            Evaluation Complete
-                          </p>
-                          <p className="text-sm text-text-muted">
-                            All criteria have been scored. Finalize to lock in your evaluation.
-                          </p>
-                        </div>
-                        <Button
-                          onClick={() => onFinalizeEvaluation(selectedResponseId!)}
-                          className="bg-brand-green hover:bg-brand-green-mid text-white"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Finalize Evaluation
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </>
-            )}
-          </div>
+              )}
+            </>
+          )}
         </div>
       ) : (
         /* Compare & Rank View */
         <div className="space-y-6">
-          {/* Criteria Matrix Table */}
+          {/* Enhanced Evaluation Matrix with Rank, Criteria, Price, Recommendation */}
           <Card className="border-border bg-background">
             <CardHeader className="border-b border-border">
-              <CardTitle className="text-lg">Full Evaluation Matrix</CardTitle>
-              <p className="text-sm text-text-muted mt-1">All assessed suppliers scored against each criterion</p>
+              <CardTitle className="text-lg">Supplier Comparison Matrix</CardTitle>
+              <p className="text-sm text-text-muted mt-1">Click a supplier row to view detailed score breakdown below</p>
             </CardHeader>
             <CardContent className="p-0 overflow-x-auto">
               <table className="w-full min-w-max">
                 <thead>
                   <tr className="border-b border-border bg-surface">
-                    <th className="sticky left-0 z-10 px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide bg-surface min-w-[180px]">
+                    <th className="sticky left-0 z-10 px-3 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide bg-surface w-[60px]">
+                      Rank
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide min-w-[160px]">
                       Supplier
                     </th>
                     {criteria.map((criterion) => (
@@ -483,27 +402,51 @@ export function EvaluationTab({
                         key={criterion.id}
                         className="px-3 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide whitespace-nowrap"
                       >
-                        <div className="flex flex-col items-center gap-0.5">
-                          <span className="line-clamp-2 text-xs">{criterion.name}</span>
-                          <span className="text-xs font-normal opacity-70">W: {criterion.weight}%</span>
-                        </div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger className="flex flex-col items-center gap-0.5">
+                              <span className="line-clamp-1 text-xs">{criterion.name}</span>
+                              <span className="text-xs font-normal opacity-70">{criterion.weight}%</span>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p className="text-sm font-medium">{criterion.name}</p>
+                              <p className="text-xs text-text-muted mt-1">{criterion.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </th>
                     ))}
                     <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
                       Overall
                     </th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                      Price
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {evaluatableResponses.map((response) => {
-                    const ranking = rankings.find(r => r.responseId === response.id);
-                    const evaluation = evaluations.find(e => e.responseId === response.id);
-                    const isSelectedRow = selectedCompareId === response.id;
+                  {rankings.map((ranking, index) => {
+                    const response = evaluatableResponses.find(r => r.id === ranking.responseId);
+                    const evaluation = evaluations.find(e => e.responseId === ranking.responseId);
+                    const isSelectedRow = selectedCompareId === ranking.responseId;
+
+                    // Find best score for each criterion to highlight
+                    const getBestScore = (criteriaId: string) => {
+                      let best = 0;
+                      evaluations.forEach(eval_ => {
+                        const s = eval_.scores.find(sc => sc.criteriaId === criteriaId);
+                        if (s && s.score > best) best = s.score;
+                      });
+                      return best;
+                    };
 
                     return (
                       <tr
-                        key={response.id}
-                        onClick={() => setSelectedCompareId(isSelectedRow ? null : response.id)}
+                        key={ranking.responseId}
+                        onClick={() => setSelectedCompareId(isSelectedRow ? null : ranking.responseId)}
                         className={cn(
                           'cursor-pointer transition-colors',
                           isSelectedRow
@@ -511,176 +454,83 @@ export function EvaluationTab({
                             : 'hover:bg-surface-hover'
                         )}
                       >
-                        <td className="sticky left-0 z-10 px-4 py-3 font-medium text-text-primary bg-inherit">
+                        <td className="sticky left-0 z-10 px-3 py-3 text-center bg-inherit">
+                          {index === 0 ? (
+                            <div className="h-7 w-7 mx-auto rounded-full bg-amber-100 flex items-center justify-center">
+                              <Trophy className="h-3.5 w-3.5 text-amber-600" />
+                            </div>
+                          ) : (
+                            <span className="font-semibold text-text-secondary">{ranking.rank}</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 font-medium text-text-primary">
                           <div className="flex items-center gap-2">
                             <Avatar className="h-7 w-7 border border-border">
                               <AvatarFallback className="text-xs bg-surface">
-                                {getInitials(response.supplierName)}
+                                {getInitials(ranking.supplierName)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="truncate">{response.supplierName}</span>
+                            <span className="truncate">{ranking.supplierName}</span>
                           </div>
                         </td>
                         {criteria.map((criterion) => {
                           const score = evaluation?.scores.find(s => s.criteriaId === criterion.id);
                           const rawScore = score?.score ?? null;
+                          const bestScore = getBestScore(criterion.id);
+                          const isBest = rawScore !== null && rawScore === bestScore && bestScore > 0;
 
                           return (
                             <td
-                              key={`${response.id}-${criterion.id}`}
-                              className="px-3 py-3 text-center text-sm font-medium whitespace-nowrap"
+                              key={`${ranking.responseId}-${criterion.id}`}
+                              className={cn(
+                                'px-3 py-3 text-center text-sm font-medium whitespace-nowrap',
+                                isBest && 'bg-green-50'
+                              )}
                             >
                               {rawScore !== null ? (
-                                <div className="flex flex-col items-center gap-1">
-                                  <span className={cn('text-base font-bold', getScoreColor(rawScore, criterion.maxScore))}>
-                                    {rawScore}
-                                  </span>
-                                  <span className="text-xs text-text-muted">
-                                    /{criterion.maxScore}
-                                  </span>
-                                </div>
+                                <span className={cn('font-bold', isBest ? 'text-green-600' : getScoreColor(rawScore, criterion.maxScore))}>
+                                  {rawScore}
+                                  <span className="text-xs font-normal text-text-muted">/{criterion.maxScore}</span>
+                                </span>
                               ) : (
                                 <span className="text-text-muted text-xs">—</span>
                               )}
                             </td>
                           );
                         })}
-                        <td className="px-4 py-3 text-center font-semibold">
-                          {ranking ? (
-                            <span className={cn('text-base', getScoreColor(ranking.percentageScore, 100))}>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                              <div
+                                className={cn('h-full rounded-full', getProgressColor(ranking.percentageScore, 100))}
+                                style={{ width: `${ranking.percentageScore}%` }}
+                              />
+                            </div>
+                            <span className={cn('font-bold text-sm', getScoreColor(ranking.percentageScore, 100))}>
                               {ranking.percentageScore}%
                             </span>
-                          ) : (
-                            <span className="text-text-muted text-sm">—</span>
-                          )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span className="font-medium text-text-primary tabular-nums text-sm">
+                            {formatCurrency(ranking.priceTotal)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              'text-xs',
+                              ranking.recommendation === 'highly_recommended' && 'bg-green-100 text-green-700 border-green-200',
+                              ranking.recommendation === 'recommended' && 'bg-blue-100 text-blue-700 border-blue-200',
+                              ranking.recommendation === 'neutral' && 'bg-gray-100 text-gray-700 border-gray-200',
+                              ranking.recommendation === 'not_recommended' && 'bg-red-100 text-red-700 border-red-200'
+                            )}
+                          >
+                            {ranking.recommendation.replace('_', ' ')}
+                          </Badge>
                         </td>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-
-          {/* Rankings Table */}
-          <Card className="border-border bg-background">
-            <CardHeader className="border-b border-border">
-              <CardTitle className="text-lg">Supplier Rankings</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-surface">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Rank
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Supplier
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Score
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Price
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Interviews
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Recommendation
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {rankings.map((ranking, index) => {
-                    const isSelectedRow = selectedCompareId === ranking.responseId;
-                    return (
-                    <tr
-                      key={ranking.responseId}
-                      onClick={() => setSelectedCompareId(isSelectedRow ? null : ranking.responseId)}
-                      className={cn(
-                        'cursor-pointer transition-colors',
-                        isSelectedRow
-                          ? 'bg-brand-green-light ring-2 ring-inset ring-brand-green'
-                          : 'hover:bg-surface-hover'
-                      )}
-                    >
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-2">
-                          {index === 0 ? (
-                            <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center">
-                              <Trophy className="h-4 w-4 text-amber-600" />
-                            </div>
-                          ) : (
-                            <div className="h-8 w-8 rounded-full bg-surface flex items-center justify-center">
-                              <span className="font-semibold text-text-secondary">{ranking.rank}</span>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <Avatar className={cn('h-9 w-9 border', isSelectedRow ? 'border-brand-green' : 'border-border')}>
-                            <AvatarFallback className={cn('text-sm', isSelectedRow ? 'bg-brand-green-light text-brand-green' : 'bg-surface')}>
-                              {getInitials(ranking.supplierName)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <span className="font-medium text-text-primary">
-                              {ranking.supplierName}
-                            </span>
-                            {isSelectedRow && (
-                              <p className="text-xs text-brand-green font-medium">Score breakdown shown below</p>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <div className="inline-flex items-center gap-2">
-                          <div className="w-20 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div
-                              className={cn('h-full rounded-full', getProgressColor(ranking.percentageScore, 100))}
-                              style={{ width: `${ranking.percentageScore}%` }}
-                            />
-                          </div>
-                          <span className={cn('font-semibold', getScoreColor(ranking.percentageScore, 100))}>
-                            {ranking.percentageScore}%
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <span className="font-medium text-text-primary tabular-nums">
-                          {formatCurrency(ranking.priceTotal)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="text-text-secondary">{ranking.interviewsCompleted}</span>
-                          {ranking.interviewRating && (
-                            <div className="flex items-center ml-2">
-                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                              <span className="text-sm text-text-secondary ml-1">
-                                {ranking.interviewRating}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            'text-xs',
-                            ranking.recommendation === 'highly_recommended' && 'bg-green-100 text-green-700 border-green-200',
-                            ranking.recommendation === 'recommended' && 'bg-blue-100 text-blue-700 border-blue-200',
-                            ranking.recommendation === 'neutral' && 'bg-gray-100 text-gray-700 border-gray-200',
-                            ranking.recommendation === 'not_recommended' && 'bg-red-100 text-red-700 border-red-200'
-                          )}
-                        >
-                          {ranking.recommendation.replace('_', ' ')}
-                        </Badge>
-                      </td>
-                    </tr>
                     );
                   })}
                 </tbody>
