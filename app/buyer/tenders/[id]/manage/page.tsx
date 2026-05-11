@@ -12,9 +12,9 @@ import {
   Scale,
   Trophy,
   CheckCircle2,
-  CircleDot,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { RFPProgressBar } from '@/components/rfp/RFPProgressBar';
 
 // Import lifecycle components
 import { ResponsesTab } from '@/components/rfp/lifecycle/ResponsesTab';
@@ -51,7 +51,6 @@ const tenderData = {
   status: 'accepting_bids' as const,
   deadline: 'Apr 15, 2026',
   budget: 125000,
-  currentPhase: 'responses' as 'responses' | 'interviews' | 'evaluation' | 'award' | 'closed',
 };
 
 // RFP Lifecycle phases configuration
@@ -85,6 +84,7 @@ export default function TenderManagePage() {
 
   // State
   const [activeTab, setActiveTab] = useState<LifecycleTab>('responses');
+  const [currentPhase, setCurrentPhase] = useState<'responses' | 'interviews' | 'evaluation' | 'award' | 'closed'>('responses');
   const [responses, setResponses] = useState<RFPResponse[]>(mockResponses);
   const [interviews, setInterviews] = useState<RFPInterview[]>(mockInterviews);
   const [selectedResponse, setSelectedResponse] = useState<RFPResponse | null>(null);
@@ -271,6 +271,7 @@ export default function TenderManagePage() {
           : { ...r, status: 'rejected' as const }
       )
     );
+    setCurrentPhase('award');
     setActiveTab('award');
     console.log('[v0] Contract awarded:', newAward);
   };
@@ -295,10 +296,18 @@ export default function TenderManagePage() {
     setCommunications(prev => [...prev, newComm]);
 
     // Update award status based on notification type
+    let updatedAward = award;
     if (notification.notificationType === 'award_notification' && award) {
-      setAward({ ...award, awardMessageSent: true, awardMessageSentAt: new Date().toISOString() });
+      updatedAward = { ...award, awardMessageSent: true, awardMessageSentAt: new Date().toISOString() };
+      setAward(updatedAward);
     } else if (notification.notificationType === 'rejection_notification' && award) {
-      setAward({ ...award, rejectionMessagesSent: true, rejectionMessagesSentAt: new Date().toISOString() });
+      updatedAward = { ...award, rejectionMessagesSent: true, rejectionMessagesSentAt: new Date().toISOString() };
+      setAward(updatedAward);
+    }
+
+    // Advance to 'closed' when both award and rejection notifications have been sent
+    if (updatedAward?.awardMessageSent && updatedAward?.rejectionMessagesSent) {
+      setCurrentPhase('closed');
     }
 
     console.log('[v0] Sent notification:', newComm);
@@ -412,65 +421,10 @@ export default function TenderManagePage() {
       </div>
 
       {/* RFP Lifecycle Progress Indicator */}
-      <div className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-7xl px-6 py-5">
-          <div className="flex items-center justify-between">
-            {lifecyclePhases.map((phase, index) => {
-              const currentPhaseIndex = lifecyclePhases.findIndex(p => p.key === tenderData.currentPhase);
-              const isCompleted = index < currentPhaseIndex;
-              const isActive = index === currentPhaseIndex;
-              const isUpcoming = index > currentPhaseIndex;
-              const Icon = phase.icon;
-              
-              return (
-                <div key={phase.key} className="flex items-center flex-1 last:flex-none">
-                  {/* Phase indicator */}
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={cn(
-                        'flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200',
-                        isCompleted && 'bg-brand-green text-white',
-                        isActive && 'bg-brand-green text-white ring-4 ring-brand-green/20',
-                        isUpcoming && 'bg-gray-100 text-gray-400 border-2 border-gray-200'
-                      )}
-                    >
-                      {isCompleted ? (
-                        <CheckCircle2 className="h-5 w-5" />
-                      ) : isActive ? (
-                        <CircleDot className="h-5 w-5" />
-                      ) : (
-                        <Icon className="h-5 w-5" />
-                      )}
-                    </div>
-                    <span
-                      className={cn(
-                        'mt-2 text-xs font-medium text-center',
-                        isCompleted && 'text-brand-green',
-                        isActive && 'text-text-primary',
-                        isUpcoming && 'text-gray-400'
-                      )}
-                    >
-                      {phase.label}
-                    </span>
-                  </div>
-                  
-                  {/* Connector line */}
-                  {index < lifecyclePhases.length - 1 && (
-                    <div className="flex-1 mx-2 sm:mx-4">
-                      <div
-                        className={cn(
-                          'h-1 rounded-full transition-colors duration-200',
-                          isCompleted ? 'bg-brand-green' : 'bg-gray-200'
-                        )}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      <RFPProgressBar
+        phases={lifecyclePhases}
+        currentIndex={lifecyclePhases.findIndex(p => p.key === currentPhase)}
+      />
 
       {/* Tab Navigation */}
       <div className="border-b border-border bg-background">
