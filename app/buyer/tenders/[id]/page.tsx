@@ -237,6 +237,20 @@ const submissionsData = [
       { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We facilitate multi-stakeholder workshops, conduct materiality assessments with both internal and external stakeholders, and provide regular progress reporting through dedicated dashboards and quarterly reviews." },
       { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "We propose a 6-week initial assessment phase: Weeks 1-2 for data gathering and stakeholder interviews, Weeks 3-4 for analysis and benchmarking, and Weeks 5-6 for developing recommendations and presenting findings." },
     ],
+    communications: [
+      { id: "c1", date: "Mar 12, 2026", from: "John Smith", to: "Procurement Team", subject: "Clarification on sustainability requirements", message: "Could you please clarify the specific GHG scopes required for the carbon footprint assessment? We want to ensure our methodology aligns with your expectations.", type: "question" },
+      { id: "c2", date: "Mar 13, 2026", from: "Sarah Chen", to: "John Smith", subject: "RE: Clarification on sustainability requirements", message: "We require Scope 1, 2, and material Scope 3 categories. Please refer to the GHG Protocol Corporate Standard for methodology guidance.", type: "response" },
+      { id: "c3", date: "Mar 14, 2026", from: "John Smith", to: "Procurement Team", subject: "Thank you for clarification", message: "Thank you for the clarification. We will include all three scopes in our proposal with detailed methodology for each.", type: "message" },
+    ],
+    activityLog: [
+      { id: "a1", action: "Submission received", timestamp: "Mar 15, 2026 14:32", user: "System" },
+      { id: "a2", action: "Documents uploaded (5 files)", timestamp: "Mar 15, 2026 14:30", user: "John Smith" },
+      { id: "a3", action: "Questionnaire completed", timestamp: "Mar 15, 2026 14:25", user: "John Smith" },
+      { id: "a4", action: "Clarification response received", timestamp: "Mar 13, 2026 10:15", user: "Sarah Chen" },
+      { id: "a5", action: "Clarification question submitted", timestamp: "Mar 12, 2026 16:45", user: "John Smith" },
+      { id: "a6", action: "RFP documents accessed", timestamp: "Mar 10, 2026 09:00", user: "John Smith" },
+      { id: "a7", action: "Invitation accepted", timestamp: "Mar 8, 2026 11:30", user: "John Smith" },
+    ],
   },
   {
     id: "s2",
@@ -271,6 +285,20 @@ const submissionsData = [
       { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We use industry-standard GHG Protocol methodologies with built-in validation rules. All data undergoes peer review and we maintain full audit trails. Our reporting platform integrates directly with client ERP systems to minimize manual data entry errors." },
       { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We implement a comprehensive engagement framework including executive briefings, department-level working sessions, employee awareness programs, and external stakeholder surveys. We believe sustainable change requires buy-in at all levels." },
       { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "Our accelerated assessment methodology delivers initial findings in 4 weeks: Week 1 for rapid data collection and system access, Weeks 2-3 for deep-dive analysis, and Week 4 for recommendations workshop and roadmap development." },
+    ],
+    communications: [
+      { id: "c1", date: "Mar 16, 2026", from: "Emma Davis", to: "Procurement Team", subject: "Budget flexibility inquiry", message: "We noticed the budget range specified. Is there flexibility for additional value-add services that exceed the initial scope?", type: "question" },
+      { id: "c2", date: "Mar 17, 2026", from: "Mark Johnson", to: "Emma Davis", subject: "RE: Budget flexibility inquiry", message: "We can consider proposals that exceed the stated budget if they demonstrate clear additional value. Please include any optional services separately in your pricing.", type: "response" },
+    ],
+    activityLog: [
+      { id: "a1", action: "Evaluation completed", timestamp: "Mar 22, 2026 16:00", user: "Evaluation Committee" },
+      { id: "a2", action: "Submission received", timestamp: "Mar 18, 2026 11:45", user: "System" },
+      { id: "a3", action: "Documents uploaded (4 files)", timestamp: "Mar 18, 2026 11:42", user: "Emma Davis" },
+      { id: "a4", action: "Questionnaire completed", timestamp: "Mar 18, 2026 11:30", user: "Emma Davis" },
+      { id: "a5", action: "Budget clarification received", timestamp: "Mar 17, 2026 09:30", user: "Mark Johnson" },
+      { id: "a6", action: "Budget inquiry submitted", timestamp: "Mar 16, 2026 14:20", user: "Emma Davis" },
+      { id: "a7", action: "RFP documents downloaded", timestamp: "Mar 14, 2026 10:00", user: "Emma Davis" },
+      { id: "a8", action: "Invitation accepted", timestamp: "Mar 12, 2026 08:45", user: "Emma Davis" },
     ],
   },
   {
@@ -308,6 +336,20 @@ const submissionsData = [
       { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "Our proprietary SustainTrack platform provides automated data collection with 99.7% accuracy rates. We implement multi-level verification including AI-powered anomaly detection, cross-reference validation with utility data, and independent third-party limited assurance engagements." },
       { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We deploy our proven 'Sustainability Champions' model, identifying and training internal advocates across departments. This is complemented by regular town halls, interactive sustainability dashboards, and gamified engagement programs that have achieved 85%+ employee participation rates." },
       { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "Given the comprehensive scope, we recommend an 8-week assessment: Weeks 1-3 for thorough data gathering across all value chain categories, Weeks 4-6 for detailed analysis and scenario modeling, and Weeks 7-8 for strategic recommendations and implementation roadmap with board-ready deliverables." },
+    ],
+    communications: [
+      { id: "c1", date: "Mar 19, 2026", from: "Michael Brown", to: "Procurement Team", subject: "Timeline flexibility question", message: "We noticed the aggressive timeline in the RFP. Is there any flexibility on the completion date if we can demonstrate superior methodology and outcomes?", type: "question" },
+      { id: "c2", date: "Mar 19, 2026", from: "Sarah Chen", to: "Michael Brown", subject: "RE: Timeline flexibility question", message: "We have some flexibility on the timeline for proposals that demonstrate exceptional value. Please note any timeline variations clearly in your proposal.", type: "response" },
+    ],
+    activityLog: [
+      { id: "a1", action: "Submission received", timestamp: "Mar 20, 2026 12:05", user: "System" },
+      { id: "a2", action: "Documents uploaded (6 files)", timestamp: "Mar 20, 2026 12:00", user: "Michael Brown" },
+      { id: "a3", action: "Questionnaire completed", timestamp: "Mar 20, 2026 11:50", user: "Michael Brown" },
+      { id: "a4", action: "Timeline clarification received", timestamp: "Mar 19, 2026 15:45", user: "Sarah Chen" },
+      { id: "a5", action: "Timeline inquiry submitted", timestamp: "Mar 19, 2026 10:30", user: "Michael Brown" },
+      { id: "a6", action: "Case studies uploaded", timestamp: "Mar 19, 2026 09:15", user: "Michael Brown" },
+      { id: "a7", action: "RFP documents reviewed", timestamp: "Mar 15, 2026 14:00", user: "Michael Brown" },
+      { id: "a8", action: "Invitation accepted", timestamp: "Mar 10, 2026 16:20", user: "Michael Brown" },
     ],
   },
   {
@@ -989,7 +1031,7 @@ export default function TenderDetailPage() {
   // Submission detail modal
   const [submissionModalOpen, setSubmissionModalOpen] = useState(false)
   const [selectedSubmission, setSelectedSubmission] = useState<typeof submissionsData[0] | null>(null)
-  const [submissionModalTab, setSubmissionModalTab] = useState<'overview' | 'documents' | 'questionnaire' | 'scores'>('overview')
+  const [submissionModalTab, setSubmissionModalTab] = useState<'overview' | 'documents' | 'questionnaire' | 'scores' | 'communications' | 'activity'>('overview')
   
   const handleOpenSubmission = (submission: typeof submissionsData[0]) => {
     setSelectedSubmission(submission)
@@ -1048,6 +1090,26 @@ export default function TenderDetailPage() {
       lines.push(`-------------------`)
       submission.documents.forEach(doc => {
         lines.push(`- ${doc.name} (${doc.size})`)
+      })
+      lines.push(``)
+    }
+
+    if (submission.communications && submission.communications.length > 0) {
+      lines.push(`COMMUNICATION HISTORY`)
+      lines.push(`---------------------`)
+      submission.communications.forEach((comm) => {
+        lines.push(`[${comm.date}] ${comm.type.toUpperCase()}: ${comm.subject}`)
+        lines.push(`From: ${comm.from} | To: ${comm.to}`)
+        lines.push(`${comm.message}`)
+        lines.push(``)
+      })
+    }
+
+    if (submission.activityLog && submission.activityLog.length > 0) {
+      lines.push(`ACTIVITY LOG`)
+      lines.push(`------------`)
+      submission.activityLog.forEach((activity) => {
+        lines.push(`[${activity.timestamp}] ${activity.action} (by ${activity.user})`)
       })
     }
 
@@ -3724,7 +3786,7 @@ export default function TenderDetailPage() {
               {/* Tabs */}
               <div className="border-b border-border px-6">
                 <div className="flex gap-8">
-                  {(['overview', 'questionnaire', 'documents', 'scores'] as const).map((tab) => (
+                  {(['overview', 'questionnaire', 'documents', 'scores', 'communications', 'activity'] as const).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setSubmissionModalTab(tab)}
@@ -3880,6 +3942,68 @@ export default function TenderDetailPage() {
                       </>
                     ) : (
                       <p className="text-sm text-text-muted text-center py-8">No scores available</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Communications Tab */}
+                {submissionModalTab === 'communications' && (
+                  <div className="space-y-4">
+                    {selectedSubmission.communications && selectedSubmission.communications.length > 0 ? (
+                      selectedSubmission.communications.map((comm) => (
+                        <div key={comm.id} className="border border-border rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <p className="text-sm font-semibold text-text-primary">{comm.subject}</p>
+                              <p className="text-xs text-text-muted mt-0.5">
+                                {comm.from} &rarr; {comm.to}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className={cn(
+                                'text-xs',
+                                comm.type === 'question' && 'bg-blue-50 text-blue-700 border-blue-200',
+                                comm.type === 'response' && 'bg-green-50 text-green-700 border-green-200',
+                                comm.type === 'message' && 'bg-gray-50 text-gray-700 border-gray-200',
+                              )}>
+                                {comm.type.charAt(0).toUpperCase() + comm.type.slice(1)}
+                              </Badge>
+                              <span className="text-xs text-text-muted">{comm.date}</span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-text-secondary leading-relaxed">{comm.message}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-text-muted text-center py-8">No communications recorded</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Activity Tab */}
+                {submissionModalTab === 'activity' && (
+                  <div className="space-y-1">
+                    {selectedSubmission.activityLog && selectedSubmission.activityLog.length > 0 ? (
+                      <div className="relative">
+                        <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-border" />
+                        {selectedSubmission.activityLog.map((activity, idx) => (
+                          <div key={activity.id} className="relative flex items-start gap-4 py-2">
+                            <div className={cn(
+                              "relative z-10 w-4 h-4 rounded-full border-2 flex-shrink-0",
+                              idx === 0 ? "bg-brand-green border-brand-green" : "bg-background border-border"
+                            )} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-text-primary">{activity.action}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs text-text-muted">{activity.timestamp}</span>
+                                <span className="text-xs text-text-muted">by {activity.user}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-text-muted text-center py-8">No activity recorded</p>
                     )}
                   </div>
                 )}
