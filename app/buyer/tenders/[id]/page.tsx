@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -3625,6 +3626,225 @@ export default function TenderDetailPage() {
         )}
 
       {/* Approval Modal */}
+      {/* Submission Detail Modal */}
+      <Dialog open={submissionModalOpen} onOpenChange={setSubmissionModalOpen}>
+        <DialogContent 
+          className="flex flex-col p-0 gap-0"
+          style={{ width: '1000px', maxWidth: '95vw', maxHeight: '85vh' }}
+        >
+          {selectedSubmission && (
+            <>
+              <DialogHeader className="px-6 py-4 border-b border-border">
+                <div className="flex items-start justify-between w-full">
+                  <div>
+                    <DialogTitle className="text-xl">{selectedSubmission.supplierName}</DialogTitle>
+                    <DialogDescription className="mt-1">
+                      Submitted {selectedSubmission.submittedDate}
+                    </DialogDescription>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'text-sm',
+                      selectedSubmission.status === 'under_review' && 'bg-blue-100 text-blue-700 border-blue-200',
+                      selectedSubmission.status === 'evaluated' && 'bg-emerald-100 text-emerald-700 border-emerald-300',
+                      selectedSubmission.status === 'pending' && 'bg-gray-100 text-gray-700 border-gray-200',
+                    )}
+                  >
+                    {selectedSubmission.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </Badge>
+                </div>
+              </DialogHeader>
+
+              {/* Tabs */}
+              <div className="border-b border-border px-6">
+                <div className="flex gap-8">
+                  {(['overview', 'questionnaire', 'documents', 'scores'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setSubmissionModalTab(tab)}
+                      className={cn(
+                        'py-3 px-1 text-sm font-medium border-b-2 transition-colors',
+                        submissionModalTab === tab
+                          ? 'border-brand-green text-brand-green'
+                          : 'border-transparent text-text-secondary hover:text-text-primary'
+                      )}
+                    >
+                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tab Content */}
+              <div className="flex-1 overflow-y-auto px-6 py-4">
+                {/* Overview Tab */}
+                {submissionModalTab === 'overview' && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Contact Information</h4>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-text-muted">Name</p>
+                            <p className="font-medium text-text-primary">{selectedSubmission.keyContact}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-text-muted">Email</p>
+                            <p className="font-medium text-text-primary">{selectedSubmission.keyContactEmail}</p>
+                          </div>
+                          {selectedSubmission.keyContactPhone && (
+                            <div>
+                              <p className="text-xs text-text-muted">Phone</p>
+                              <p className="font-medium text-text-primary">{selectedSubmission.keyContactPhone}</p>
+                            </div>
+                          )}
+                          {selectedSubmission.companyAddress && (
+                            <div>
+                              <p className="text-xs text-text-muted">Address</p>
+                              <p className="font-medium text-text-primary">{selectedSubmission.companyAddress}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Proposal Details</h4>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-text-muted">Proposed Value</p>
+                            <p className="font-medium text-text-primary">${selectedSubmission.proposedValue.toLocaleString()}</p>
+                          </div>
+                          {selectedSubmission.totalHours && (
+                            <div>
+                              <p className="text-xs text-text-muted">Total Hours</p>
+                              <p className="font-medium text-text-primary">{selectedSubmission.totalHours} hours</p>
+                            </div>
+                          )}
+                          {selectedSubmission.completionDate && (
+                            <div>
+                              <p className="text-xs text-text-muted">Completion Date</p>
+                              <p className="font-medium text-text-primary">{selectedSubmission.completionDate}</p>
+                            </div>
+                          )}
+                          {selectedSubmission.weightedScore && (
+                            <div>
+                              <p className="text-xs text-text-muted">Overall Score</p>
+                              <p className="font-medium text-text-primary">{selectedSubmission.weightedScore}/100</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Questionnaire Tab */}
+                {submissionModalTab === 'questionnaire' && (
+                  <div className="space-y-4">
+                    <div className="mb-4">
+                      <p className="text-sm text-text-muted mb-4">Responses to evaluation questions:</p>
+                    </div>
+                    {selectedSubmission.questionnaireResponses && selectedSubmission.questionnaireResponses.length > 0 ? (
+                      selectedSubmission.questionnaireResponses.map((qr, idx) => (
+                        <div key={idx} className="border border-border rounded-lg p-4">
+                          <p className="text-sm font-semibold text-text-primary mb-2">
+                            Q{idx + 1}: {qr.question}
+                          </p>
+                          <p className="text-sm text-text-secondary leading-relaxed">
+                            {qr.answer}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-text-muted text-center py-8">No questionnaire responses submitted</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Documents Tab */}
+                {submissionModalTab === 'documents' && (
+                  <div className="space-y-3">
+                    {selectedSubmission.documents && selectedSubmission.documents.length > 0 ? (
+                      selectedSubmission.documents.map((doc, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 bg-surface rounded border border-border hover:bg-surface-hover transition-colors">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-4 w-4 text-text-muted" />
+                            <div>
+                              <p className="text-sm font-medium text-text-primary">{doc.name}</p>
+                              <p className="text-xs text-text-muted">{doc.size}</p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" className="h-7 px-2">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-text-muted text-center py-8">No documents submitted</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Scores Tab */}
+                {submissionModalTab === 'scores' && (
+                  <div className="space-y-4">
+                    {selectedSubmission.scores && Object.entries(selectedSubmission.scores).length > 0 ? (
+                      <>
+                        {Object.entries(selectedSubmission.scores).map(([criterion, score]) => (
+                          <div key={criterion} className="space-y-1">
+                            <div className="flex justify-between items-center mb-1">
+                              <p className="text-sm font-medium text-text-primary">
+                                {criterion.charAt(0).toUpperCase() + criterion.slice(1)}
+                              </p>
+                              <p className="text-sm font-semibold text-brand-green">{score}/100</p>
+                            </div>
+                            <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
+                              <div 
+                                className="bg-brand-green h-full transition-all"
+                                style={{ width: `${score}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                        <div className="mt-6 pt-6 border-t border-border">
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm font-semibold text-text-primary">Weighted Score</p>
+                            <p className="text-2xl font-bold text-brand-green">{selectedSubmission.weightedScore}/100</p>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-text-muted text-center py-8">No scores available</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-surface">
+                <Button
+                  variant="outline"
+                  onClick={() => setSubmissionModalOpen(false)}
+                >
+                  Close
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSubmissionModalOpen(false)
+                      router.push(`/buyer/tenders/${tenderData.id}/submissions/${selectedSubmission.id}`)
+                    }}
+                  >
+                    View Full Details
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <ApprovalRequestModal
         open={showApprovalModal}
         onOpenChange={setShowApprovalModal}
