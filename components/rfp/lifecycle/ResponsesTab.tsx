@@ -27,7 +27,6 @@ import {
   MoreHorizontal,
   Eye,
   Star,
-  MessageSquare,
   FileText,
   Clock,
   DollarSign,
@@ -447,10 +446,6 @@ export function ResponsesTab({
                       <DropdownMenuItem onClick={() => onScheduleInterview(response.id)}>
                         <Calendar className="h-4 w-4 mr-2" />
                         Schedule Interview
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onRequestClarification(response.id)}>
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Request Clarification
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => onShortlist([response.id])}>
