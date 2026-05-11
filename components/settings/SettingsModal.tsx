@@ -174,7 +174,7 @@ export function SettingsModal({ open, onOpenChange }: SettingsModalProps) {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent 
           className="flex flex-col h-[80vh] p-0 gap-0"
-          style={{ width: '90vw', maxWidth: '90vw' }}
+          style={{ width: '1500px', maxWidth: '90vw' }}
         >
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
             <DialogTitle>Settings</DialogTitle>
