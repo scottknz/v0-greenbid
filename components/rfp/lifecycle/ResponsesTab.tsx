@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   Search,
-  Filter,
   MoreHorizontal,
   Eye,
   Star,
@@ -150,68 +149,73 @@ export function ResponsesTab({
     pending: responses.filter(r => r.status === 'submitted' || r.status === 'clarifications_provided').length,
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-border bg-background">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <FileText className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
-                <p className="text-sm text-text-muted">Total Responses</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border bg-background">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-brand-green-light flex items-center justify-center">
-                <Star className="h-5 w-5 text-brand-green" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-text-primary">{stats.shortlisted}</p>
-                <p className="text-sm text-text-muted">Shortlisted</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border bg-background">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                <CheckCircle className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-text-primary">{stats.evaluated}</p>
-                <p className="text-sm text-text-muted">Evaluated</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border bg-background">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-text-primary">{stats.pending}</p>
-                <p className="text-sm text-text-muted">Pending Review</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+  // Filter pills config — mirrors the old summary cards
+  const filterPills = [
+    { key: 'all',         label: 'All',            count: stats.total },
+    { key: 'shortlisted', label: 'Shortlisted',     count: stats.shortlisted },
+    { key: 'evaluated',   label: 'Evaluated',       count: stats.evaluated },
+    { key: 'pending',     label: 'Pending Review',  count: stats.pending },
+  ] as const;
 
-      {/* Filters and Actions */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-surface p-4 rounded-lg border border-border">
-        <div className="flex flex-1 items-center gap-3">
-          <div className="relative flex-1 max-w-sm">
+  // Map pill keys to the statusFilter values used by the existing filter logic
+  const pillToFilter: Record<string, ResponseStatus | 'all'> = {
+    all:         'all',
+    shortlisted: 'shortlisted',
+    evaluated:   'all',   // evaluated spans multiple statuses — handled below
+    pending:     'submitted',
+  };
+
+  const [activePill, setActivePill] = useState<'all' | 'shortlisted' | 'evaluated' | 'pending'>('all');
+
+  const handlePillClick = (pill: typeof activePill) => {
+    setActivePill(pill);
+    if (pill === 'evaluated') {
+      setStatusFilter('all');
+    } else {
+      setStatusFilter(pillToFilter[pill] as ResponseStatus | 'all');
+    }
+  };
+
+  // Extra filter for 'evaluated' pill
+  const pillFilteredResponses = activePill === 'evaluated'
+    ? responses.filter(r => r.evaluationStatus === 'complete')
+    : responses;
+
+  return (
+    <div className="space-y-4">
+      {/* Filter Pills + Search Row */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        {/* Pills */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {filterPills.map(pill => (
+            <button
+              key={pill.key}
+              onClick={() => handlePillClick(pill.key as typeof activePill)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium transition-colors border',
+                activePill === pill.key
+                  ? 'bg-brand-green text-white border-brand-green'
+                  : 'bg-background text-text-secondary border-border hover:border-brand-green hover:text-brand-green'
+              )}
+            >
+              {pill.label}
+              <span
+                className={cn(
+                  'rounded-full px-1.5 py-0.5 text-xs font-semibold',
+                  activePill === pill.key
+                    ? 'bg-white/20 text-white'
+                    : 'bg-surface text-text-muted'
+                )}
+              >
+                {pill.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Search + Sort (right side) */}
+        <div className="flex items-center gap-3 flex-1 sm:flex-none justify-end">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
             <Input
               placeholder="Search suppliers..."
@@ -223,33 +227,11 @@ export function ResponsesTab({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2 border-border">
-                <Filter className="h-4 w-4" />
-                {statusFilter === 'all' ? 'All Status' : RESPONSE_STATUS_LABELS[statusFilter]}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => setStatusFilter('all')}>
-                All Status
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              {Object.entries(RESPONSE_STATUS_LABELS).map(([key, label]) => (
-                <DropdownMenuItem
-                  key={key}
-                  onClick={() => setStatusFilter(key as ResponseStatus)}
-                >
-                  {label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2 border-border">
                 <ArrowUpDown className="h-4 w-4" />
                 Sort
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setSortBy('date')}>
                 By Date
               </DropdownMenuItem>
@@ -261,8 +243,6 @@ export function ResponsesTab({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-        <div className="flex items-center gap-2">
           {selectedResponses.size > 0 && (
             <>
               <span className="text-sm text-text-secondary">
@@ -274,7 +254,7 @@ export function ResponsesTab({
                 className="bg-brand-green hover:bg-brand-green-mid text-white gap-2"
               >
                 <Star className="h-4 w-4" />
-                Shortlist Selected
+                Shortlist
               </Button>
             </>
           )}
