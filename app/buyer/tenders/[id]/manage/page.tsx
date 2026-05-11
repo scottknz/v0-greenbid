@@ -5,6 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   ArrowLeft,
   FileText,
@@ -12,6 +15,13 @@ import {
   Scale,
   Trophy,
   CheckCircle2,
+  Mail,
+  Phone,
+  Building2,
+  Calendar,
+  DollarSign,
+  Clock,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RFPProgressBar } from '@/components/rfp/RFPProgressBar';
@@ -88,6 +98,7 @@ export default function TenderManagePage() {
   const [responses, setResponses] = useState<RFPResponse[]>(mockResponses);
   const [interviews, setInterviews] = useState<RFPInterview[]>(mockInterviews);
   const [selectedResponse, setSelectedResponse] = useState<RFPResponse | null>(null);
+  const [responseModalOpen, setResponseModalOpen] = useState(false);
   const [award, setAward] = useState<RFPAward | undefined>(undefined);
   const [communications, setCommunications] = useState<PostAwardCommunication[]>([]);
 
@@ -97,8 +108,7 @@ export default function TenderManagePage() {
   // Handlers
   const handleViewResponse = (response: RFPResponse) => {
     setSelectedResponse(response);
-    // Navigate to the submission detail page
-    router.push(`/buyer/tenders/${rfpId}/submissions/${response.id}`);
+    setResponseModalOpen(true);
   };
 
   const handleShortlist = (responseIds: string[]) => {
@@ -537,6 +547,211 @@ export default function TenderManagePage() {
           />
         )}
       </div>
+
+      {/* Submission Detail Modal */}
+      <Dialog open={responseModalOpen} onOpenChange={setResponseModalOpen}>
+        <DialogContent 
+          className="flex flex-col p-0 gap-0"
+          style={{ width: '900px', maxWidth: '95vw', maxHeight: '85vh' }}
+        >
+          {selectedResponse && (
+            <>
+              <DialogHeader className="px-6 py-4 border-b border-border">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="h-12 w-12 border-2 border-brand-green/20">
+                      <AvatarFallback className="bg-brand-green-light text-brand-green font-semibold">
+                        {selectedResponse.supplierName.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <DialogTitle className="text-xl">{selectedResponse.supplierName}</DialogTitle>
+                      <DialogDescription className="mt-1">
+                        Submitted {new Date(selectedResponse.submittedAt).toLocaleDateString('en-US', { 
+                          month: 'short', day: 'numeric', year: 'numeric' 
+                        })}
+                      </DialogDescription>
+                    </div>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'text-sm',
+                      selectedResponse.status === 'shortlisted' && 'bg-purple-100 text-purple-700 border-purple-200',
+                      selectedResponse.status === 'awarded' && 'bg-green-100 text-green-700 border-green-200',
+                      selectedResponse.status === 'contract_agreed' && 'bg-emerald-100 text-emerald-700 border-emerald-300',
+                      selectedResponse.status === 'submitted' && 'bg-blue-100 text-blue-700 border-blue-200',
+                      selectedResponse.status === 'evaluated' && 'bg-amber-100 text-amber-700 border-amber-200',
+                    )}
+                  >
+                    {selectedResponse.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </Badge>
+                </div>
+              </DialogHeader>
+
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+                {/* Contact Information */}
+                <div>
+                  <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Contact Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center gap-3 text-sm">
+                      <Users className="h-4 w-4 text-text-muted" />
+                      <div>
+                        <p className="text-text-muted text-xs">Key Contact</p>
+                        <p className="font-medium text-text-primary">{selectedResponse.contactName || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <Mail className="h-4 w-4 text-text-muted" />
+                      <div>
+                        <p className="text-text-muted text-xs">Email</p>
+                        <p className="font-medium text-text-primary">{selectedResponse.contactEmail || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <Phone className="h-4 w-4 text-text-muted" />
+                      <div>
+                        <p className="text-text-muted text-xs">Phone</p>
+                        <p className="font-medium text-text-primary">{selectedResponse.contactPhone || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <Building2 className="h-4 w-4 text-text-muted" />
+                      <div>
+                        <p className="text-text-muted text-xs">Company</p>
+                        <p className="font-medium text-text-primary">{selectedResponse.supplierName}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pricing Summary */}
+                <div>
+                  <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Pricing Summary</h4>
+                  <Card className="border-border">
+                    <CardContent className="p-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-xs text-text-muted">Total Price</p>
+                          <p className="text-xl font-bold text-text-primary">
+                            ${(selectedResponse.priceItems?.reduce((sum, item) => sum + (item.totalPrice || 0), 0) || 0).toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-text-muted">Evaluation Score</p>
+                          <p className="text-xl font-bold text-text-primary">
+                            {selectedResponse.totalScore !== undefined ? `${selectedResponse.totalScore}/100` : 'Not scored'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-text-muted">Price Items</p>
+                          <p className="text-xl font-bold text-text-primary">
+                            {selectedResponse.priceItems?.length || 0}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Price Breakdown */}
+                {selectedResponse.priceItems && selectedResponse.priceItems.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Price Breakdown</h4>
+                    <div className="border border-border rounded-lg overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead className="bg-surface">
+                          <tr className="border-b border-border">
+                            <th className="px-4 py-2 text-left font-medium text-text-secondary">Item</th>
+                            <th className="px-4 py-2 text-right font-medium text-text-secondary">Qty</th>
+                            <th className="px-4 py-2 text-right font-medium text-text-secondary">Unit Price</th>
+                            <th className="px-4 py-2 text-right font-medium text-text-secondary">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {selectedResponse.priceItems.map((item, idx) => (
+                            <tr key={idx} className="hover:bg-surface-hover">
+                              <td className="px-4 py-2 text-text-primary">{item.description || `Item ${idx + 1}`}</td>
+                              <td className="px-4 py-2 text-right text-text-secondary">{item.quantity || 1}</td>
+                              <td className="px-4 py-2 text-right text-text-secondary">${(item.unitPrice || 0).toLocaleString()}</td>
+                              <td className="px-4 py-2 text-right font-medium text-text-primary">${(item.totalPrice || 0).toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Question Responses */}
+                {selectedResponse.questionResponses && selectedResponse.questionResponses.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Questionnaire Responses</h4>
+                    <div className="space-y-3">
+                      {selectedResponse.questionResponses.slice(0, 5).map((qr, idx) => (
+                        <div key={idx} className="p-3 bg-surface rounded-lg border border-border">
+                          <p className="text-xs text-text-muted mb-1">Question {idx + 1}</p>
+                          <p className="text-sm text-text-primary">{qr.answer}</p>
+                        </div>
+                      ))}
+                      {selectedResponse.questionResponses.length > 5 && (
+                        <p className="text-sm text-text-muted text-center">
+                          + {selectedResponse.questionResponses.length - 5} more responses
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Attachments */}
+                {selectedResponse.attachments && selectedResponse.attachments.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Attachments</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {selectedResponse.attachments.map((att, idx) => (
+                        <div key={idx} className="flex items-center gap-2 p-2 bg-surface rounded border border-border">
+                          <FileText className="h-4 w-4 text-text-muted" />
+                          <span className="text-sm text-text-primary truncate">{att.fileName}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Actions */}
+              <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-surface">
+                <Button
+                  variant="outline"
+                  onClick={() => setResponseModalOpen(false)}
+                >
+                  Close
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setResponseModalOpen(false);
+                      router.push(`/buyer/tenders/${rfpId}/submissions/${selectedResponse.id}`);
+                    }}
+                  >
+                    View Full Details
+                  </Button>
+                  <Button
+                    className="bg-brand-green hover:bg-brand-green-dark text-white"
+                    onClick={() => {
+                      handleShortlist([selectedResponse.id]);
+                      setResponseModalOpen(false);
+                    }}
+                  >
+                    Add to Shortlist
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
