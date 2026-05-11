@@ -5,8 +5,6 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
-import Image from 'next/image';
 import {
   ArrowLeft,
   FileText,
@@ -355,19 +353,11 @@ export default function TenderManagePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header — matches RFP create flow */}
+      {/* Header */}
       <div className="border-b border-border bg-background">
         <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Image
-                src="/greenbid-logo-green.png"
-                alt="Greenbid"
-                width={100}
-                height={28}
-                className="h-7 w-auto"
-              />
-              <div className="h-6 w-px bg-border" />
               <Button
                 variant="ghost"
                 size="sm"
