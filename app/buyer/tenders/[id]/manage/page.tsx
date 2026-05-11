@@ -97,8 +97,8 @@ export default function TenderManagePage() {
   // Handlers
   const handleViewResponse = (response: RFPResponse) => {
     setSelectedResponse(response);
-    // Could open a detail modal or navigate to detail page
-    console.log('[v0] View response:', response.supplierName);
+    // Navigate to the submission detail page
+    router.push(`/buyer/tenders/${rfpId}/submissions/${response.id}`);
   };
 
   const handleShortlist = (responseIds: string[]) => {
