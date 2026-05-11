@@ -997,6 +997,69 @@ export default function TenderDetailPage() {
     setSubmissionModalOpen(true)
   }
 
+  const handleDownloadSubmission = (submission: typeof submissionsData[0]) => {
+    // Build a plain-text summary of the full submission
+    const lines: string[] = []
+
+    lines.push(`SUBMISSION SUMMARY`)
+    lines.push(`==================`)
+    lines.push(`Supplier: ${submission.supplierName}`)
+    lines.push(`Submitted: ${submission.submittedDate}`)
+    lines.push(`Status: ${submission.status.replace('_', ' ')}`)
+    lines.push(``)
+
+    lines.push(`CONTACT INFORMATION`)
+    lines.push(`-------------------`)
+    lines.push(`Name: ${submission.keyContact}`)
+    lines.push(`Email: ${submission.keyContactEmail}`)
+    if (submission.keyContactPhone) lines.push(`Phone: ${submission.keyContactPhone}`)
+    if (submission.companyAddress) lines.push(`Address: ${submission.companyAddress}`)
+    lines.push(``)
+
+    lines.push(`PROPOSAL DETAILS`)
+    lines.push(`----------------`)
+    lines.push(`Proposed Value: $${submission.proposedValue.toLocaleString()}`)
+    if (submission.totalHours) lines.push(`Total Hours: ${submission.totalHours}`)
+    if (submission.completionDate) lines.push(`Completion Date: ${submission.completionDate}`)
+    if (submission.weightedScore) lines.push(`Overall Score: ${submission.weightedScore}/100`)
+    lines.push(``)
+
+    if (submission.scores) {
+      lines.push(`EVALUATION SCORES`)
+      lines.push(`-----------------`)
+      Object.entries(submission.scores).forEach(([criterion, score]) => {
+        lines.push(`${criterion.charAt(0).toUpperCase() + criterion.slice(1)}: ${score}/100`)
+      })
+      lines.push(``)
+    }
+
+    if (submission.questionnaireResponses && submission.questionnaireResponses.length > 0) {
+      lines.push(`QUESTIONNAIRE RESPONSES`)
+      lines.push(`-----------------------`)
+      submission.questionnaireResponses.forEach((qr, idx) => {
+        lines.push(`Q${idx + 1}: ${qr.question}`)
+        lines.push(`A: ${qr.answer}`)
+        lines.push(``)
+      })
+    }
+
+    if (submission.documents && submission.documents.length > 0) {
+      lines.push(`SUBMITTED DOCUMENTS`)
+      lines.push(`-------------------`)
+      submission.documents.forEach(doc => {
+        lines.push(`- ${doc.name} (${doc.size})`)
+      })
+    }
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${submission.supplierName.replace(/\s+/g, '-')}-submission.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   // RFP Lifecycle phases configuration
   const lifecyclePhases = [
     { key: 'draft', label: 'Preparation', icon: Pencil },
@@ -3634,25 +3697,27 @@ export default function TenderDetailPage() {
         >
           {selectedSubmission && (
             <>
-              <DialogHeader className="px-6 py-4 border-b border-border">
-                <div className="flex items-start justify-between w-full">
-                  <div>
-                    <DialogTitle className="text-xl">{selectedSubmission.supplierName}</DialogTitle>
-                    <DialogDescription className="mt-1">
-                      Submitted {selectedSubmission.submittedDate}
-                    </DialogDescription>
+              <DialogHeader className="px-6 pt-5 pb-4 border-b border-border pr-14">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <DialogTitle className="text-xl leading-snug">{selectedSubmission.supplierName}</DialogTitle>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <DialogDescription className="text-sm">
+                        Submitted {selectedSubmission.submittedDate}
+                      </DialogDescription>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'text-xs',
+                          selectedSubmission.status === 'under_review' && 'bg-blue-100 text-blue-700 border-blue-200',
+                          selectedSubmission.status === 'evaluated' && 'bg-emerald-100 text-emerald-700 border-emerald-300',
+                          selectedSubmission.status === 'pending' && 'bg-gray-100 text-gray-700 border-gray-200',
+                        )}
+                      >
+                        {selectedSubmission.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </Badge>
+                    </div>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      'text-sm',
-                      selectedSubmission.status === 'under_review' && 'bg-blue-100 text-blue-700 border-blue-200',
-                      selectedSubmission.status === 'evaluated' && 'bg-emerald-100 text-emerald-700 border-emerald-300',
-                      selectedSubmission.status === 'pending' && 'bg-gray-100 text-gray-700 border-gray-200',
-                    )}
-                  >
-                    {selectedSubmission.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                  </Badge>
                 </div>
               </DialogHeader>
 
@@ -3829,6 +3894,14 @@ export default function TenderDetailPage() {
                   Close
                 </Button>
                 <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => handleDownloadSubmission(selectedSubmission)}
+                  >
+                    <Download className="h-4 w-4" />
+                    Download Submission
+                  </Button>
                   <Button
                     variant="outline"
                     onClick={() => {
