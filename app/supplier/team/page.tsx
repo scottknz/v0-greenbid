@@ -203,7 +203,7 @@ export default function SupplierTeamPage() {
                     {member.roleType}
                   </Badge>
                 </td>
-                <td className="px-6 py-4 text-sm text-text-primary">
+                <td className="px-6 py-4 text-sm text-text-primary border-r-0">
                   <Badge variant="outline">{member.assignedRFPs.length}</Badge>
                 </td>
                 <td className="px-6 py-4 text-sm text-text-secondary">
