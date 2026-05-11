@@ -921,6 +921,28 @@ export default function TenderDetailPage() {
     }
     setCurrentApproval(newApproval)
     setIsEditingRFP(false)
+    
+    // Create approval notification message thread
+    const approvalMessage = `Approval requested for RFP: ${tenderData.name}\n\n${data.message || 'No additional message provided.'}`
+    const newThread: QaThread = {
+      id: `t${Date.now()}`,
+      subject: `Approval Requested: ${tenderData.name}`,
+      visibility: 'private' as const,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      participants: data.approverIds,
+      messages: [{
+        id: `m${Date.now()}`,
+        threadId: `t${Date.now()}`,
+        senderId: 'user-sarah',
+        senderName: 'Sarah Chen',
+        senderType: 'buyer' as const,
+        content: approvalMessage,
+        attachments: [],
+        timestamp: new Date().toISOString(),
+      }],
+    }
+    setQaThreads(prev => [newThread, ...prev])
   }
 
   const toggleActivityRow = (id: string) => {

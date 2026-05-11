@@ -263,6 +263,33 @@ export default function RFPDetailPage() {
     }
     setCurrentApproval(newApproval)
     setShowApprovalModal(false)
+    
+    // Create approval notification message thread
+    const approvalMessage = `Approval requested for proposal submission: ${rfp.title}\n\n${data.message || 'No additional message provided.'}`
+    const newThread: MessageThread = {
+      id: `t${Date.now()}`,
+      subject: `Approval Requested: ${rfp.title}`,
+      visibility: 'private',
+      status: 'awaiting',
+      isRead: true,
+      isStarred: false,
+      isArchived: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      lastSender: 'John Smith',
+      lastSenderType: 'supplier',
+      participants: data.approverIds,
+      messages: [{
+        id: `m${Date.now()}`,
+        senderId: 'supplier',
+        senderName: 'John Smith',
+        senderType: 'supplier',
+        content: approvalMessage,
+        attachments: [],
+        timestamp: new Date().toISOString(),
+      }],
+    }
+    setMessageThreads(prev => [newThread, ...prev])
   }
   
   // Calculate days until deadline
