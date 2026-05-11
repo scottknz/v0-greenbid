@@ -138,30 +138,30 @@ export default function TeamPage() {
       </div>
 
       {/* Team Members Table */}
-      <div className="border border-border rounded-lg overflow-hidden bg-background">
-        <table className="w-full table-fixed">
+      <div className="border border-border rounded-lg bg-background">
+        <table className="w-full">
           <thead className="bg-surface border-b border-border">
             <tr>
-              <th className="w-[220px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Name
               </th>
-              <th className="w-[200px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Contact
               </th>
-              <th className="w-[120px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Department
               </th>
-              <th className="w-[100px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Role
               </th>
-              <th className="w-[80px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 RFPs
               </th>
-              <th className="w-[120px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Last Activity
               </th>
-              <th className="w-[100px] px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                Actions
+              <th className="w-16 px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                
               </th>
             </tr>
           </thead>
