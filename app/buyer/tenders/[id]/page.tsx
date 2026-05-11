@@ -69,6 +69,10 @@ import {
   Globe,
   Lock,
   Zap,
+  CheckCircle2,
+  CircleDot,
+  Scale,
+  Trophy,
 } from "lucide-react"
 import { ApprovalRequestModal } from "@/components/approval/ApprovalRequestModal"
 import { ApprovalStatus } from "@/components/approval/ApprovalStatus"
@@ -1488,6 +1492,64 @@ export default function TenderDetailPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          </div>
+        </div>
+
+        {/* RFP Lifecycle Progress Indicator */}
+        <div className="border-b border-[#E5E7EB] bg-[#FAFAFA] -mx-5 px-5 py-4">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
+            {lifecyclePhases.map((phase, index) => {
+              const isCompleted = index < currentPhaseIndex;
+              const isActive = index === currentPhaseIndex;
+              const isUpcoming = index > currentPhaseIndex;
+              const Icon = phase.icon;
+              
+              return (
+                <div key={phase.key} className="flex items-center flex-1 last:flex-none">
+                  {/* Phase indicator */}
+                  <div className="flex flex-col items-center w-full">
+                    <div
+                      className={cn(
+                        'flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200 shrink-0',
+                        isCompleted && 'bg-[#16A34A] text-white',
+                        isActive && 'bg-[#16A34A] text-white ring-4 ring-[#16A34A]/20',
+                        isUpcoming && 'bg-[#F3F4F6] text-[#9CA3AF] border-2 border-[#E5E7EB]'
+                      )}
+                    >
+                      {isCompleted ? (
+                        <CheckCircle2 className="h-5 w-5" />
+                      ) : isActive ? (
+                        <CircleDot className="h-5 w-5" />
+                      ) : (
+                        <Icon className="h-5 w-5" />
+                      )}
+                    </div>
+                    <span
+                      className={cn(
+                        'mt-1.5 text-xs font-medium text-center leading-tight',
+                        isCompleted && 'text-[#16A34A]',
+                        isActive && 'text-[#111827]',
+                        isUpcoming && 'text-[#9CA3AF]'
+                      )}
+                    >
+                      {phase.label}
+                    </span>
+                  </div>
+                  
+                  {/* Connector line */}
+                  {index < lifecyclePhases.length - 1 && (
+                    <div className="flex-1 mx-1 md:mx-3 h-0.5 -mb-8">
+                      <div
+                        className={cn(
+                          'h-full rounded-full transition-colors duration-200',
+                          isCompleted ? 'bg-[#16A34A]' : 'bg-[#E5E7EB]'
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -3504,7 +3566,19 @@ export default function TenderDetailPage() {
                       ) : (
                         filteredActivities.map(activity => {
                           const isSelected = selectedActivityRows.has(activity.id)
-                          return (
+  // RFP Lifecycle phases configuration
+  const lifecyclePhases = [
+    { key: 'draft', label: 'Preparation', icon: FileText },
+    { key: 'accepting_bids', label: 'Accepting Bids', icon: Users },
+    { key: 'under_review', label: 'Evaluation', icon: Scale },
+    { key: 'completed', label: 'Award', icon: Trophy },
+    { key: 'closed', label: 'Closed', icon: CheckCircle2 },
+  ] as const;
+
+  // Get current phase index
+  const currentPhaseIndex = lifecyclePhases.findIndex(p => p.key === tenderData.status) || 0;
+
+  return (
                             <tr
                               key={activity.id}
                               className={`transition-colors ${isSelected ? "bg-[#F0FDF4]" : "hover:bg-[#F9FAFB]"}`}
