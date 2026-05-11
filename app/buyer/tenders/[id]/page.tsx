@@ -920,7 +920,7 @@ export default function TenderDetailPage() {
       status: 'pending',
     }
     setCurrentApproval(newApproval)
-    console.log('[v0] Approval request sent:', newApproval)
+    setIsEditingRFP(false)
   }
 
   const toggleActivityRow = (id: string) => {
@@ -1605,6 +1605,14 @@ export default function TenderDetailPage() {
                 {statusLabel}
               </Badge>
             </div>
+            {currentApproval?.status === 'pending' && (
+              <div className="flex items-center gap-1.5 pt-0.5">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  Waiting for Approval
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-4 text-sm text-[#6B7280]">
               <span>{tenderData.referenceId}</span>
               <span className="text-[#D1D5DB]">|</span>
