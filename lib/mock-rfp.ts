@@ -594,8 +594,56 @@ export const rfpCategories = [
 // In-memory store for RFPs (mock database)
 const rfpStore: Map<string, RFPDocument> = new Map();
 
-// Initialize with sample RFP
-rfpStore.set(sampleDraftRFP.id, sampleDraftRFP);
+// Initialize with sample RFP using tender ID "1" as the key for compatibility
+const rfp1 = { ...sampleDraftRFP, id: '1' };
+rfpStore.set('1', rfp1);
+
+// Create mock RFPs for other tender IDs for edit/view support
+const tenderTitles = [
+  'Comprehensive Scope 3 Value Chain Emissions Analysis',
+  'SBTi Target Setting & Validation Support',
+  'Embodied Carbon Life Cycle Assessment (LCA)',
+  'ISSB (IFRS S1 & S2) Integration & Reporting',
+  'Renewable Energy Procurement & VPPA Structuring',
+  'Sustainable Catering Services',
+  'Electric Vehicle Fleet',
+  'Carbon Offset Program Management & Verification',
+];
+
+// Initialize RFPs for tender IDs 2-8
+for (let i = 2; i <= 8; i++) {
+  const mockRfp: RFPDocument = {
+    id: String(i),
+    title: tenderTitles[i - 1],
+    referenceId: `RFP-2026-${String(i).padStart(3, '0')}`,
+    status: 'draft',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    createdBy: 'system',
+    projectInfo: {
+      projectName: tenderTitles[i - 1],
+      category: 'General',
+      description: `RFP for ${tenderTitles[i - 1]}`,
+      expectedBudget: 250000,
+      budgetCurrency: 'USD',
+      budgetFlexibility: 'flexible',
+      submissionDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      qaStartDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      qaEndDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      expectedStartDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      expectedCompletionDate: new Date(Date.now() + 120 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      primaryContact: 'Contact Person',
+      primaryContactEmail: 'contact@company.com',
+      department: 'Procurement',
+      milestones: [],
+    },
+    sections: [],
+    branding: defaultBranding,
+    toneVoice: defaultToneVoice,
+    versions: [],
+  };
+  rfpStore.set(String(i), mockRfp);
+}
 
 /**
  * Get an RFP by ID
