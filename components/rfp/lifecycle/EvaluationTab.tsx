@@ -464,331 +464,228 @@ export function EvaluationTab({
           )}
         </div>
       ) : (
-        /* Compare & Rank View */
-        <div className="space-y-6">
-          {/* Enhanced Evaluation Matrix with Rank, Criteria, Price, Recommendation */}
-          <Card className="border-border bg-background">
-            <CardHeader className="border-b border-border">
-              <CardTitle className="text-lg">Supplier Comparison Matrix</CardTitle>
-              <p className="text-sm text-text-muted mt-1">Click a supplier row to view detailed score breakdown below</p>
-            </CardHeader>
-            <CardContent className="p-0 overflow-x-auto">
-              <table className="w-full min-w-max">
-                <thead>
-                  <tr className="border-b border-border bg-surface">
-                    <th className="sticky left-0 z-10 px-3 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide bg-surface w-[60px]">
-                      Rank
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide min-w-[160px]">
-                      Supplier
-                    </th>
-                    {criteria.map((criterion) => (
-                      <th
-                        key={criterion.id}
-                        className="px-3 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide whitespace-nowrap"
-                      >
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger className="flex flex-col items-center gap-0.5">
-                              <span className="line-clamp-1 text-xs">{criterion.name}</span>
-                              <span className="text-xs font-normal opacity-70">{criterion.weight}%</span>
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-xs">
-                              <p className="text-sm font-medium">{criterion.name}</p>
-                              <p className="text-xs text-text-muted mt-1">{criterion.description}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </th>
-                    ))}
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Overall
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Price
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {rankings.map((ranking, index) => {
-                    const response = evaluatableResponses.find(r => r.id === ranking.responseId);
-                    const evaluation = evaluations.find(e => e.responseId === ranking.responseId);
-                    const isSelectedRow = selectedCompareId === ranking.responseId;
+        /* Compare & Rank View - Transposed table: Criteria as rows, Suppliers as columns */
+        <div className="space-y-4">
+          {/* Supplier Selector */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-text-secondary">Compare:</span>
+            {rankings.map((ranking, idx) => {
+              const isSelected = compareSelection.includes(ranking.responseId);
+              return (
+                <button
+                  key={ranking.responseId}
+                  onClick={() => {
+                    if (isSelected) {
+                      setCompareSelection(prev => prev.filter(id => id !== ranking.responseId));
+                    } else if (compareSelection.length < 4) {
+                      setCompareSelection(prev => [...prev, ranking.responseId]);
+                    }
+                  }}
+                  className={cn(
+                    'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all border',
+                    isSelected
+                      ? 'bg-brand-green text-white border-brand-green'
+                      : 'bg-background text-text-secondary border-border hover:border-brand-green hover:text-brand-green',
+                    !isSelected && compareSelection.length >= 4 && 'opacity-50 cursor-not-allowed'
+                  )}
+                  disabled={!isSelected && compareSelection.length >= 4}
+                >
+                  {idx === 0 && <Trophy className="h-3.5 w-3.5" />}
+                  <span className="truncate max-w-[100px]">{ranking.supplierName}</span>
+                  <span className={cn('text-xs', isSelected ? 'text-white/70' : 'text-text-muted')}>
+                    {ranking.percentageScore}%
+                  </span>
+                </button>
+              );
+            })}
+            {compareSelection.length > 0 && (
+              <button
+                onClick={() => setCompareSelection([])}
+                className="text-xs text-text-muted hover:text-text-primary ml-2"
+              >
+                Clear
+              </button>
+            )}
+          </div>
 
-                    // Find best score for each criterion to highlight
-                    const getBestScore = (criteriaId: string) => {
-                      let best = 0;
-                      evaluations.forEach(eval_ => {
-                        const s = eval_.scores.find(sc => sc.criteriaId === criteriaId);
-                        if (s && s.score > best) best = s.score;
-                      });
-                      return best;
-                    };
-
-                    return (
-                      <tr
-                        key={ranking.responseId}
-                        onClick={() => setSelectedCompareId(isSelectedRow ? null : ranking.responseId)}
-                        className={cn(
-                          'cursor-pointer transition-colors',
-                          isSelectedRow
-                            ? 'bg-brand-green-light ring-2 ring-inset ring-brand-green'
-                            : 'hover:bg-surface-hover'
-                        )}
-                      >
-                        <td className="sticky left-0 z-10 px-3 py-3 text-center bg-inherit">
-                          {index === 0 ? (
-                            <div className="h-7 w-7 mx-auto rounded-full bg-amber-100 flex items-center justify-center">
-                              <Trophy className="h-3.5 w-3.5 text-amber-600" />
-                            </div>
-                          ) : (
-                            <span className="font-semibold text-text-secondary">{ranking.rank}</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 font-medium text-text-primary">
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-7 w-7 border border-border">
-                              <AvatarFallback className="text-xs bg-surface">
-                                {getInitials(ranking.supplierName)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="truncate">{ranking.supplierName}</span>
-                          </div>
-                        </td>
-                        {criteria.map((criterion) => {
-                          const score = evaluation?.scores.find(s => s.criteriaId === criterion.id);
-                          const rawScore = score?.score ?? null;
-                          const bestScore = getBestScore(criterion.id);
-                          const isBest = rawScore !== null && rawScore === bestScore && bestScore > 0;
-
-                          return (
-                            <td
-                              key={`${ranking.responseId}-${criterion.id}`}
-                              className={cn(
-                                'px-3 py-3 text-center text-sm font-medium whitespace-nowrap',
-                                isBest && 'bg-green-50'
-                              )}
-                            >
-                              {rawScore !== null ? (
-                                <span className={cn('font-bold', isBest ? 'text-green-600' : getScoreColor(rawScore, criterion.maxScore))}>
-                                  {rawScore}
-                                  <span className="text-xs font-normal text-text-muted">/{criterion.maxScore}</span>
-                                </span>
-                              ) : (
-                                <span className="text-text-muted text-xs">—</span>
-                              )}
-                            </td>
-                          );
-                        })}
-                        <td className="px-4 py-3 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                              <div
-                                className={cn('h-full rounded-full', getProgressColor(ranking.percentageScore, 100))}
-                                style={{ width: `${ranking.percentageScore}%` }}
-                              />
-                            </div>
-                            <span className={cn('font-bold text-sm', getScoreColor(ranking.percentageScore, 100))}>
-                              {ranking.percentageScore}%
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <span className="font-medium text-text-primary tabular-nums text-sm">
-                            {formatCurrency(ranking.priceTotal)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              'text-xs',
-                              ranking.recommendation === 'highly_recommended' && 'bg-green-100 text-green-700 border-green-200',
-                              ranking.recommendation === 'recommended' && 'bg-blue-100 text-blue-700 border-blue-200',
-                              ranking.recommendation === 'neutral' && 'bg-gray-100 text-gray-700 border-gray-200',
-                              ranking.recommendation === 'not_recommended' && 'bg-red-100 text-red-700 border-red-200'
-                            )}
-                          >
-                            {ranking.recommendation.replace('_', ' ')}
-                          </Badge>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-
-          {/* Criteria Breakdown — updates when a supplier row is selected above */}
+          {/* Transposed Comparison Table */}
           {(() => {
-            const selectedRanking = selectedCompareId
-              ? rankings.find(r => r.responseId === selectedCompareId)
-              : null;
-            const selectedBreakdownEval = selectedCompareId
-              ? evaluations.find(e => e.responseId === selectedCompareId)
-              : null;
+            // Use selected suppliers or default to top 3
+            const suppliersToCompare = compareSelection.length > 0
+              ? rankings.filter(r => compareSelection.includes(r.responseId))
+              : rankings.slice(0, Math.min(3, rankings.length));
+
+            // Helper to find best score for a criterion among compared suppliers
+            const getBestScoreForCriteria = (criteriaId: string): number => {
+              let best = 0;
+              suppliersToCompare.forEach(ranking => {
+                const eval_ = evaluations.find(e => e.responseId === ranking.responseId);
+                const score = eval_?.scores.find(s => s.criteriaId === criteriaId);
+                if (score && score.score > best) best = score.score;
+              });
+              return best;
+            };
+
+            // Find lowest price among compared
+            const lowestPrice = Math.min(...suppliersToCompare.map(r => r.priceTotal));
 
             return (
               <Card className="border-border bg-background">
-                <CardHeader className="border-b border-border pb-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Score Breakdown by Criteria</CardTitle>
-                      {selectedRanking ? (
-                        <p className="text-sm text-text-muted mt-0.5">
-                          Showing scores for{' '}
-                          <span className="font-semibold text-brand-green">
-                            {selectedRanking.supplierName}
-                          </span>
-                          {' '}— click a different row above to switch, or click again to deselect.
-                        </p>
-                      ) : (
-                        <p className="text-sm text-text-muted mt-0.5">
-                          Click a supplier row above to see their detailed score breakdown.
-                        </p>
-                      )}
-                    </div>
-                    {selectedRanking && (
-                      <div className="text-right shrink-0">
-                        <p className="text-2xl font-bold text-text-primary">
-                          {selectedRanking.percentageScore}%
-                        </p>
-                        <p className="text-xs text-text-muted">Overall score</p>
-                      </div>
-                    )}
-                  </div>
-                </CardHeader>
                 <CardContent className="p-0">
-                  {!selectedRanking ? (
-                    <div className="flex flex-col items-center justify-center py-14 gap-3">
-                      <div className="h-12 w-12 rounded-full bg-surface flex items-center justify-center">
-                        <BarChart3 className="h-6 w-6 text-text-muted" />
-                      </div>
-                      <p className="text-sm font-medium text-text-secondary">No supplier selected</p>
-                      <p className="text-xs text-text-muted">
-                        Click a supplier in the rankings table above to view their score breakdown.
-                      </p>
-                    </div>
-                  ) : (
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-border bg-surface">
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                            Criteria
-                          </th>
-                          <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                            Weight
-                          </th>
-                          <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                            Score
-                          </th>
-                          <th className="px-4 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                            Weighted
-                          </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                            Breakdown
-                          </th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                            Comment
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {criteria.map((criterion) => {
-                          const score = selectedBreakdownEval?.scores.find(
-                            s => s.criteriaId === criterion.id
-                          );
-                          const rawScore = score?.score ?? null;
-                          const weightedScore =
-                            rawScore !== null
-                              ? ((rawScore / criterion.maxScore) * criterion.weight).toFixed(1)
-                              : null;
-                          const barPct =
-                            rawScore !== null ? (rawScore / criterion.maxScore) * 100 : 0;
-
-                          return (
-                            <tr key={criterion.id} className="hover:bg-surface-hover transition-colors">
-                              <td className="px-4 py-3">
-                                <p className="font-medium text-text-primary">{criterion.name}</p>
-                                <p className="text-xs text-text-muted mt-0.5">{criterion.description}</p>
-                              </td>
-                              <td className="px-4 py-3 text-center">
-                                <Badge variant="outline" className="text-xs border-border">
-                                  {criterion.weight}%
-                                </Badge>
-                              </td>
-                              <td className="px-4 py-3 text-center">
-                                {rawScore !== null ? (
-                                  <span className={cn('text-base font-bold', getScoreColor(rawScore, criterion.maxScore))}>
-                                    {rawScore}
-                                    <span className="text-xs font-normal text-text-muted">
-                                      /{criterion.maxScore}
-                                    </span>
-                                  </span>
-                                ) : (
-                                  <span className="text-text-muted text-sm">Not scored</span>
-                                )}
-                              </td>
-                              <td className="px-4 py-3 text-center">
-                                {weightedScore !== null ? (
-                                  <span className="font-semibold text-text-primary">
-                                    {weightedScore}
-                                  </span>
-                                ) : (
-                                  <span className="text-text-muted">-</span>
-                                )}
-                              </td>
-                              <td className="px-4 py-3 w-40">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex-1 h-2 bg-border rounded-full overflow-hidden">
-                                    <div
-                                      className={cn(
-                                        'h-full rounded-full transition-all',
-                                        getProgressColor(barPct, 100)
-                                      )}
-                                      style={{ width: `${barPct}%` }}
-                                    />
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-surface">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide w-[200px]">
+                          Criteria
+                        </th>
+                        <th className="px-3 py-3 text-center text-xs font-semibold text-text-secondary uppercase tracking-wide w-[70px]">
+                          Weight
+                        </th>
+                        {suppliersToCompare.map((ranking, idx) => (
+                          <th key={ranking.responseId} className="px-4 py-3 text-center min-w-[140px]">
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="flex items-center gap-2">
+                                {idx === 0 && rankings[0].responseId === ranking.responseId && (
+                                  <div className="h-5 w-5 rounded-full bg-amber-100 flex items-center justify-center">
+                                    <Trophy className="h-3 w-3 text-amber-600" />
                                   </div>
-                                  <span className="text-xs text-text-muted w-8 text-right tabular-nums">
-                                    {Math.round(barPct)}%
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 max-w-xs">
-                                {score?.comment ? (
-                                  <p className="text-sm text-text-secondary line-clamp-2">
-                                    {score.comment}
-                                  </p>
-                                ) : (
-                                  <span className="text-xs text-text-muted italic">No comment</span>
                                 )}
-                              </td>
-                            </tr>
+                                <Avatar className="h-6 w-6 border border-border">
+                                  <AvatarFallback className="text-[10px] bg-surface">
+                                    {getInitials(ranking.supplierName)}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </div>
+                              <span className="text-xs font-semibold text-text-primary truncate max-w-[120px]">
+                                {ranking.supplierName}
+                              </span>
+                              <span className="text-[10px] text-text-muted">Rank #{ranking.rank}</span>
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {criteria.map((criterion) => {
+                        const bestScore = getBestScoreForCriteria(criterion.id);
+
+                        return (
+                          <tr key={criterion.id} className="hover:bg-surface-hover transition-colors">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-medium text-text-primary text-sm">{criterion.name}</span>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <HelpCircle className="h-3.5 w-3.5 text-text-muted cursor-help shrink-0" />
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right" align="center" className="max-w-xs">
+                                      <p className="text-sm">{criterion.description}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <Badge variant="outline" className="text-xs border-border">
+                                {criterion.weight}%
+                              </Badge>
+                            </td>
+                            {suppliersToCompare.map((ranking) => {
+                              const eval_ = evaluations.find(e => e.responseId === ranking.responseId);
+                              const score = eval_?.scores.find(s => s.criteriaId === criterion.id);
+                              const rawScore = score?.score ?? null;
+                              const isBest = rawScore !== null && rawScore === bestScore && bestScore > 0;
+                              const pct = rawScore !== null ? (rawScore / criterion.maxScore) * 100 : 0;
+
+                              return (
+                                <td
+                                  key={ranking.responseId}
+                                  className={cn(
+                                    'px-4 py-3 text-center',
+                                    isBest && 'bg-green-50'
+                                  )}
+                                >
+                                  {rawScore !== null ? (
+                                    <div className="flex flex-col items-center gap-1">
+                                      <span className={cn('text-lg font-bold', isBest ? 'text-green-600' : getScoreColor(rawScore, criterion.maxScore))}>
+                                        {rawScore}
+                                        <span className="text-xs font-normal text-text-muted">/{criterion.maxScore}</span>
+                                      </span>
+                                      <div className="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                        <div
+                                          className={cn('h-full rounded-full', isBest ? 'bg-green-500' : getProgressColor(pct, 100))}
+                                          style={{ width: `${pct}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <span className="text-text-muted text-xs">—</span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    {/* Summary Rows */}
+                    <tfoot className="border-t-2 border-border">
+                      {/* Overall Score Row */}
+                      <tr className="bg-surface">
+                        <td className="px-4 py-3 font-semibold text-text-primary">Overall Score</td>
+                        <td className="px-3 py-3 text-center">
+                          <Badge variant="outline" className="text-xs border-border">100%</Badge>
+                        </td>
+                        {suppliersToCompare.map((ranking) => {
+                          const isBestOverall = ranking.percentageScore === Math.max(...suppliersToCompare.map(r => r.percentageScore));
+                          return (
+                            <td key={ranking.responseId} className={cn('px-4 py-3 text-center', isBestOverall && 'bg-green-50')}>
+                              <span className={cn('text-xl font-bold', isBestOverall ? 'text-green-600' : getScoreColor(ranking.percentageScore, 100))}>
+                                {ranking.percentageScore}%
+                              </span>
+                            </td>
                           );
                         })}
-                      </tbody>
-                      {/* Footer totals */}
-                      <tfoot>
-                        <tr className="border-t-2 border-border bg-surface">
-                          <td className="px-4 py-3 font-semibold text-text-primary">Total</td>
-                          <td className="px-4 py-3 text-center">
-                            <Badge variant="outline" className="text-xs border-border">100%</Badge>
+                      </tr>
+                      {/* Price Row */}
+                      <tr className="bg-surface">
+                        <td className="px-4 py-3 font-semibold text-text-primary">Total Price</td>
+                        <td className="px-3 py-3 text-center">—</td>
+                        {suppliersToCompare.map((ranking) => {
+                          const isBestPrice = ranking.priceTotal === lowestPrice;
+                          return (
+                            <td key={ranking.responseId} className={cn('px-4 py-3 text-center', isBestPrice && 'bg-green-50')}>
+                              <span className={cn('text-base font-bold tabular-nums', isBestPrice ? 'text-green-600' : 'text-text-primary')}>
+                                {formatCurrency(ranking.priceTotal)}
+                              </span>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                      {/* Recommendation Row */}
+                      <tr className="bg-surface">
+                        <td className="px-4 py-3 font-semibold text-text-primary">Recommendation</td>
+                        <td className="px-3 py-3 text-center">—</td>
+                        {suppliersToCompare.map((ranking) => (
+                          <td key={ranking.responseId} className="px-4 py-3 text-center">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'text-xs',
+                                ranking.recommendation === 'highly_recommended' && 'bg-green-100 text-green-700 border-green-200',
+                                ranking.recommendation === 'recommended' && 'bg-blue-100 text-blue-700 border-blue-200',
+                                ranking.recommendation === 'neutral' && 'bg-gray-100 text-gray-700 border-gray-200',
+                                ranking.recommendation === 'not_recommended' && 'bg-red-100 text-red-700 border-red-200'
+                              )}
+                            >
+                              {ranking.recommendation.replace('_', ' ')}
+                            </Badge>
                           </td>
-                          <td className="px-4 py-3 text-center">—</td>
-                          <td className="px-4 py-3 text-center">
-                            <span className={cn('text-base font-bold', getScoreColor(selectedRanking.percentageScore, 100))}>
-                              {selectedRanking.percentageScore}%
-                            </span>
-                          </td>
-                          <td colSpan={2} className="px-4 py-3" />
-                        </tr>
-                      </tfoot>
-                    </table>
-                  )}
+                        ))}
+                      </tr>
+                    </tfoot>
+                  </table>
                 </CardContent>
               </Card>
             );
