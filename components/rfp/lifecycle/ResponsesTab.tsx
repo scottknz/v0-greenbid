@@ -15,6 +15,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import {
   Search,
   MoreHorizontal,
   Eye,
@@ -30,6 +38,9 @@ import {
   Download,
   Users,
   Calendar,
+  Mail,
+  Phone,
+  Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { RFPResponse, ResponseStatus } from '@/types/rfp';
@@ -71,6 +82,15 @@ export function ResponsesTab({
   const [selectedResponses, setSelectedResponses] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<ResponseStatus | 'all'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'price' | 'score'>('date');
+  
+  // Modal state
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedResponse, setSelectedResponse] = useState<RFPResponse | null>(null);
+  
+  const handleViewDetails = (response: RFPResponse) => {
+    setSelectedResponse(response);
+    setDetailModalOpen(true);
+  };
 
   const filteredResponses = responses
     .filter(r => {
@@ -326,7 +346,7 @@ export function ResponsesTab({
                   'flex items-center gap-4 px-4 py-4 hover:bg-surface-hover transition-colors cursor-pointer',
                   selectedResponses.has(response.id) && 'bg-brand-green-light/30'
                 )}
-                onClick={() => onViewResponse(response)}
+                onClick={() => handleViewDetails(response)}
               >
                 <div className="w-8" onClick={(e) => e.stopPropagation()}>
                   <Checkbox
@@ -420,8 +440,8 @@ export function ResponsesTab({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onViewResponse(response)}>
-                        <Eye className="h-4 w-4 mr-2" />
+                      <DropdownMenuItem onClick={() => handleViewDetails(response)}>
+                        <Eye className="size-4 mr-2" />
                         View Details
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onScheduleInterview(response.id)}>
@@ -457,6 +477,188 @@ export function ResponsesTab({
           </div>
         )}
       </div>
+
+      {/* Submission Detail Modal */}
+      <Dialog open={detailModalOpen} onOpenChange={setDetailModalOpen}>
+        <DialogContent 
+          className="flex flex-col p-0 gap-0"
+          style={{ width: '900px', maxWidth: '95vw', maxHeight: '85vh' }}
+        >
+          {selectedResponse && (
+            <>
+              <DialogHeader className="px-6 pt-5 pb-4 border-b border-border pr-14">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <DialogTitle className="text-xl leading-snug">{selectedResponse.supplierName}</DialogTitle>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <DialogDescription className="text-sm">
+                        Submitted {new Date(selectedResponse.submittedAt).toLocaleDateString('en-US', { 
+                          month: 'short', day: 'numeric', year: 'numeric' 
+                        })}
+                      </DialogDescription>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'text-xs',
+                          statusConfig[selectedResponse.status]?.color
+                        )}
+                      >
+                        {RESPONSE_STATUS_LABELS[selectedResponse.status]}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+                {/* Contact Information */}
+                <div>
+                  <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Contact Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center gap-3 text-sm">
+                      <Users className="h-4 w-4 text-text-muted" />
+                      <div>
+                        <p className="text-text-muted text-xs">Key Contact</p>
+                        <p className="font-medium text-text-primary">{selectedResponse.contactName || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <Mail className="h-4 w-4 text-text-muted" />
+                      <div>
+                        <p className="text-text-muted text-xs">Email</p>
+                        <p className="font-medium text-text-primary">{selectedResponse.contactEmail || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <Phone className="h-4 w-4 text-text-muted" />
+                      <div>
+                        <p className="text-text-muted text-xs">Phone</p>
+                        <p className="font-medium text-text-primary">{selectedResponse.contactPhone || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <Building2 className="h-4 w-4 text-text-muted" />
+                      <div>
+                        <p className="text-text-muted text-xs">Company</p>
+                        <p className="font-medium text-text-primary">{selectedResponse.supplierName}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pricing Summary */}
+                <div>
+                  <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Pricing Summary</h4>
+                  <Card className="border-border">
+                    <CardContent className="p-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-xs text-text-muted">Total Price</p>
+                          <p className="text-xl font-bold text-text-primary">
+                            ${(selectedResponse.priceItems?.reduce((sum, item) => sum + (item.totalPrice || 0), 0) || 0).toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-text-muted">Evaluation Score</p>
+                          <p className="text-xl font-bold text-text-primary">
+                            {selectedResponse.totalScore !== undefined ? `${selectedResponse.totalScore}/100` : 'Not scored'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-text-muted">Price Items</p>
+                          <p className="text-xl font-bold text-text-primary">
+                            {selectedResponse.priceItems?.length || 0}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Price Breakdown */}
+                {selectedResponse.priceItems && selectedResponse.priceItems.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Price Breakdown</h4>
+                    <div className="border border-border rounded-lg overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead className="bg-surface">
+                          <tr className="border-b border-border">
+                            <th className="px-4 py-2 text-left font-medium text-text-secondary">Item</th>
+                            <th className="px-4 py-2 text-right font-medium text-text-secondary">Qty</th>
+                            <th className="px-4 py-2 text-right font-medium text-text-secondary">Unit Price</th>
+                            <th className="px-4 py-2 text-right font-medium text-text-secondary">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {selectedResponse.priceItems.map((item, idx) => (
+                            <tr key={idx} className="hover:bg-surface-hover">
+                              <td className="px-4 py-2 text-text-primary">{item.description || `Item ${idx + 1}`}</td>
+                              <td className="px-4 py-2 text-right text-text-secondary">{item.quantity || 1}</td>
+                              <td className="px-4 py-2 text-right text-text-secondary">${(item.unitPrice || 0).toLocaleString()}</td>
+                              <td className="px-4 py-2 text-right font-medium text-text-primary">${(item.totalPrice || 0).toLocaleString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Question Responses */}
+                {selectedResponse.questionResponses && selectedResponse.questionResponses.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Questionnaire Responses</h4>
+                    <div className="space-y-3">
+                      {selectedResponse.questionResponses.map((qr, idx) => (
+                        <div key={idx} className="p-3 bg-surface rounded-lg border border-border">
+                          <p className="text-xs text-text-muted mb-1">Question {idx + 1}</p>
+                          <p className="text-sm text-text-primary">{qr.answer}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Attachments */}
+                {selectedResponse.attachments && selectedResponse.attachments.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-text-secondary uppercase tracking-wide mb-3">Attachments</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {selectedResponse.attachments.map((att, idx) => (
+                        <div key={idx} className="flex items-center gap-2 p-2 bg-surface rounded border border-border">
+                          <FileText className="h-4 w-4 text-text-muted" />
+                          <span className="text-sm text-text-primary truncate">{att.fileName}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Actions */}
+              <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-surface">
+                <Button
+                  variant="outline"
+                  onClick={() => setDetailModalOpen(false)}
+                >
+                  Close
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    className="bg-brand-green hover:bg-brand-green-dark text-white"
+                    onClick={() => {
+                      onShortlist([selectedResponse.id]);
+                      setDetailModalOpen(false);
+                    }}
+                  >
+                    Add to Shortlist
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
