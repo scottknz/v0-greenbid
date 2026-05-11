@@ -135,6 +135,13 @@ export function AwardTab({
   const [nextStepDescription, setNextStepDescription] = useState('');
   const [nextStepDueDate, setNextStepDueDate] = useState('');
 
+  // Compose new message modal (for awarded state)
+  const [showComposeModal, setShowComposeModal] = useState(false);
+  const [composeSubject, setComposeSubject] = useState('');
+  const [composeMessage, setComposeMessage] = useState('');
+  const [composeRecipient, setComposeRecipient] = useState<string>('all');
+  const [composeSent, setComposeSent] = useState(false);
+
   const awardedResponse = award ? responses.find(r => r.id === award.awardedResponseId) : null;
   const unsuccessfulResponses = award
     ? responses.filter(r => r.id !== award.awardedResponseId)
@@ -670,13 +677,6 @@ export function AwardTab({
   }
 
   // ─── Awarded state ───────────────────────────────────────────────────────────
-
-  // Compose new message modal (for awarded state)
-  const [showComposeModal, setShowComposeModal] = useState(false);
-  const [composeSubject, setComposeSubject] = useState('');
-  const [composeMessage, setComposeMessage] = useState('');
-  const [composeRecipient, setComposeRecipient] = useState<string>('all');
-  const [composeSent, setComposeSent] = useState(false);
 
   const handleOpenCompose = () => {
     setComposeSubject('');
