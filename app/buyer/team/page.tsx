@@ -206,7 +206,7 @@ export default function TeamPage() {
                 <td className="px-6 py-4 text-sm text-text-primary border-r-0">
                   <Badge variant="outline">{member.assignedRFPs.length}</Badge>
                 </td>
-                <td className="px-6 py-4 text-sm text-text-secondary">
+                <td className="px-6 py-4 text-sm text-text-secondary border-l-0">
                   {member.lastActivity
                     ? new Date(member.lastActivity).toLocaleDateString()
                     : 'Never'}
