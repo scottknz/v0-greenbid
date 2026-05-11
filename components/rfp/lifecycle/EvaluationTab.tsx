@@ -81,10 +81,12 @@ export function EvaluationTab({
     responses.find(r => r.status === 'shortlisted' || r.status === 'evaluated')?.id || null
   );
   const [expandedCriteria, setExpandedCriteria] = useState<Set<string>>(new Set());
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [scoreDrafts, setScoreDrafts] = useState<Record<string, { score: number; comment: string }>>({});
   const [activeView, setActiveView] = useState<'evaluate' | 'compare'>('evaluate');
   const [compareSelection, setCompareSelection] = useState<string[]>([]);
   const [selectedCompareId, setSelectedCompareId] = useState<string | null>(null);
+  const [supplierHeaderExpanded, setSupplierHeaderExpanded] = useState(false);
 
   const evaluatableResponses = responses.filter(
     r => r.status === 'shortlisted' || r.status === 'evaluated' || r.status === 'finalist'
@@ -108,12 +110,38 @@ export function EvaluationTab({
 
   const toggleCriteria = (criteriaId: string) => {
     const newExpanded = new Set(expandedCriteria);
-    if (newExpanded.has(criteriaId)) {
-      newExpanded.delete(criteriaId);
-    } else {
-      newExpanded.add(criteriaId);
-    }
+    if (newExpanded.has(criteriaId)) newExpanded.delete(criteriaId);
+    else newExpanded.add(criteriaId);
     setExpandedCriteria(newExpanded);
+  };
+
+  const toggleComment = (criteriaId: string) => {
+    const next = new Set(expandedComments);
+    if (next.has(criteriaId)) next.delete(criteriaId);
+    else next.add(criteriaId);
+    setExpandedComments(next);
+  };
+
+  // Weighted overall score for a given response (0–100)
+  const getWeightedScore = (responseId: string): number | null => {
+    const evaluation = evaluations.find(e => e.responseId === responseId);
+    if (!evaluation || evaluation.scores.length === 0) return null;
+    let totalWeight = 0;
+    let weightedSum = 0;
+    criteria.forEach(c => {
+      const score = evaluation.scores.find(s => s.criteriaId === c.id && s.isFinalized);
+      if (score) {
+        weightedSum += (score.score / score.maxScore) * c.weight;
+        totalWeight += c.weight;
+      }
+    });
+    if (totalWeight === 0) return null;
+    return Math.round((weightedSum / totalWeight) * 100);
+  };
+
+  const handleSelectSupplier = (responseId: string) => {
+    setSelectedResponseId(responseId);
+    setSupplierHeaderExpanded(false);
   };
 
   const getScoreForCriteria = (criteriaId: string): ProposalScore | undefined => {
@@ -192,74 +220,114 @@ export function EvaluationTab({
 
       {activeView === 'evaluate' ? (
         <div className="space-y-4">
-          {/* Compact Supplier Chips */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-text-secondary mr-2">Supplier:</span>
-            {evaluatableResponses.map((response) => {
-              const evaluation = evaluations.find(e => e.responseId === response.id);
-              const isSelected = response.id === selectedResponseId;
-              const evalScoredCount = evaluation?.scores.filter(s => s.isFinalized).length || 0;
-              const isComplete = evalScoredCount === criteria.length;
-              
-              return (
-                <button
-                  key={response.id}
-                  onClick={() => setSelectedResponseId(response.id)}
-                  className={cn(
-                    'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all border',
-                    isSelected
-                      ? 'bg-brand-green text-white border-brand-green'
-                      : 'bg-background text-text-secondary border-border hover:border-brand-green hover:text-brand-green'
-                  )}
-                >
-                  <Avatar className="h-5 w-5 border-0">
-                    <AvatarFallback className={cn('text-[10px]', isSelected ? 'bg-white/20 text-white' : 'bg-surface')}>
-                      {getInitials(response.supplierName)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="truncate max-w-[120px]">{response.supplierName}</span>
-                  {isComplete ? (
-                    <CheckCircle className={cn('h-3.5 w-3.5', isSelected ? 'text-white' : 'text-green-600')} />
-                  ) : (
-                    <span className={cn('text-xs', isSelected ? 'text-white/70' : 'text-text-muted')}>
-                      {evalScoredCount}/{criteria.length}
+          {/* Expandable Supplier Header */}
+          <div className={cn('border border-border rounded-lg bg-background overflow-hidden transition-all')}>
+            {/* Collapsed header — shows selected supplier as main heading */}
+            <button
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-surface-hover transition-colors"
+              onClick={() => setSupplierHeaderExpanded(v => !v)}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                {selectedResponse ? (
+                  <>
+                    <Avatar className="h-9 w-9 border border-border shrink-0">
+                      <AvatarFallback className="bg-surface text-sm font-semibold">
+                        {getInitials(selectedResponse.supplierName)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-left min-w-0">
+                      <p className="font-semibold text-text-primary leading-tight">{selectedResponse.supplierName}</p>
+                      <p className="text-xs text-text-muted">
+                        Submitted {new Date(selectedResponse.submittedAt).toLocaleDateString()}
+                        {' · '}{selectedResponse.attachments.length} docs
+                        {' · '}{scoredCriteria}/{totalCriteria} criteria scored
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <p className="font-semibold text-text-secondary">Select a supplier to evaluate</p>
+                )}
+              </div>
+              <div className="flex items-center gap-4 shrink-0 ml-4">
+                {selectedResponse && (() => {
+                  const ws = getWeightedScore(selectedResponseId!);
+                  return ws !== null ? (
+                    <span className={cn('text-sm font-bold', getScoreColor(ws, 100))}>
+                      {ws}% overall
                     </span>
-                  )}
-                </button>
-              );
-            })}
+                  ) : null;
+                })()}
+                <div className="flex items-center gap-1.5 text-sm text-text-muted">
+                  <span>{evaluatableResponses.length} supplier{evaluatableResponses.length !== 1 ? 's' : ''}</span>
+                  {supplierHeaderExpanded
+                    ? <ChevronDown className="h-4 w-4" />
+                    : <ChevronRight className="h-4 w-4" />}
+                </div>
+              </div>
+            </button>
+
+            {/* Expanded list — all suppliers scrollable */}
+            {supplierHeaderExpanded && (
+              <div className="border-t border-border max-h-64 overflow-y-auto">
+                {evaluatableResponses.map((response) => {
+                  const evaluation = evaluations.find(e => e.responseId === response.id);
+                  const evalScoredCount = evaluation?.scores.filter(s => s.isFinalized).length || 0;
+                  const isComplete = evalScoredCount === criteria.length;
+                  const isSelected = response.id === selectedResponseId;
+                  const ws = getWeightedScore(response.id);
+
+                  return (
+                    <button
+                      key={response.id}
+                      onClick={() => handleSelectSupplier(response.id)}
+                      className={cn(
+                        'w-full flex items-center justify-between px-4 py-3 transition-colors text-left border-b border-border last:border-0',
+                        isSelected
+                          ? 'bg-brand-green-light'
+                          : 'hover:bg-surface-hover'
+                      )}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Avatar className="h-8 w-8 border border-border shrink-0">
+                          <AvatarFallback className={cn('text-xs font-semibold', isSelected ? 'bg-brand-green text-white' : 'bg-surface')}>
+                            {getInitials(response.supplierName)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                          <p className={cn('font-medium text-sm leading-tight', isSelected ? 'text-brand-green' : 'text-text-primary')}>
+                            {response.supplierName}
+                          </p>
+                          <p className="text-xs text-text-muted">
+                            {evalScoredCount}/{criteria.length} scored
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0 ml-4">
+                        {ws !== null && (
+                          <span className={cn('text-sm font-bold', getScoreColor(ws, 100))}>
+                            {ws}%
+                          </span>
+                        )}
+                        {isComplete ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <div className="w-20 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-brand-green rounded-full transition-all"
+                              style={{ width: `${(evalScoredCount / criteria.length) * 100}%` }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {selectedResponse && (
             <>
-              {/* Compact Header Row */}
-              <div className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 border border-border">
-                    <AvatarFallback className="bg-background text-sm">
-                      {getInitials(selectedResponse.supplierName)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="font-semibold text-text-primary">{selectedResponse.supplierName}</h3>
-                    <p className="text-xs text-text-muted">
-                      Submitted {new Date(selectedResponse.submittedAt).toLocaleDateString()} | {selectedResponse.attachments.length} docs
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="text-right">
-                    <p className="text-xs text-text-muted">Total Price</p>
-                    <p className="font-bold text-text-primary">
-                      {formatCurrency(selectedResponse.priceAnswers?.reduce((sum, p) => sum + p.value, 0) || 0)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-text-muted">Progress</p>
-                    <p className="font-bold text-text-primary">{scoredCriteria}/{totalCriteria}</p>
-                  </div>
-                </div>
-              </div>
 
               {/* Table-Based Scoring Form */}
               <Card className="border-border bg-background">
@@ -289,18 +357,19 @@ export function EvaluationTab({
                         const existingScore = getScoreForCriteria(criterion.id);
                         const draft = getDraftScore(criterion.id);
                         const isSaved = existingScore?.isFinalized;
+                        const isCommentExpanded = expandedComments.has(criterion.id);
 
                         return (
-                          <tr key={criterion.id} className="hover:bg-surface-hover transition-colors">
+                          <tr key={criterion.id} className="hover:bg-surface-hover transition-colors align-top">
                             <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1.5">
                                 <span className="font-medium text-text-primary">{criterion.name}</span>
                                 <TooltipProvider>
                                   <Tooltip>
-                                    <TooltipTrigger>
-                                      <HelpCircle className="h-3.5 w-3.5 text-text-muted" />
+                                    <TooltipTrigger asChild>
+                                      <HelpCircle className="h-3.5 w-3.5 text-text-muted cursor-help shrink-0" />
                                     </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs">
+                                    <TooltipContent side="right" align="center" className="max-w-xs">
                                       <p className="text-sm font-medium mb-1">{criterion.description}</p>
                                       <p className="text-xs text-text-muted whitespace-pre-line">{criterion.rubric}</p>
                                     </TooltipContent>
@@ -322,20 +391,36 @@ export function EvaluationTab({
                                   step={1}
                                   className="flex-1"
                                 />
-                                <span className={cn('w-12 text-center font-bold text-sm', getScoreColor(draft.score, criterion.maxScore))}>
+                                <span className={cn('w-12 text-center font-bold text-sm shrink-0', getScoreColor(draft.score, criterion.maxScore))}>
                                   {draft.score}/{criterion.maxScore}
                                 </span>
                               </div>
                             </td>
                             <td className="px-4 py-3">
-                              <input
-                                type="text"
-                                value={draft.comment}
-                                onChange={(e) => updateDraftScore(criterion.id, { comment: e.target.value })}
-                                onBlur={() => handleSaveScore(criterion.id)}
-                                placeholder="Add comment..."
-                                className="w-full px-2 py-1.5 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-brand-green/30"
-                              />
+                              <div className="space-y-1">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleComment(criterion.id)}
+                                  className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors"
+                                >
+                                  {isCommentExpanded
+                                    ? <ChevronDown className="h-3.5 w-3.5" />
+                                    : <ChevronRight className="h-3.5 w-3.5" />}
+                                  {draft.comment
+                                    ? <span className="truncate max-w-[200px] text-text-secondary">{draft.comment}</span>
+                                    : <span className="text-text-muted italic">Add comment...</span>}
+                                </button>
+                                {isCommentExpanded && (
+                                  <Textarea
+                                    value={draft.comment}
+                                    onChange={(e) => updateDraftScore(criterion.id, { comment: e.target.value })}
+                                    onBlur={() => handleSaveScore(criterion.id)}
+                                    placeholder="Add your evaluation notes..."
+                                    className="mt-1 min-h-[80px] text-sm bg-background border-border resize-none focus:ring-brand-green/30"
+                                    autoFocus
+                                  />
+                                )}
+                              </div>
                             </td>
                             <td className="px-4 py-3 text-center">
                               {isSaved ? (
