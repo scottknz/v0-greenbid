@@ -1032,7 +1032,15 @@ export default function TenderDetailPage() {
   const [submissionModalOpen, setSubmissionModalOpen] = useState(false)
   const [selectedSubmission, setSelectedSubmission] = useState<typeof submissionsData[0] | null>(null)
   const [submissionModalTab, setSubmissionModalTab] = useState<'overview' | 'documents' | 'questionnaire' | 'scores' | 'communications' | 'activity'>('overview')
-  
+  const [submissionStatuses, setSubmissionStatuses] = useState<Record<string, string>>({})
+
+  const getSubmissionStatus = (submission: typeof submissionsData[0]) =>
+    submissionStatuses[submission.id] ?? submission.status
+
+  const handleSubmissionStatusChange = (submissionId: string, newStatus: string) => {
+    setSubmissionStatuses(prev => ({ ...prev, [submissionId]: newStatus }))
+  }
+
   const handleOpenSubmission = (submission: typeof submissionsData[0]) => {
     setSelectedSubmission(submission)
     setSubmissionModalTab('overview')
@@ -3767,17 +3775,7 @@ export default function TenderDetailPage() {
                       <DialogDescription className="text-sm">
                         Submitted {selectedSubmission.submittedDate}
                       </DialogDescription>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          'text-xs',
-                          selectedSubmission.status === 'under_review' && 'bg-blue-100 text-blue-700 border-blue-200',
-                          selectedSubmission.status === 'evaluated' && 'bg-emerald-100 text-emerald-700 border-emerald-300',
-                          selectedSubmission.status === 'pending' && 'bg-gray-100 text-gray-700 border-gray-200',
-                        )}
-                      >
-                        {selectedSubmission.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                      </Badge>
+                      <SubmissionStatusBadge status={getSubmissionStatus(selectedSubmission)} />
                     </div>
                   </div>
                 </div>
@@ -4010,31 +4008,61 @@ export default function TenderDetailPage() {
               </div>
 
               {/* Footer */}
-              <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-surface">
-                <Button
-                  variant="outline"
-                  onClick={() => setSubmissionModalOpen(false)}
-                >
-                  Close
-                </Button>
-                <div className="flex items-center gap-2">
+              <div className="px-6 py-4 border-t border-border bg-surface space-y-3">
+                {/* Status actions */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-medium text-text-muted mr-1">Change status:</span>
+                  {(
+                    [
+                      { status: 'under_review', label: 'Under Review', className: 'border-amber-300 text-amber-700 hover:bg-amber-50' },
+                      { status: 'shortlisted',  label: 'Shortlist',     className: 'border-brand-green text-brand-green hover:bg-brand-green/10' },
+                      { status: 'evaluated',    label: 'Evaluated',     className: 'border-emerald-400 text-emerald-700 hover:bg-emerald-50' },
+                      { status: 'rejected',     label: 'Reject',        className: 'border-red-300 text-red-600 hover:bg-red-50' },
+                      { status: 'awarded',      label: 'Award',         className: 'border-brand-green text-brand-green hover:bg-brand-green/10' },
+                    ] as const
+                  ).map(({ status, label, className }) => {
+                    const isCurrent = getSubmissionStatus(selectedSubmission) === status
+                    return (
+                      <Button
+                        key={status}
+                        variant="outline"
+                        size="sm"
+                        disabled={isCurrent}
+                        className={cn('h-7 px-3 text-xs transition-colors', isCurrent ? 'opacity-40 cursor-not-allowed' : className)}
+                        onClick={() => handleSubmissionStatusChange(selectedSubmission.id, status)}
+                      >
+                        {label}
+                      </Button>
+                    )
+                  })}
+                </div>
+                {/* Secondary actions */}
+                <div className="flex items-center justify-between">
                   <Button
                     variant="outline"
-                    className="gap-2"
-                    onClick={() => handleDownloadSubmission(selectedSubmission)}
+                    onClick={() => setSubmissionModalOpen(false)}
                   >
-                    <Download className="h-4 w-4" />
-                    Download Submission
+                    Close
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setSubmissionModalOpen(false)
-                      router.push(`/buyer/tenders/${tenderData.id}/submissions/${selectedSubmission.id}`)
-                    }}
-                  >
-                    View Full Details
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => handleDownloadSubmission(selectedSubmission)}
+                    >
+                      <Download className="h-4 w-4" />
+                      Download Submission
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSubmissionModalOpen(false)
+                        router.push(`/buyer/tenders/${tenderData.id}/submissions/${selectedSubmission.id}`)
+                      }}
+                    >
+                      View Full Details
+                    </Button>
+                  </div>
                 </div>
               </div>
             </>
@@ -4059,10 +4087,12 @@ export default function TenderDetailPage() {
 
 function SubmissionStatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; className: string }> = {
-    pending: { label: "Pending", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
+    pending:      { label: "Pending",      className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
     under_review: { label: "Under Review", className: "bg-amber-50 text-amber-700 border-amber-200" },
-    evaluated: { label: "Evaluated", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
-    rejected: { label: "Rejected", className: "bg-red-50 text-red-700 border-red-200" },
+    evaluated:    { label: "Evaluated",    className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
+    shortlisted:  { label: "Shortlisted",  className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/30" },
+    awarded:      { label: "Awarded",      className: "bg-[#ECFDF5] text-[#059669] border-[#059669]/30" },
+    rejected:     { label: "Rejected",     className: "bg-red-50 text-red-700 border-red-200" },
   }
 
   const { label, className } = config[status] || config.pending
