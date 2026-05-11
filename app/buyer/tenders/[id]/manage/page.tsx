@@ -492,7 +492,7 @@ export default function TenderManagePage() {
           <InterviewsTab
             rfpId={rfpId}
             interviews={interviews}
-            responses={responses}
+            responses={submissions}
             onScheduleInterview={handleScheduleInterview}
             onUpdateInterview={handleUpdateInterview}
             onAddNote={handleAddNote}
@@ -529,6 +529,31 @@ export default function TenderManagePage() {
         )}
       </div>
 
+      {/* Continue Button Footer */}
+      <div className="border-t border-border bg-background">
+        <div className="mx-auto max-w-7xl px-6 py-4 flex justify-end">
+          <Button
+            onClick={() => {
+              const nextPhases: Record<LifecycleTab, LifecycleTab | string> = {
+                submissions: 'interviews',
+                interviews: 'evaluation',
+                evaluation: 'award',
+                award: 'closed',
+              };
+              const nextTab = nextPhases[activeTab];
+              if (nextTab === 'closed') {
+                router.push(`/buyer/tenders/${rfpId}`);
+              } else {
+                setActiveTab(nextTab as LifecycleTab);
+                setCurrentPhase(nextTab as any);
+              }
+            }}
+            className="bg-brand-green hover:bg-brand-green-dark text-white"
+          >
+            Continue
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
