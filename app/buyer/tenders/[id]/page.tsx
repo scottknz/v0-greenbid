@@ -73,7 +73,6 @@ import {
   CircleDot,
   Scale,
   Trophy,
-  Check,
 } from "lucide-react"
 import { ApprovalRequestModal } from "@/components/approval/ApprovalRequestModal"
 import { ApprovalStatus } from "@/components/approval/ApprovalStatus"
@@ -1512,48 +1511,54 @@ export default function TenderDetailPage() {
         </div>
 
         {/* RFP Lifecycle Progress Indicator */}
-        <div className="border border-[#E5E7EB] rounded-lg bg-[#FAFAFA] mt-3">
-          <div className="flex items-stretch divide-x divide-[#E5E7EB]">
-            {lifecyclePhases.map((phase, index) => {
-              const isCompleted = index < currentPhaseIndex;
-              const isActive = index === currentPhaseIndex;
-              const Icon = phase.icon;
+        <div className="border-b border-border bg-surface">
+          <div className="mx-auto max-w-7xl px-6 py-4">
+            <nav className="flex items-center justify-start gap-4">
+              {lifecyclePhases.map((phase, index) => {
+                const isCompleted = index < currentPhaseIndex;
+                const isActive = index === currentPhaseIndex;
+                const Icon = phase.icon;
 
-              return (
-                <div
-                  key={phase.key}
-                  className={cn(
-                    'flex flex-1 items-center gap-2.5 px-4 py-3 first:rounded-l-lg last:rounded-r-lg transition-colors',
-                    isActive && 'bg-[#F0FDF4]',
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'flex h-7 w-7 shrink-0 items-center justify-center rounded-full',
-                      isCompleted && 'bg-[#16A34A] text-white',
-                      isActive && 'bg-[#16A34A] text-white',
-                      !isCompleted && !isActive && 'bg-[#F3F4F6] text-[#9CA3AF]'
-                    )}
-                  >
-                    {isCompleted ? (
-                      <Check className="h-3.5 w-3.5 stroke-[2.5]" />
-                    ) : (
-                      <Icon className="h-3.5 w-3.5" />
+                return (
+                  <div key={phase.key} className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-brand-green text-white'
+                          : isCompleted
+                          ? 'bg-brand-green-light text-brand-green'
+                          : 'bg-surface-hover text-text-muted'
+                      )}
+                    >
+                      {isCompleted ? (
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <Icon className="h-4 w-4" />
+                      )}
+                    </div>
+                    <span
+                      className={cn(
+                        'text-sm font-medium',
+                        isActive ? 'text-text-primary' : 'text-text-muted'
+                      )}
+                    >
+                      {phase.label}
+                    </span>
+                    {index < lifecyclePhases.length - 1 && (
+                      <div
+                        className={cn(
+                          'ml-2 h-px w-8',
+                          isCompleted ? 'bg-brand-green' : 'bg-border'
+                        )}
+                      />
                     )}
                   </div>
-                  <span
-                    className={cn(
-                      'text-sm font-medium whitespace-nowrap',
-                      isCompleted && 'text-[#16A34A]',
-                      isActive && 'text-[#111827]',
-                      !isCompleted && !isActive && 'text-[#9CA3AF]'
-                    )}
-                  >
-                    {phase.label}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </nav>
           </div>
         </div>
 
