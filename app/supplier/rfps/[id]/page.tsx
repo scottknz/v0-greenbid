@@ -471,14 +471,30 @@ export default function RFPDetailPage() {
     e.target.value = ''
   }
   
+  // Completion checks for each preparation sub-step
+  const isQuestionnaireComplete = rfp.buyerQuestions.every(
+    q => !q.required || (questionResponses[q.id] && questionResponses[q.id].trim() !== '')
+  )
+  const isDocumentsComplete = mockProposalDocuments.some(d => d.status === 'active') || submissionAttachments.length > 0
+
   const handleProgressProposal = () => {
     if (currentPhase === 'new_rfp') {
       setShowInitialReviewModal(true)
     } else if (currentPhase === 'in_progress') {
-      setActiveTab('questionnaire')
+      // Navigate to the first incomplete step, or advance phase if all done
+      if (!isQuestionnaireComplete) {
+        setActiveTab('questionnaire')
+      } else if (!isDocumentsComplete) {
+        setActiveTab('documents')
+      } else {
+        // All preparation steps done — advance to Internal Review
+        handleMoveForward()
+      }
     } else if (currentPhase === 'under_final_review') {
       if (!currentApproval) {
         setShowApprovalModal(true)
+      } else if (currentApproval.status === 'approved') {
+        handleSubmitProposal()
       }
     }
   }
@@ -490,12 +506,15 @@ export default function RFPDetailPage() {
   
   const getProgressButtonLabel = () => {
     switch (currentPhase) {
-      case 'new_rfp': return 'Progress Proposal'
-      case 'in_progress': return 'Progress Proposal'
+      case 'new_rfp': return 'Begin Preparation'
+      case 'in_progress':
+        if (!isQuestionnaireComplete) return 'Complete Questionnaire'
+        if (!isDocumentsComplete) return 'Upload Documents'
+        return 'Proceed to Review'
       case 'under_final_review': 
         if (currentApproval?.status === 'pending') return 'Awaiting Approval'
         if (currentApproval?.status === 'approved') return 'Submit to Client'
-        return 'Progress Proposal'
+        return 'Send for Approval'
       default: return 'View Status'
     }
   }
