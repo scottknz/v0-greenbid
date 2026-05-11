@@ -214,8 +214,9 @@ export default function SupplierTeamPage() {
                 <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                         <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open actions menu</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
