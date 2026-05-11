@@ -721,16 +721,44 @@ const globalSuppliersData = [
   { id: "g4", name: "SustainaPaper Ltd", contact: "Rachel Green", email: "rachel@sustainapaper.co.uk" },
 ]
 
-const tabs = [
-  { key: "overview", label: "Overview" },
-  { key: "team", label: "Team", count: teamMembersData.length },
-  { key: "documents", label: "Documents", count: documentsData.length },
-  { key: "submissions", label: "Submissions", count: tenderData.submissions },
-  { key: "qa", label: "Q&A", count: qaThreadsData.length },
-  { key: "criteria", label: "Scoring" },
-  { key: "results", label: "Results" },
-  { key: "activity", label: "Activity" },
-]
+// Determine visible tabs based on RFP status
+const getVisibleTabs = (status: string) => {
+  const allTabs = [
+    { key: "overview", label: "Overview" },
+    { key: "team", label: "Team", count: teamMembersData.length },
+    { key: "documents", label: "Documents", count: documentsData.length },
+    { key: "submissions", label: "Submissions", count: tenderData.submissions },
+    { key: "qa", label: "Q&A", count: qaThreadsData.length },
+    { key: "criteria", label: "Scoring" },
+    { key: "results", label: "Results" },
+    { key: "activity", label: "Activity" },
+  ]
+
+  // Draft/Preparation phase: editing phase before publishing
+  if (status === "draft") {
+    return allTabs.filter(t => ["overview", "team", "documents", "activity"].includes(t.key))
+  }
+
+  // Active/Accepting bids phase: waiting for supplier responses
+  if (status === "accepting_bids") {
+    return allTabs.filter(t => ["overview", "team", "submissions", "qa", "activity"].includes(t.key))
+  }
+
+  // Evaluation phase: reviewing and scoring submissions
+  if (status === "under_review" || status === "evaluated") {
+    return allTabs.filter(t => ["overview", "submissions", "criteria", "results", "activity"].includes(t.key))
+  }
+
+  // Completed phase: read-only results
+  if (status === "completed" || status === "awarded") {
+    return allTabs.filter(t => ["overview", "submissions", "results", "activity"].includes(t.key))
+  }
+
+  // Default: show all tabs
+  return allTabs
+}
+
+const tabs = getVisibleTabs(tenderData.status)
 
 export default function TenderDetailPage() {
   const params = useParams()
@@ -748,6 +776,11 @@ export default function TenderDetailPage() {
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [activeTab, setActiveTab] = useState("overview")
+  
+  // Reset tab if it becomes invalid after status change
+  if (!tabs.find(t => t.key === activeTab)) {
+    setActiveTab("overview")
+  }
   const [criteriaEditOpen, setCriteriaEditOpen] = useState(false)
   const [editableCriteria, setEditableCriteria] = useState(tenderData.evaluationCriteria)
   const [expandedCriteria, setExpandedCriteria] = useState<string[]>([])
