@@ -77,6 +77,7 @@ import {
 import { ApprovalRequestModal } from "@/components/approval/ApprovalRequestModal"
 import { ApprovalStatus } from "@/components/approval/ApprovalStatus"
 import { mockBuyerApprovalRequests } from "@/lib/mock-approvals"
+import { cn } from "@/lib/utils"
 import type { ApprovalRequest } from "@/types/approval"
 
 // Q&A Thread types
