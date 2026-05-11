@@ -136,6 +136,42 @@ hooks/
 └── useSupplierInvitations.ts
 ```
 
+## Supplier RFP Proposal Workflow (New)
+
+Suppliers can now create and manage RFP proposals with approval gates:
+
+### Key Pages
+- **`/app/supplier/rfps/[id]/page.tsx`** - Main RFP detail page with:
+  - Progress bar showing lifecycle phases (Preparation → Internal Review → Submitted → etc.)
+  - Smart "Progress Proposal" button that navigates to incomplete steps or advances when ready
+  - Tabs: Overview, Team, Approvals, Documents, Questionnaire, Messages, Notes, Activity
+
+### Approval Tab (`activeTab === 'approvals'`)
+- Shows `ApprovalStatus` card when proposal is in internal review phase
+- Displays approval details: approver names, roles, approval status
+- Empty state with "Send for Approval" button when no approval in progress
+- Tab has pending indicator badge when approval is waiting
+
+### Smart Navigation Logic
+- **Preparation Phase**: Progress button checks questionnaire completion and document uploads
+  - If questionnaire incomplete → navigate to Questionnaire tab
+  - If documents missing → navigate to Documents tab  
+  - If both complete → auto-advance to Internal Review phase
+- **Internal Review Phase**: Progress button sends for team approval
+  - Uses `ApprovalRequestModal` component (same design as buyer side)
+  - Selects approvers from internal team members (`availableTeamApprovers`)
+  - Creates notification message sent to message center
+  - Proposal stays locked until approval received
+- **After Approval**: Proposal can be submitted to client
+
+### Completion Checks
+```typescript
+const isQuestionnaireComplete = rfp.buyerQuestions.every(
+  q => !q.required || (questionResponses[q.id] && questionResponses[q.id].trim() !== '')
+)
+const isDocumentsComplete = mockProposalDocuments.some(d => d.status === 'active') || submissionAttachments.length > 0
+```
+
 ## Design System Integration
 
 - **Colors**: Uses existing design tokens (brand-green, surface, border, etc.)

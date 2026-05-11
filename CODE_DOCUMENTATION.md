@@ -60,6 +60,54 @@ Buyers follow this workflow (all built and working):
 
 See `/components/rfp/lifecycle/` for the UI components.
 
+## Approval Workflows (New)
+
+Both buyer and supplier sides now include approval gates where content must be approved by team members before progressing:
+
+### Buyer Side - RFP Approval
+- **When**: Before publishing RFP (in tender details page)
+- **Who Approves**: Selected internal team members
+- **Flow**: 
+  1. Click "Send for Approval" button on RFP details
+  2. `ApprovalRequestModal` opens to select approvers and add notes
+  3. Modal uses fixed width (`w-[500px]`) with single-column layout
+  4. Approval notification sent as private message thread to all approvers
+  5. Form locks with "Waiting for Approval" badge
+  6. Approvers can approve/reject directly from message center
+
+### Supplier Side - Proposal Approval
+- **When**: Before submitting proposal to client (in RFP details page, "under_final_review" phase)
+- **Who Approves**: Selected internal team members
+- **Flow**:
+  1. Click "Proceed to Review" button (after questionnaire and documents complete)
+  2. Opens to "Internal Review" phase with `ApprovalRequestModal`
+  3. Same approval modal design as buyer side (reusable component)
+  4. Notification sent to team members in message center
+  5. Proposal locks until approval received
+  6. Smart "Progress Proposal" button shows next action needed
+
+### Smart Progress Button (Supplier)
+The "Progress Proposal" button on supplier RFP page is intelligent:
+- **Preparation Phase**: 
+  - If questionnaire incomplete → navigate to Questionnaire tab
+  - If documents missing → navigate to Documents tab
+  - If both complete → advance to Internal Review phase
+  - Button label changes: "Complete Questionnaire" → "Upload Documents" → "Proceed to Review"
+- **Internal Review Phase**: 
+  - If no approval request → open ApprovalRequestModal to send for approval
+  - If approval pending → show "Awaiting Approval" (disabled)
+  - If approval approved → submit directly to client
+
+### Approval Message Center Integration
+- Approval requests appear as private message threads in message center
+- Each thread includes `approvalData` metadata with approval ID, item, and status
+- Approval Actions banner displays at top of thread with:
+  - Status indicator (Pending/Approved/Rejected) with color coding
+  - Item title and type
+  - Approve and Reject buttons (for pending approvals)
+- Clicking Approve/Reject immediately updates thread status
+- Status persists and reflects in Approvals tab on main pages
+
 ## Key Design Decisions (Copy with as-is to Gemini)
 
 1. **Transposed Comparison Table** (Option A)
@@ -88,6 +136,14 @@ See `/components/rfp/lifecycle/` for the UI components.
 3. **API Routes** - Create `/app/api/*` endpoints
 4. **Error Handling** - Add error boundaries and validation
 5. **Loading States** - Add skeletons/spinners while fetching
+
+## Manage RFP Page Flow (New)
+
+The Manage RFP page (`/app/buyer/tenders/[id]/manage/page.tsx`) provides lifecycle management:
+- Tabs for Submissions, Interviews, Evaluation, Award phases
+- Each tab contains specific management workflows
+- "Continue" button at bottom navigates through phases: Submissions → Interviews → Evaluation → Award → back to RFP details
+- Fixed footer ensures Continue button is always accessible
 
 ## Structure is Already Perfect For
 

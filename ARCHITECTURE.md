@@ -62,7 +62,9 @@ This is a Next.js 16 web application for managing RFP (Request for Proposal) pro
 ├── /settings                 # Settings modal (both buyer and supplier)
 │   └── SettingsModal.tsx     # User and organization settings
 ├── /approval                 # Approval workflow components
-│   └── ApprovalPanel.tsx     # Approval UI
+│   ├── ApprovalRequestModal.tsx # Reusable modal for sending approvals (buyer & supplier)
+│   ├── ApprovalStatus.tsx      # Display approval request details and status
+│   └── ApprovalActions.tsx     # Approve/Reject buttons (used in message center)
 ├── /library                  # Document library components
 ├── /team                     # Team management components
 ├── /dashboard                # Dashboard components
@@ -181,7 +183,52 @@ Mock Data Files → Imported in components → Filtered/sorted in state → Disp
 
 **Components:** `/components/rfp/lifecycle/*.tsx`
 
-### 2. Evaluation & Scoring (Buyer-side)
+### 3. Approval Workflows (New)
+
+**Buyer-side Approval (RFP Publication):**
+- RFP must be approved by internal team members before publication
+- Triggered from tender details page via "Send for Approval" button
+- Uses `ApprovalRequestModal` component with fixed width and single-column layout
+- Approval request sent as private message thread to approvers
+- Form locks with "Waiting for Approval" badge until approval granted
+- Approvers see "Approvals" tab in message center with action buttons
+
+**Supplier-side Approval (Proposal Submission):**
+- Proposal must be approved by team before submitting to client
+- Triggered from RFP details page (in "under_final_review" phase)
+- Smart "Progress Proposal" button navigates to incomplete sections or sends for approval
+- Same `ApprovalRequestModal` component (reusable design)
+- Approval notifications sent to team members in message center
+- New "Approvals" tab shows approval status and history
+
+**Message Center Integration:**
+- Approval requests appear as private message threads
+- Each thread includes `approvalData` metadata (approvalId, itemId, itemTitle, status)
+- Approval Actions banner displays at top with status and approve/reject buttons
+- Users can approve/reject directly from message center without navigating to main page
+- Status updates immediately in thread and propagates to Approvals tab
+
+**Components:** 
+- `/components/approval/ApprovalRequestModal.tsx` - Reusable modal for both sides
+- `/components/approval/ApprovalStatus.tsx` - Display approval details
+- `/components/approval/ApprovalActions.tsx` - Message center approve/reject interface
+
+### 4. Supplier RFP Response Workflow (New)
+
+**Phases:**
+1. **Preparation** - Complete questionnaire and upload documents
+   - Smart button checks completion and navigates to incomplete tab
+   - Only advances when both questionnaire and documents are complete
+2. **Internal Review** - Send for team approval
+   - Uses `ApprovalRequestModal` to select approvers
+   - Proposal locked until approval received
+3. **Submitted** - Proposal submitted to client
+4. **Client Reviewing** - Client evaluating proposal
+5. **Awarded/Rejected** - Final outcome
+
+**Components:** `/app/supplier/rfps/[id]/page.tsx` with lifecycle state management
+
+### 3. Evaluation & Scoring (Buyer-side)
 
 **Evaluation Tab Features:**
 - **Expandable Supplier Header** - Shows selected supplier as main heading, collapses when expanded to show all suppliers with progress
