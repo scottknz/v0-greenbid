@@ -185,61 +185,65 @@ export function RFPEditor({ rfp, onUpdate, onSave, onPublish, isPublishing }: RF
       {/* Main Editor Area - Distraction-free centered layout */}
       <div className="flex-1 flex flex-col min-w-0 print:hidden">
         {/* Top Toolbar */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-white">
-          <div className="min-w-0">
-            <h1 className="text-lg font-semibold text-text-primary truncate">
-              {rfp.title}
-            </h1>
-            <p className="text-xs text-text-muted">
-              Reference: {rfp.referenceId} | Version {rfp.currentVersion}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsPreviewOpen(true)}
-              className="gap-2 text-text-secondary"
-            >
-              <Eye className="w-4 h-4" />
-              Preview as HTML
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleGeneratePDF}
-              disabled={isGeneratingPDF}
-              className="gap-2 text-text-secondary"
-            >
-              {isGeneratingPDF ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <FileText className="w-4 h-4" />
-              )}
-              Generate PDF
-            </Button>
-            <Button
-              variant="outline"
-              onClick={onSave}
-              className="gap-2"
-            >
-              <Save className="w-4 h-4" />
-              Save Draft
-            </Button>
-            {onPublish && (
+        <div className="px-6 py-3 border-b border-border bg-white">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold text-text-primary truncate">
+                {rfp.title}
+              </h1>
+              <p className="text-xs text-text-muted">
+                Reference: {rfp.referenceId} | Version {rfp.currentVersion}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
               <Button
-                onClick={onPublish}
-                disabled={isPublishing}
-                className="gap-2 bg-brand-green hover:bg-brand-green/90 text-white"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsPreviewOpen(true)}
+                className="gap-2 text-text-secondary"
               >
-                {isPublishing ? (
+                <Eye className="w-4 h-4" />
+                <span className="hidden sm:inline">Preview as HTML</span>
+                <span className="sm:hidden">Preview</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleGeneratePDF}
+                disabled={isGeneratingPDF}
+                className="gap-2 text-text-secondary"
+              >
+                {isGeneratingPDF ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Send className="w-4 h-4" />
+                  <FileText className="w-4 h-4" />
                 )}
-                {isPublishing ? 'Publishing...' : 'Publish RFP'}
+                <span className="hidden sm:inline">Generate PDF</span>
+                <span className="sm:hidden">PDF</span>
               </Button>
-            )}
+              <Button
+                variant="outline"
+                onClick={onSave}
+                className="gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Save Draft
+              </Button>
+              {onPublish && (
+                <Button
+                  onClick={onPublish}
+                  disabled={isPublishing}
+                  className="gap-2 bg-brand-green hover:bg-brand-green/90 text-white"
+                >
+                  {isPublishing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  {isPublishing ? 'Publishing...' : 'Publish RFP'}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 

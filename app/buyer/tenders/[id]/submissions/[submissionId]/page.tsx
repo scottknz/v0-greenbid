@@ -60,6 +60,7 @@ const submissionsData: Record<string, {
   documents: Array<{ name: string; size: string; type: string; uploadedDate: string }>
   team: Array<{ id: string; name: string; role: string; email: string; isLead: boolean }>
   activities: Array<{ id: string; type: string; action: string; detail: string; timestamp: string }>
+  questionnaireResponses?: Array<{ question: string; answer: string }>
 }> = {
   s1: {
     id: "s1",
@@ -109,6 +110,126 @@ const submissionsData: Record<string, {
       { id: "a11", type: "communication", action: "Message received", detail: "Received response to clarification request", timestamp: "2026-03-08T09:00:00" },
       { id: "a12", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-05T10:00:00" },
     ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "EcoSupply has completed over 50 sustainability projects for Fortune 500 companies, including comprehensive carbon footprint assessments, supply chain sustainability audits, and sustainability reporting implementations. Notable clients include Tesla, Patagonia, and Unilever." },
+      { question: "What certifications does your organization currently hold?", answer: "We hold ISO 14001:2015 Environmental Management, ISO 9001:2015 Quality Management, B Corp Certification (Score: 142), and are a certified Science Based Targets initiative (SBTi) partner." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We employ a three-tier verification process: automated data validation at collection, independent third-party audits, and continuous monitoring with real-time anomaly detection. All data is traceable to source documentation." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We facilitate multi-stakeholder workshops, conduct materiality assessments with both internal and external stakeholders, and provide regular progress reporting through dedicated dashboards and quarterly reviews." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "We propose a 6-week initial assessment phase: Weeks 1-2 for data gathering and stakeholder interviews, Weeks 3-4 for analysis and benchmarking, and Weeks 5-6 for developing recommendations and presenting findings." },
+    ],
+  },
+  // Map response IDs from mock-rfp-lifecycle to submissions
+  'resp-001': {
+    id: "resp-001",
+    supplierName: "TechVendor Solutions",
+    submittedDate: "May 1, 2026",
+    status: "shortlisted",
+    keyContact: "Sarah Johnson",
+    keyContactEmail: "sarah.johnson@techvendor.com",
+    keyContactPhone: "+1 (555) 456-7890",
+    companyAddress: "999 Tech Boulevard, Austin, TX 78701",
+    proposedValue: 125000,
+    totalHours: 300,
+    completionDate: "Aug 15, 2026",
+    scores: {
+      content: 88,
+      quality: 90,
+      capability: 94,
+      sustainability: 82,
+      risk: 85,
+      price: 82,
+    },
+    weightedScore: 87,
+    documents: [
+      { name: "Technical Proposal.pdf", size: "2.5 MB", type: "PDF", uploadedDate: "May 1, 2026" },
+      { name: "Company Profile.pdf", size: "1.2 MB", type: "PDF", uploadedDate: "May 1, 2026" },
+    ],
+    team: [
+      { id: "t1", name: "Sarah Johnson", role: "Account Manager", email: "sarah.johnson@techvendor.com", isLead: true },
+      { id: "t2", name: "David Lee", role: "Technical Lead", email: "d.lee@techvendor.com", isLead: false },
+    ],
+    activities: [
+      { id: "a1", type: "upload", action: "Document uploaded", detail: "Uploaded Technical Proposal.pdf", timestamp: "2026-05-01T14:30:00" },
+      { id: "a2", type: "form_submission", action: "Form submitted", detail: "Completed submission form", timestamp: "2026-05-01T14:25:00" },
+    ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "TechVendor Solutions has led 40+ sustainability technology implementations across the finance, healthcare, and logistics sectors. We specialize in integrating sustainability data platforms with existing ERP and reporting systems." },
+      { question: "What certifications does your organization currently hold?", answer: "ISO 14001:2015, ISO 27001 (Information Security), SOC 2 Type II, and our platform holds GHG Protocol Product Life Cycle Standard certification." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "Our platform uses API-first integrations with source systems, eliminating manual data entry. Data is validated against industry benchmarks in real time, with anomaly alerts and a full audit trail of every data point." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We provide interactive dashboards tailored for each stakeholder group — from board-level summaries to operational drill-downs. Our customer success team runs quarterly reviews and training sessions to keep all stakeholders aligned." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "Our phased approach delivers a baseline assessment in 5 weeks: Weeks 1-2 for system discovery and integration mapping, Week 3 for data collection and validation, and Weeks 4-5 for analysis and a structured readout." },
+    ],
+  },
+  'resp-002': {
+    id: "resp-002",
+    supplierName: "GreenTech Industries",
+    submittedDate: "May 2, 2026",
+    status: "shortlisted",
+    keyContact: "Michael Chen",
+    keyContactEmail: "michael.chen@greentech.com",
+    keyContactPhone: "+1 (555) 567-8901",
+    companyAddress: "555 Innovation Way, San Jose, CA 95110",
+    proposedValue: 142000,
+    totalHours: 350,
+    completionDate: "Sep 1, 2026",
+    scores: {
+      content: 85,
+      quality: 92,
+      capability: 90,
+      sustainability: 94,
+      risk: 88,
+      price: 78,
+    },
+    weightedScore: 88,
+    documents: [
+      { name: "Proposal Document.pdf", size: "3.5 MB", type: "PDF", uploadedDate: "May 2, 2026" },
+    ],
+    team: [
+      { id: "t1", name: "Michael Chen", role: "Project Manager", email: "michael.chen@greentech.com", isLead: true },
+    ],
+    activities: [
+      { id: "a1", type: "upload", action: "Document uploaded", detail: "Uploaded Proposal Document.pdf", timestamp: "2026-05-02T09:10:00" },
+    ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "GreenTech Industries has delivered end-to-end sustainability transformations for over 60 companies globally. Our expertise spans Scope 1-3 emissions accounting, renewable energy procurement, circular economy strategy, and TCFD-aligned reporting." },
+      { question: "What certifications does your organization currently hold?", answer: "ISO 14001:2015, CDP Gold Partner status, SASB Assurance Provider, and all of our senior consultants hold GHG Protocol Scope 3 Specialist credentials. We are also an official ISSB implementation partner." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We implement a dual-control data governance framework: primary data collection through direct supplier engagement, verified against secondary emission factors from Ecoinvent and DEFRA. All datasets undergo independent limited assurance before reporting." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "Our engagement model starts with a materiality assessment to identify key stakeholders, followed by tailored communication strategies for each group. We run structured workshops, maintain a living stakeholder register, and provide role-based access to our reporting platform." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "We propose a 7-week baseline assessment: Weeks 1-2 for stakeholder mapping and data request distribution, Weeks 3-4 for primary data collection and gap analysis, Weeks 5-6 for emissions quantification and benchmarking, and Week 7 for a recommendations presentation to senior leadership." },
+    ],
+  },
+  'resp-003': {
+    id: "resp-003",
+    supplierName: "Innovative Solutions Corp",
+    submittedDate: "May 3, 2026",
+    status: "received",
+    keyContact: "Robert Wilson",
+    keyContactEmail: "robert.wilson@innovative.com",
+    keyContactPhone: "+1 (555) 678-9012",
+    companyAddress: "111 Innovation Drive, Denver, CO 80202",
+    proposedValue: 98000,
+    totalHours: 200,
+    completionDate: "Jul 31, 2026",
+    scores: null,
+    weightedScore: null,
+    documents: [
+      { name: "Executive Summary.pdf", size: "1.8 MB", type: "PDF", uploadedDate: "May 3, 2026" },
+      { name: "Implementation Plan.pdf", size: "2.1 MB", type: "PDF", uploadedDate: "May 3, 2026" },
+    ],
+    team: [
+      { id: "t1", name: "Robert Wilson", role: "VP Sales", email: "robert.wilson@innovative.com", isLead: true },
+      { id: "t2", name: "Jennifer Martinez", role: "Delivery Manager", email: "j.martinez@innovative.com", isLead: false },
+    ],
+    activities: [
+      { id: "a1", type: "upload", action: "Document uploaded", detail: "Uploaded Executive Summary.pdf", timestamp: "2026-05-03T10:15:00" },
+    ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "Innovative Solutions Corp has managed 25+ sustainability transformation engagements with a focus on mid-market organisations. We bring a practical, implementation-first approach, helping clients move from strategy to measurable action quickly." },
+      { question: "What certifications does your organization currently hold?", answer: "ISO 9001:2015, ISO 14001:2015, and our lead consultants hold Prince2 and PMI credentials. We are currently pursuing B Corp certification and CDP partnership status." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We use a structured data collection template mapped to GHG Protocol categories, with built-in validation rules. Client data is reviewed by a senior consultant before any calculations are performed, and we provide clear documentation of all assumptions." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We believe in a co-design approach — working closely with the client's internal champions to build ownership from the start. This includes facilitated discovery workshops, regular progress check-ins, and a final presentation to the full leadership team." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "Our streamlined assessment can deliver initial recommendations in 4-5 weeks: a 2-week discovery and data collection phase, followed by a 2-week analysis and report-writing phase, and a final presentation session in week 5." },
+    ],
   },
   s2: {
     id: "s2",
@@ -148,6 +269,13 @@ const submissionsData: Record<string, {
       { id: "a3", type: "upload", action: "Document uploaded", detail: "Uploaded Cost Breakdown.xlsx", timestamp: "2026-03-18T15:45:00" },
       { id: "a4", type: "document_access", action: "Document viewed", detail: "Viewed RFP Document.pdf", timestamp: "2026-03-17T11:00:00" },
       { id: "a5", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-17T10:55:00" },
+    ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "GreenOffice has delivered 35+ sustainability transformation projects across manufacturing, retail, and technology sectors. Our team has helped companies achieve average emissions reductions of 28% within the first year." },
+      { question: "What certifications does your organization currently hold?", answer: "ISO 14001:2015, ISO 50001:2018 Energy Management, CDP Supply Chain Member, GRI Certified Training Partner, and we maintain LEED AP credentials across our consulting team." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We use industry-standard GHG Protocol methodologies with built-in validation rules. All data undergoes peer review and we maintain full audit trails. Our reporting platform integrates directly with client ERP systems to minimize manual data entry errors." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We implement a comprehensive engagement framework including executive briefings, department-level working sessions, employee awareness programs, and external stakeholder surveys. We believe sustainable change requires buy-in at all levels." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "Our accelerated assessment methodology delivers initial findings in 4 weeks: Week 1 for rapid data collection and system access, Weeks 2-3 for deep-dive analysis, and Week 4 for recommendations workshop and roadmap development." },
     ],
   },
   s3: {
@@ -195,6 +323,13 @@ const submissionsData: Record<string, {
       { id: "a6", type: "document_access", action: "Document downloaded", detail: "Downloaded all RFP documents", timestamp: "2026-03-15T09:00:00" },
       { id: "a7", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-15T08:55:00" },
     ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "Sustainable Solutions Inc has been a leader in corporate sustainability for over 15 years, with 200+ completed projects. We specialize in complex, multi-site implementations and have particular expertise in Scope 3 emissions accounting and science-based target setting." },
+      { question: "What certifications does your organization currently hold?", answer: "We maintain ISO 14001, ISO 14064-1 (GHG verification), and are CDP Gold Partner. Our team includes 12 certified GHG Lead Verifiers and 8 SASB FSA credential holders. We are also an official SBTi consulting partner." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "Our proprietary SustainTrack platform provides automated data collection with 99.7% accuracy rates. We implement multi-level verification including AI-powered anomaly detection, cross-reference validation with utility data, and independent third-party limited assurance engagements." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We deploy our proven Sustainability Champions model, identifying and training internal advocates across departments. This is complemented by regular town halls, interactive sustainability dashboards, and gamified engagement programs that have achieved 85%+ employee participation rates." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "Given the comprehensive scope, we recommend an 8-week assessment: Weeks 1-3 for thorough data gathering across all value chain categories, Weeks 4-6 for detailed analysis and scenario modeling, and Weeks 7-8 for strategic recommendations and implementation roadmap with board-ready deliverables." },
+    ],
   },
   s4: {
     id: "s4",
@@ -224,6 +359,13 @@ const submissionsData: Record<string, {
       { id: "a2", type: "form_submission", action: "Form submitted", detail: "Completed submission form", timestamp: "2026-03-22T09:55:00" },
       { id: "a3", type: "document_access", action: "Document viewed", detail: "Viewed RFP Document.pdf", timestamp: "2026-03-21T14:00:00" },
       { id: "a4", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-21T13:55:00" },
+    ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "EarthFirst Supplies has supported 20+ organisations in building sustainable procurement and operations frameworks. We focus on practical, affordable solutions tailored to the specific needs of each client." },
+      { question: "What certifications does your organization currently hold?", answer: "ISO 14001:2015 and we are a registered Fairtrade supply chain partner. Our team is trained in the GHG Protocol Corporate Standard." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We use a structured spreadsheet-based data collection process with mandatory source documentation for each data point. A senior team member reviews all submissions before finalisation." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We start with a senior leadership briefing to align on goals, then engage department heads through focused interviews and surveys. Progress is reported monthly through a simple dashboard." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "We propose a compact 4-week assessment: 1 week for scoping and data requests, 2 weeks for data collection and analysis, and 1 week for a written report and presentation of findings." },
     ],
   },
   s5: {
@@ -258,6 +400,13 @@ const submissionsData: Record<string, {
       { id: "a4", type: "document_access", action: "Document downloaded", detail: "Downloaded RFP Document.pdf", timestamp: "2026-03-24T11:00:00" },
       { id: "a5", type: "upload", action: "Document uploaded", detail: "Uploaded Certifications.pdf", timestamp: "2026-03-24T10:30:00" },
       { id: "a6", type: "login", action: "Portal login", detail: "Logged into supplier portal", timestamp: "2026-03-24T10:25:00" },
+    ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "CleanTech Office has completed 30+ sustainability projects with a particular focus on office environments, facilities management, and operational carbon reduction. Our client base spans professional services, real estate, and public sector organisations." },
+      { question: "What certifications does your organization currently hold?", answer: "ISO 14001:2015, ISO 50001:2018, and our team holds BREEAM AP and WELL AP credentials. We are also a registered EcoVadis Gold supplier." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We collect data through structured on-site audits supplemented by utility data APIs where available. All calculations are cross-checked against DEFRA and IEA emission factors, and we produce a reconciliation report for every submission." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "Our engagement approach is tailored to each client, but typically includes a kick-off workshop with all relevant teams, regular progress updates via a shared online portal, and a final debrief session with recommendations for ongoing improvement." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "We can deliver a comprehensive baseline assessment and initial recommendations within 5 weeks: a 1-week scoping call and data request, 2 weeks of on-site and remote data collection, 1 week of analysis, and a final presentation in week 5." },
     ],
   },
 }
@@ -670,6 +819,10 @@ function SubmissionDetailContent() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
+  
+  const tenderId = params.id as string
+  const submissionId = params.submissionId as string
+  
   const submission = submissionsData[submissionId]
   const communications = communicationsData[submissionId] || []
   const assessmentCategories = assessmentScoresData[submissionId] || []
@@ -679,6 +832,7 @@ function SubmissionDetailContent() {
   const tabs = [
     { key: "summary", label: "Summary" },
     { key: "results", label: "Results" },
+    { key: "questionnaire", label: "Questionnaire", count: submission?.questionnaireResponses?.length },
     { key: "documents", label: "Documents", count: submission?.documents.length },
     { key: "communication", label: "Communication", count: communications.length },
     { key: "activity", label: "Activity Log", count: submission?.activities.length },
@@ -1543,6 +1697,49 @@ function SubmissionDetailContent() {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* Questionnaire Tab */}
+        {activeTab === "questionnaire" && (
+          <Card className="border-[#E5E7EB] bg-white">
+            <CardHeader className="pb-3">
+              <div>
+                <CardTitle className="text-lg">Questionnaire Responses</CardTitle>
+                <p className="text-sm text-[#6B7280] mt-1">
+                  Supplier responses to the evaluation questions set for this RFP
+                </p>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {submission.questionnaireResponses && submission.questionnaireResponses.length > 0 ? (
+                <div className="space-y-4">
+                  {submission.questionnaireResponses.map((qr, idx) => (
+                    <div key={idx} className="border border-[#E5E7EB] rounded-lg overflow-hidden">
+                      <div className="bg-[#F9FAFB] px-4 py-3 border-b border-[#E5E7EB]">
+                        <div className="flex items-start gap-3">
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#16A34A]/10 text-[#16A34A] text-xs font-semibold flex items-center justify-center mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <p className="text-sm font-semibold text-[#111827] leading-snug">{qr.question}</p>
+                        </div>
+                      </div>
+                      <div className="px-4 py-3 pl-[52px]">
+                        <p className="text-sm text-[#374151] leading-relaxed">{qr.answer}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-12 h-12 rounded-full bg-[#F3F4F6] flex items-center justify-center mb-3">
+                    <FileText className="size-5 text-[#9CA3AF]" />
+                  </div>
+                  <p className="text-[#6B7280] font-medium">No questionnaire responses</p>
+                  <p className="text-sm text-[#9CA3AF] mt-1">This supplier did not submit responses to the evaluation questions.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Activity Log Tab */}

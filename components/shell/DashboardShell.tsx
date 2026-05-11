@@ -1,3 +1,24 @@
+/**
+ * DashboardShell Component
+ * 
+ * Main layout wrapper for both buyer and supplier dashboards.
+ * Provides:
+ * - Sidebar navigation (role-aware routing)
+ * - Chat panel (messaging UI)
+ * - Settings modal
+ * 
+ * Used by:
+ * - /app/buyer/layout.tsx
+ * - /app/supplier/layout.tsx
+ * 
+ * Props:
+ * - children: React.ReactNode - Page content to render in main area
+ * - variant: 'buyer' | 'supplier' - Used by Sidebar to show role-specific nav
+ * 
+ * Context:
+ * Wraps with ShellProvider for managing global shell state (settings modal, etc.)
+ */
+
 "use client";
 
 import React from 'react';

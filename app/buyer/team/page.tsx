@@ -138,30 +138,30 @@ export default function TeamPage() {
       </div>
 
       {/* Team Members Table */}
-      <div className="border border-border rounded-lg overflow-hidden bg-background">
-        <table className="w-full table-fixed">
+      <div className="border border-border rounded-lg bg-background">
+        <table className="w-full">
           <thead className="bg-surface border-b border-border">
             <tr>
-              <th className="w-[220px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Name
               </th>
-              <th className="w-[200px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Contact
               </th>
-              <th className="w-[120px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Department
               </th>
-              <th className="w-[100px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Role
               </th>
-              <th className="w-[80px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 RFPs
               </th>
-              <th className="w-[120px] px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-text-secondary uppercase tracking-wide">
                 Last Activity
               </th>
-              <th className="w-[100px] px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
-                Actions
+              <th className="w-16 px-6 py-3 text-right text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                
               </th>
             </tr>
           </thead>
@@ -203,10 +203,10 @@ export default function TeamPage() {
                     {member.roleType}
                   </Badge>
                 </td>
-                <td className="px-6 py-4 text-sm text-text-primary">
+                <td className="px-6 py-4 text-sm text-text-primary border-r-0">
                   <Badge variant="outline">{member.assignedRFPs.length}</Badge>
                 </td>
-                <td className="px-6 py-4 text-sm text-text-secondary">
+                <td className="px-6 py-4 text-sm text-text-secondary border-l-0">
                   {member.lastActivity
                     ? new Date(member.lastActivity).toLocaleDateString()
                     : 'Never'}
@@ -214,8 +214,9 @@ export default function TeamPage() {
                 <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                         <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open actions menu</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

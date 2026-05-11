@@ -1046,6 +1046,74 @@ function MessagesPageContent() {
                   </div>
                 </div>
 
+                {/* Approval Actions Banner */}
+                {(selectedThread as typeof selectedThread & { approvalData?: { approvalId: string; itemId: string; itemTitle: string; status: 'pending' | 'approved' | 'rejected' } }).approvalData && (
+                  <div className={`px-6 py-4 border-b border-[#E5E7EB] ${
+                    (selectedThread as typeof selectedThread & { approvalData?: { status: string } }).approvalData?.status === 'pending' 
+                      ? 'bg-amber-50' 
+                      : (selectedThread as typeof selectedThread & { approvalData?: { status: string } }).approvalData?.status === 'approved'
+                        ? 'bg-green-50'
+                        : 'bg-red-50'
+                  }`}>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        {(selectedThread as typeof selectedThread & { approvalData?: { status: string } }).approvalData?.status === 'pending' ? (
+                          <Clock className="h-5 w-5 text-amber-600" />
+                        ) : (selectedThread as typeof selectedThread & { approvalData?: { status: string } }).approvalData?.status === 'approved' ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <X className="h-5 w-5 text-red-600" />
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-[#111827]">
+                            {(selectedThread as typeof selectedThread & { approvalData?: { status: string } }).approvalData?.status === 'pending' 
+                              ? 'Approval Required' 
+                              : (selectedThread as typeof selectedThread & { approvalData?: { status: string } }).approvalData?.status === 'approved'
+                                ? 'Approved'
+                                : 'Rejected'}
+                          </p>
+                          <p className="text-xs text-[#6B7280]">
+                            {(selectedThread as typeof selectedThread & { approvalData?: { itemTitle: string } }).approvalData?.itemTitle}
+                          </p>
+                        </div>
+                      </div>
+                      {(selectedThread as typeof selectedThread & { approvalData?: { status: string } }).approvalData?.status === 'pending' && (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-red-300 text-red-700 hover:bg-red-100"
+                            onClick={() => {
+                              setThreads(prev => prev.map(t => 
+                                t.id === selectedThread.id 
+                                  ? { ...t, approvalData: { ...(t as typeof t & { approvalData: { approvalId: string; itemId: string; itemTitle: string; status: string } }).approvalData, status: 'rejected' as const } } 
+                                  : t
+                              ))
+                            }}
+                          >
+                            <X className="h-4 w-4 mr-1" />
+                            Reject
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-[#16A34A] hover:bg-[#15803D] text-white"
+                            onClick={() => {
+                              setThreads(prev => prev.map(t => 
+                                t.id === selectedThread.id 
+                                  ? { ...t, approvalData: { ...(t as typeof t & { approvalData: { approvalId: string; itemId: string; itemTitle: string; status: string } }).approvalData, status: 'approved' as const } } 
+                                  : t
+                              ))
+                            }}
+                          >
+                            <CheckCircle2 className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6">
                   {selectedThread.messages.map((message) => {

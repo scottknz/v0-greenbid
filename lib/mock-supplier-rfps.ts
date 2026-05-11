@@ -10,7 +10,8 @@ export type SupplierRFPPhase =
   | 'under_final_review' 
   | 'submitted' 
   | 'client_reviewing' 
-  | 'awarded' 
+  | 'awarded'
+  | 'contract_agreed'
   | 'rejected' 
   | 'declined'
 
@@ -111,6 +112,15 @@ export const SUPPLIER_PHASE_CONFIG = {
     color: 'bg-green-100 text-green-800', 
     bgColor: 'bg-green-50', 
     borderColor: 'border-green-200', 
+    progressPercent: 100 
+  },
+  contract_agreed: { 
+    label: 'Contract Agreed', 
+    shortLabel: 'Contract Agreed',
+    icon: 'check-circle',
+    color: 'bg-emerald-100 text-emerald-800', 
+    bgColor: 'bg-emerald-50', 
+    borderColor: 'border-emerald-300', 
     progressPercent: 100 
   },
   rejected: { 
@@ -449,5 +459,5 @@ export function getPhaseConfig(phase: SupplierRFPPhase) {
 }
 
 export function isTerminalPhase(phase: SupplierRFPPhase): boolean {
-  return ['awarded', 'rejected', 'declined'].includes(phase)
+  return ['awarded', 'contract_agreed', 'rejected', 'declined'].includes(phase)
 }

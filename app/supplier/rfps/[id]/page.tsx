@@ -263,6 +263,40 @@ export default function RFPDetailPage() {
     }
     setCurrentApproval(newApproval)
     setShowApprovalModal(false)
+    
+    // Create approval notification message thread
+    const approvalMessage = `Approval requested for proposal submission: ${rfp.title}\n\n${data.message || 'No additional message provided.'}`
+    const threadId = `t${Date.now()}`
+    const newThread: MessageThread & { approvalData?: { approvalId: string; itemId: string; itemTitle: string; status: 'pending' | 'approved' | 'rejected' } } = {
+      id: threadId,
+      subject: `Approval Requested: ${rfp.title}`,
+      visibility: 'private',
+      status: 'awaiting',
+      isRead: true,
+      isStarred: false,
+      isArchived: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      lastSender: 'John Smith',
+      lastSenderType: 'supplier',
+      participants: data.approverIds,
+      approvalData: {
+        approvalId: newApproval.id,
+        itemId: rfp.id,
+        itemTitle: rfp.title,
+        status: 'pending',
+      },
+      messages: [{
+        id: `m${Date.now()}`,
+        senderId: 'supplier',
+        senderName: 'John Smith',
+        senderType: 'supplier',
+        content: approvalMessage,
+        attachments: [],
+        timestamp: new Date().toISOString(),
+      }],
+    }
+    setMessageThreads(prev => [newThread, ...prev])
   }
   
   // Calculate days until deadline
@@ -471,14 +505,30 @@ export default function RFPDetailPage() {
     e.target.value = ''
   }
   
+  // Completion checks for each preparation sub-step
+  const isQuestionnaireComplete = rfp.buyerQuestions.every(
+    q => !q.required || (questionResponses[q.id] && questionResponses[q.id].trim() !== '')
+  )
+  const isDocumentsComplete = mockProposalDocuments.some(d => d.status === 'active') || submissionAttachments.length > 0
+
   const handleProgressProposal = () => {
     if (currentPhase === 'new_rfp') {
       setShowInitialReviewModal(true)
     } else if (currentPhase === 'in_progress') {
-      setActiveTab('questionnaire')
+      // Navigate to the first incomplete step, or advance phase if all done
+      if (!isQuestionnaireComplete) {
+        setActiveTab('questionnaire')
+      } else if (!isDocumentsComplete) {
+        setActiveTab('documents')
+      } else {
+        // All preparation steps done — advance to Internal Review
+        handleMoveForward()
+      }
     } else if (currentPhase === 'under_final_review') {
       if (!currentApproval) {
         setShowApprovalModal(true)
+      } else if (currentApproval.status === 'approved') {
+        handleSubmitProposal()
       }
     }
   }
@@ -490,12 +540,15 @@ export default function RFPDetailPage() {
   
   const getProgressButtonLabel = () => {
     switch (currentPhase) {
-      case 'new_rfp': return 'Progress Proposal'
-      case 'in_progress': return 'Progress Proposal'
+      case 'new_rfp': return 'Begin Preparation'
+      case 'in_progress':
+        if (!isQuestionnaireComplete) return 'Complete Questionnaire'
+        if (!isDocumentsComplete) return 'Upload Documents'
+        return 'Proceed to Review'
       case 'under_final_review': 
         if (currentApproval?.status === 'pending') return 'Awaiting Approval'
         if (currentApproval?.status === 'approved') return 'Submit to Client'
-        return 'Progress Proposal'
+        return 'Send for Approval'
       default: return 'View Status'
     }
   }
@@ -840,6 +893,7 @@ export default function RFPDetailPage() {
               {[
                 { key: 'overview', label: 'Overview', icon: Eye },
                 { key: 'team', label: 'Team', icon: Users },
+                { key: 'approvals', label: 'Approvals', icon: CheckCircle2, badge: currentApproval?.status === 'pending' },
                 { key: 'documents', label: 'Documents', icon: Folder },
                 { key: 'questionnaire', label: 'Questionnaire', icon: HelpCircle },
                 { key: 'messages', label: 'Messages', icon: MessageSquare, badge: mockMessages.some(m => m.unread) },
@@ -1667,6 +1721,57 @@ export default function RFPDetailPage() {
             </Card>
           )}
 
+          {activeTab === 'approvals' && (
+            <Card className="border-[#E5E7EB]">
+              <CardHeader>
+                <CardTitle className="text-base">Internal Approvals</CardTitle>
+                <p className="text-sm text-text-secondary mt-1">
+                  Track approval status from your team members before submitting to the client.
+                </p>
+              </CardHeader>
+              <CardContent>
+                {currentApproval ? (
+                  <ApprovalStatus 
+                    approval={currentApproval} 
+                    onRetry={() => {
+                      // Resend approval requests
+                    }}
+                    onResubmit={() => {
+                      // Clear changes_requested status and re-send
+                      setCurrentApproval({
+                        ...currentApproval,
+                        status: 'pending',
+                        approvers: currentApproval.approvers.map(a => ({
+                          ...a,
+                          status: 'pending' as const,
+                          comment: undefined,
+                          respondedAt: undefined,
+                        })),
+                      })
+                    }}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 text-center border border-dashed border-[#E5E7EB] rounded-lg">
+                    <CheckCircle2 className="h-10 w-10 text-text-secondary mb-3" />
+                    <h3 className="text-sm font-medium text-text-primary mb-1">No Approval Request</h3>
+                    <p className="text-sm text-text-secondary max-w-sm">
+                      When you&apos;re ready to submit, use the &quot;Send for Approval&quot; button to request sign-off from your team.
+                    </p>
+                    {currentPhase === 'under_final_review' && (
+                      <Button
+                        className="mt-4 bg-[#16A34A] hover:bg-[#15803D]"
+                        onClick={() => setShowApprovalModal(true)}
+                      >
+                        <Send className="h-4 w-4 mr-2" />
+                        Send for Approval
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {activeTab === 'notes' && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -2010,64 +2115,17 @@ export default function RFPDetailPage() {
       </Dialog>
 
       {/* Approval Modal */}
-      <Dialog open={showApprovalModal} onOpenChange={setShowApprovalModal}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Send for Internal Review</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-text-secondary mb-4">
-            Select team members who need to approve this proposal before it can be submitted to the client.
-          </p>
-          
-          <div className="space-y-3">
-            <Label>Select Approvers</Label>
-            <div className="space-y-2 max-h-[200px] overflow-y-auto">
-              {mockApprovers.map((approver) => (
-                <label
-                  key={approver.id}
-                  className={cn(
-                    'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
-                    selectedApprovers.includes(approver.id)
-                      ? 'border-[#16A34A] bg-green-50'
-                      : 'border-gray-200 hover:bg-gray-50'
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedApprovers.includes(approver.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedApprovers([...selectedApprovers, approver.id])
-                      } else {
-                        setSelectedApprovers(selectedApprovers.filter(id => id !== approver.id))
-                      }
-                    }}
-                    className="h-4 w-4 rounded border-gray-300 text-[#16A34A] focus:ring-[#16A34A]"
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-text-primary">{approver.name}</p>
-                    <p className="text-xs text-text-secondary">{approver.role} • {approver.email}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-          
-          <DialogFooter className="gap-2 mt-4">
-            <Button variant="outline" onClick={() => setShowApprovalModal(false)}>
-              Cancel
-            </Button>
-            <Button
-              className="bg-[#16A34A] hover:bg-[#15803D]"
-              onClick={() => handleSendForApproval({ approverIds: selectedApprovers, message: '', approvalMode: 'any' })}
-              disabled={selectedApprovers.length === 0}
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Send for Review
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ApprovalRequestModal
+        open={showApprovalModal}
+        onOpenChange={setShowApprovalModal}
+        title="Send for Internal Review"
+        description="Select team members who need to approve this proposal before it can be submitted to the client."
+        type="rfp_submission"
+        itemId={rfp.id}
+        itemTitle={rfp.title}
+        availableApprovers={availableTeamApprovers}
+        onSubmit={handleSendForApproval}
+      />
       
       {/* Phase History Modal */}
       <Dialog open={showPhaseHistoryModal} onOpenChange={setShowPhaseHistoryModal}>

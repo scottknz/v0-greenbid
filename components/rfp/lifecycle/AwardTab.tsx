@@ -55,6 +55,7 @@ interface AwardTabProps {
   onSelectWinner: (responseId: string, contractValue: number) => void;
   onSendNotification: (notification: Partial<PostAwardCommunication>) => void;
   onAddNextStep: (step: { title: string; description: string; dueDate?: string }) => void;
+  onUpdateAwardStatus?: (status: RFPAward['status']) => void;
 }
 
 // Step 1 — confirm the winner
@@ -112,6 +113,7 @@ export function AwardTab({
   onSelectWinner,
   onSendNotification,
   onAddNextStep,
+  onUpdateAwardStatus,
 }: AwardTabProps) {
   const router = useRouter();
 
@@ -134,6 +136,18 @@ export function AwardTab({
   const [nextStepTitle, setNextStepTitle] = useState('');
   const [nextStepDescription, setNextStepDescription] = useState('');
   const [nextStepDueDate, setNextStepDueDate] = useState('');
+
+  // Notification modals for awarded state
+  const [showWinnerNotifyModal, setShowWinnerNotifyModal] = useState(false);
+  const [showUnsuccessfulNotifyModal, setShowUnsuccessfulNotifyModal] = useState(false);
+  const [winnerNotifySubject, setWinnerNotifySubject] = useState('');
+  const [winnerNotifyMessage, setWinnerNotifyMessage] = useState('');
+  const [winnerNotifySent, setWinnerNotifySent] = useState(false);
+  const [unsuccessfulNotifySubject, setUnsuccessfulNotifySubject] = useState('');
+  const [unsuccessfulNotifyMessage, setUnsuccessfulNotifyMessage] = useState('');
+  const [unsuccessfulRecipientMode, setUnsuccessfulRecipientMode] = useState<'all' | 'individual'>('all');
+  const [selectedUnsuccessfulId, setSelectedUnsuccessfulId] = useState<string>('');
+  const [notifiedUnsuccessfulIds, setNotifiedUnsuccessfulIds] = useState<Set<string>>(new Set());
 
   const awardedResponse = award ? responses.find(r => r.id === award.awardedResponseId) : null;
   const unsuccessfulResponses = award
@@ -670,6 +684,143 @@ export function AwardTab({
   }
 
   // ─── Awarded state ───────────────────────────────────────────────────────────
+
+  // Open "Notify Successful Bidder" modal
+  const handleOpenWinnerNotify = () => {
+    const winnerName = awardedResponse?.supplierName || 'Supplier';
+    setWinnerNotifySubject(`Congratulations — Contract Awarded: ${rfpTitle}`);
+    setWinnerNotifyMessage(buildAwardMessage(winnerName, rfpTitle));
+    setWinnerNotifySent(false);
+    setShowWinnerNotifyModal(true);
+  };
+
+  // Send winner notification
+  const handleSendWinnerNotify = () => {
+    if (!awardedResponse) return;
+    const now = new Date().toISOString();
+
+    onSendNotification({
+      rfpId,
+      responseId: awardedResponse.id,
+      supplierId: awardedResponse.supplierId,
+      supplierName: awardedResponse.supplierName,
+      notificationType: 'award_notification',
+      subject: winnerNotifySubject,
+      message: winnerNotifyMessage,
+      status: 'sent',
+      sentAt: now,
+      sentBy: 'current-user',
+      sentByName: 'Procurement Team',
+      attachments: [],
+    });
+
+    saveThreadsToLocalStorage([{
+      id: `winner-notify-${rfpId}-${awardedResponse.id}-${Date.now()}`,
+      rfpId,
+      rfpTitle,
+      subject: winnerNotifySubject,
+      visibility: 'private',
+      status: 'awaiting',
+      isRead: true,
+      isStarred: false,
+      isArchived: false,
+      tag: 'award',
+      createdAt: now,
+      updatedAt: now,
+      lastSender: 'Procurement Team',
+      lastSenderType: 'buyer',
+      participants: [awardedResponse.supplierId],
+      messages: [{
+        id: `winner-msg-${awardedResponse.id}-${Date.now()}`,
+        senderId: 'buyer',
+        senderName: 'Procurement Team',
+        senderType: 'buyer',
+        content: winnerNotifyMessage,
+        attachments: [],
+        timestamp: now,
+      }],
+    }]);
+
+    setWinnerNotifySent(true);
+  };
+
+  // Open "Notify Unsuccessful Bidders" modal
+  const handleOpenUnsuccessfulNotify = () => {
+    setUnsuccessfulNotifySubject(`RFP Decision — Thank you for your participation`);
+    setUnsuccessfulNotifyMessage(buildRejectionMessage('{supplierName}', rfpTitle));
+    setUnsuccessfulRecipientMode('all');
+    setSelectedUnsuccessfulId('');
+    setShowUnsuccessfulNotifyModal(true);
+  };
+
+  // Send unsuccessful notifications
+  const handleSendUnsuccessfulNotify = () => {
+    const now = new Date().toISOString();
+    const recipients = unsuccessfulRecipientMode === 'all'
+      ? unsuccessfulResponses
+      : unsuccessfulResponses.filter(r => r.id === selectedUnsuccessfulId);
+
+    const threadsToSave: object[] = [];
+    const newNotifiedIds = new Set(notifiedUnsuccessfulIds);
+
+    recipients.forEach(resp => {
+      const personalizedMessage = unsuccessfulNotifyMessage.replace(/{supplierName}/g, resp.supplierName);
+
+      onSendNotification({
+        rfpId,
+        responseId: resp.id,
+        supplierId: resp.supplierId,
+        supplierName: resp.supplierName,
+        notificationType: 'rejection_notification',
+        subject: unsuccessfulNotifySubject,
+        message: personalizedMessage,
+        status: 'sent',
+        sentAt: now,
+        sentBy: 'current-user',
+        sentByName: 'Procurement Team',
+        attachments: [],
+      });
+
+      threadsToSave.push({
+        id: `reject-notify-${rfpId}-${resp.id}-${Date.now()}`,
+        rfpId,
+        rfpTitle,
+        subject: unsuccessfulNotifySubject,
+        visibility: 'private',
+        status: 'awaiting',
+        isRead: true,
+        isStarred: false,
+        isArchived: false,
+        tag: 'rejection',
+        createdAt: now,
+        updatedAt: now,
+        lastSender: 'Procurement Team',
+        lastSenderType: 'buyer',
+        participants: [resp.supplierId],
+        messages: [{
+          id: `reject-msg-${resp.id}-${Date.now()}`,
+          senderId: 'buyer',
+          senderName: 'Procurement Team',
+          senderType: 'buyer',
+          content: personalizedMessage,
+          attachments: [],
+          timestamp: now,
+        }],
+      });
+
+      newNotifiedIds.add(resp.id);
+    });
+
+    saveThreadsToLocalStorage(threadsToSave);
+    setNotifiedUnsuccessfulIds(newNotifiedIds);
+    setShowUnsuccessfulNotifyModal(false);
+  };
+
+  // Compute notification status for unsuccessful bidders
+  const allUnsuccessfulNotified = unsuccessfulResponses.length > 0 &&
+    unsuccessfulResponses.every(r => notifiedUnsuccessfulIds.has(r.id));
+  const someUnsuccessfulNotified = notifiedUnsuccessfulIds.size > 0 && !allUnsuccessfulNotified;
+
   return (
     <div className="space-y-6">
       {/* Award Banner */}
@@ -696,19 +847,35 @@ export function AwardTab({
                 </span>
               </div>
             </div>
-            <Badge
-              variant="outline"
-              className={cn(
-                'text-sm shrink-0',
-                award.status === 'accepted' && 'bg-green-50 text-green-700 border-green-200',
-                award.status === 'pending' && 'bg-amber-50 text-amber-700 border-amber-200',
-                award.status === 'finalized' && 'bg-brand-green-light text-brand-green border-brand-green/20'
+            <div className="flex flex-col items-end gap-2 shrink-0">
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-sm',
+                  award.status === 'contract_agreed' && 'bg-emerald-50 text-emerald-700 border-emerald-300',
+                  award.status === 'accepted' && 'bg-green-50 text-green-700 border-green-200',
+                  award.status === 'pending' && 'bg-amber-50 text-amber-700 border-amber-200',
+                  award.status === 'finalized' && 'bg-brand-green-light text-brand-green border-brand-green/20',
+                  award.status === 'declined' && 'bg-red-50 text-red-700 border-red-200',
+                )}
+              >
+                {award.status === 'contract_agreed' && <CheckCircle className="h-4 w-4 mr-1" />}
+                {award.status === 'accepted' && <CheckCircle className="h-4 w-4 mr-1" />}
+                {award.status === 'pending' && <Clock className="h-4 w-4 mr-1" />}
+                {award.status === 'contract_agreed'
+                  ? 'Contract Agreed'
+                  : award.status.charAt(0).toUpperCase() + award.status.slice(1)}
+              </Badge>
+              {/* Simulate supplier response button — visible only when pending and notification sent */}
+              {award.status === 'pending' && award.awardMessageSent && (
+                <button
+                  onClick={() => onUpdateAwardStatus?.('contract_agreed')}
+                  className="text-xs text-text-muted hover:text-brand-green underline underline-offset-2 transition-colors"
+                >
+                  Simulate: Supplier accepts
+                </button>
               )}
-            >
-              {award.status === 'accepted' && <CheckCircle className="h-4 w-4 mr-1" />}
-              {award.status === 'pending' && <Clock className="h-4 w-4 mr-1" />}
-              {award.status.charAt(0).toUpperCase() + award.status.slice(1)}
-            </Badge>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -724,42 +891,87 @@ export function AwardTab({
             <CardDescription>Supplier notifications sent for this RFP</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* Status summary */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className={cn(
-                'flex items-center gap-3 p-3 rounded-lg border',
-                award.awardMessageSent ? 'bg-green-50 border-green-200' : 'bg-surface border-border'
-              )}>
+            {/* Notification action cards */}
+            <div className="grid grid-cols-1 gap-3">
+              {/* Notify Successful Bidder */}
+              <button
+                onClick={handleOpenWinnerNotify}
+                disabled={award.awardMessageSent}
+                className={cn(
+                  'flex items-center gap-3 p-4 rounded-lg border text-left transition-all w-full',
+                  award.awardMessageSent
+                    ? 'bg-green-50 border-green-300 cursor-default'
+                    : 'bg-surface border-border hover:border-brand-green hover:shadow-sm cursor-pointer'
+                )}
+              >
                 <div className={cn(
-                  'h-8 w-8 rounded-full flex items-center justify-center shrink-0',
-                  award.awardMessageSent ? 'bg-green-100' : 'bg-surface border border-border'
+                  'h-10 w-10 rounded-full flex items-center justify-center shrink-0',
+                  award.awardMessageSent ? 'bg-green-500' : 'bg-brand-green-light'
                 )}>
                   {award.awardMessageSent
-                    ? <CheckCircle className="h-4 w-4 text-green-600" />
-                    : <Trophy className="h-4 w-4 text-text-muted" />}
+                    ? <CheckCircle className="h-5 w-5 text-white" />
+                    : <Trophy className="h-5 w-5 text-brand-green" />}
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-text-primary">Award Notice</p>
-                  <p className="text-xs text-text-muted">{award.awardMessageSent ? 'Sent' : 'Not sent'}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-text-primary">
+                    {award.awardMessageSent ? 'Successful Bidder Notified' : 'Notify Successful Bidder'}
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    {award.awardMessageSent
+                      ? `Sent to ${awardedResponse?.supplierName}`
+                      : `Send award notification to ${awardedResponse?.supplierName}`}
+                  </p>
                 </div>
-              </div>
-              <div className={cn(
-                'flex items-center gap-3 p-3 rounded-lg border',
-                award.rejectionMessagesSent ? 'bg-green-50 border-green-200' : 'bg-surface border-border'
-              )}>
+                {!award.awardMessageSent && (
+                  <ChevronRight className="h-5 w-5 text-text-muted shrink-0" />
+                )}
+              </button>
+
+              {/* Notify Unsuccessful Bidders */}
+              <button
+                onClick={handleOpenUnsuccessfulNotify}
+                disabled={allUnsuccessfulNotified}
+                className={cn(
+                  'flex items-center gap-3 p-4 rounded-lg border text-left transition-all w-full',
+                  allUnsuccessfulNotified
+                    ? 'bg-green-50 border-green-300 cursor-default'
+                    : someUnsuccessfulNotified
+                    ? 'bg-amber-50 border-amber-300 hover:border-amber-400 hover:shadow-sm cursor-pointer'
+                    : 'bg-surface border-border hover:border-brand-green hover:shadow-sm cursor-pointer'
+                )}
+              >
                 <div className={cn(
-                  'h-8 w-8 rounded-full flex items-center justify-center shrink-0',
-                  award.rejectionMessagesSent ? 'bg-green-100' : 'bg-surface border border-border'
+                  'h-10 w-10 rounded-full flex items-center justify-center shrink-0',
+                  allUnsuccessfulNotified
+                    ? 'bg-green-500'
+                    : someUnsuccessfulNotified
+                    ? 'bg-amber-500'
+                    : 'bg-surface border border-border'
                 )}>
-                  {award.rejectionMessagesSent
-                    ? <CheckCircle className="h-4 w-4 text-green-600" />
-                    : <MessageSquare className="h-4 w-4 text-text-muted" />}
+                  {allUnsuccessfulNotified
+                    ? <CheckCircle className="h-5 w-5 text-white" />
+                    : someUnsuccessfulNotified
+                    ? <MessageSquare className="h-5 w-5 text-white" />
+                    : <MessageSquare className="h-5 w-5 text-text-muted" />}
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-text-primary">Decline Notices</p>
-                  <p className="text-xs text-text-muted">{award.rejectionMessagesSent ? 'Sent' : 'Not sent'}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-text-primary">
+                    {allUnsuccessfulNotified
+                      ? 'All Unsuccessful Bidders Notified'
+                      : 'Notify Unsuccessful Bidders'}
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    {allUnsuccessfulNotified
+                      ? `Sent to ${unsuccessfulResponses.length} supplier${unsuccessfulResponses.length !== 1 ? 's' : ''}`
+                      : someUnsuccessfulNotified
+                      ? `${notifiedUnsuccessfulIds.size} of ${unsuccessfulResponses.length} notified`
+                      : `Send decline notice to ${unsuccessfulResponses.length} supplier${unsuccessfulResponses.length !== 1 ? 's' : ''}`}
+                  </p>
                 </div>
-              </div>
+                {!allUnsuccessfulNotified && (
+                  <ChevronRight className="h-5 w-5 text-text-muted shrink-0" />
+                )}
+              </button>
             </div>
 
             {/* View in message centre */}
@@ -769,7 +981,7 @@ export function AwardTab({
               onClick={() => router.push('/buyer/messages')}
             >
               <span className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
+                <ExternalLink className="h-4 w-4" />
                 View in Message Centre
               </span>
               <ChevronRight className="h-4 w-4 text-text-muted" />
@@ -863,6 +1075,227 @@ export function AwardTab({
           </CardContent>
         </Card>
       </div>
+
+      {/* Notify Successful Bidder Modal */}
+      <Dialog open={showWinnerNotifyModal} onOpenChange={open => { setShowWinnerNotifyModal(open); if (!open) setWinnerNotifySent(false); }}>
+        <DialogContent className="sm:max-w-[540px] flex flex-col max-h-[85vh] p-0 gap-0">
+          {!winnerNotifySent ? (
+            <>
+              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
+                <DialogTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-brand-green" />
+                  Notify Successful Bidder
+                </DialogTitle>
+                <DialogDescription>
+                  Send the award notification to {awardedResponse?.supplierName}. This will be saved to the Message Centre.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10 border border-green-300">
+                      <AvatarFallback className="bg-green-100 text-green-700 text-sm font-semibold">
+                        {getInitials(awardedResponse?.supplierName || '')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-green-800">{awardedResponse?.supplierName}</p>
+                      <p className="text-xs text-green-600">Awarded Supplier</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Subject</Label>
+                  <Input
+                    value={winnerNotifySubject}
+                    onChange={e => setWinnerNotifySubject(e.target.value)}
+                    placeholder="Enter subject"
+                    className="bg-background border-border"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Message</Label>
+                  <Textarea
+                    value={winnerNotifyMessage}
+                    onChange={e => setWinnerNotifyMessage(e.target.value)}
+                    placeholder="Write your message here..."
+                    className="min-h-[180px] bg-background border-border resize-none"
+                  />
+                </div>
+              </div>
+              <DialogFooter className="px-6 py-4 border-t border-border shrink-0 gap-2">
+                <Button variant="outline" onClick={() => setShowWinnerNotifyModal(false)}>Cancel</Button>
+                <Button
+                  onClick={handleSendWinnerNotify}
+                  disabled={!winnerNotifySubject.trim() || !winnerNotifyMessage.trim()}
+                  className="bg-brand-green hover:bg-brand-green-mid text-white"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  Send Notification
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
+                <DialogTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-brand-green" />
+                  Notification Sent
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 px-6 py-8 flex flex-col items-center gap-4 text-center">
+                <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center">
+                  <Trophy className="h-7 w-7 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-text-primary text-lg">Award notification sent</p>
+                  <p className="text-sm text-text-secondary mt-1">
+                    {awardedResponse?.supplierName} has been notified of the contract award.
+                  </p>
+                </div>
+              </div>
+              <DialogFooter className="px-6 py-4 border-t border-border shrink-0 gap-2">
+                <Button variant="outline" onClick={() => setShowWinnerNotifyModal(false)}>Close</Button>
+                <Button
+                  onClick={() => router.push('/buyer/messages')}
+                  className="bg-brand-green hover:bg-brand-green-mid text-white"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View in Message Centre
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Notify Unsuccessful Bidders Modal */}
+      <Dialog open={showUnsuccessfulNotifyModal} onOpenChange={setShowUnsuccessfulNotifyModal}>
+        <DialogContent className="sm:max-w-[540px] flex flex-col max-h-[85vh] p-0 gap-0">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-text-primary" />
+              Notify Unsuccessful Bidders
+            </DialogTitle>
+            <DialogDescription>
+              Send decline notifications. Messages will be saved to the Message Centre.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            {/* Recipient selection */}
+            <div className="space-y-2">
+              <Label className="text-sm">Send to</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={unsuccessfulRecipientMode === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setUnsuccessfulRecipientMode('all')}
+                  className={cn(
+                    unsuccessfulRecipientMode === 'all'
+                      ? 'bg-brand-green hover:bg-brand-green-mid text-white'
+                      : 'border-border'
+                  )}
+                >
+                  All Unsuccessful ({unsuccessfulResponses.length})
+                </Button>
+                <Button
+                  type="button"
+                  variant={unsuccessfulRecipientMode === 'individual' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setUnsuccessfulRecipientMode('individual')}
+                  className={cn(
+                    unsuccessfulRecipientMode === 'individual'
+                      ? 'bg-brand-green hover:bg-brand-green-mid text-white'
+                      : 'border-border'
+                  )}
+                >
+                  Individual
+                </Button>
+              </div>
+            </div>
+
+            {/* Individual supplier selector */}
+            {unsuccessfulRecipientMode === 'individual' && (
+              <div className="space-y-2">
+                <Label className="text-sm">Select Supplier</Label>
+                <select
+                  value={selectedUnsuccessfulId}
+                  onChange={e => setSelectedUnsuccessfulId(e.target.value)}
+                  className="w-full h-9 rounded-md border border-border bg-background px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-green/30"
+                >
+                  <option value="">Choose a supplier...</option>
+                  {unsuccessfulResponses.map(r => (
+                    <option key={r.id} value={r.id} disabled={notifiedUnsuccessfulIds.has(r.id)}>
+                      {r.supplierName} {notifiedUnsuccessfulIds.has(r.id) ? '(already notified)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Recipients preview */}
+            {unsuccessfulRecipientMode === 'all' && (
+              <div className="p-3 rounded-lg bg-surface border border-border">
+                <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-2">Recipients</p>
+                <div className="flex flex-wrap gap-2">
+                  {unsuccessfulResponses.map(r => (
+                    <div
+                      key={r.id}
+                      className={cn(
+                        'inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs',
+                        notifiedUnsuccessfulIds.has(r.id)
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-surface-hover text-text-secondary'
+                      )}
+                    >
+                      {notifiedUnsuccessfulIds.has(r.id) && <CheckCircle className="h-3 w-3" />}
+                      {r.supplierName}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label className="text-sm">Subject</Label>
+              <Input
+                value={unsuccessfulNotifySubject}
+                onChange={e => setUnsuccessfulNotifySubject(e.target.value)}
+                placeholder="Enter subject"
+                className="bg-background border-border"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">Message</Label>
+              <p className="text-xs text-text-muted">Use {'{supplierName}'} to personalize each message.</p>
+              <Textarea
+                value={unsuccessfulNotifyMessage}
+                onChange={e => setUnsuccessfulNotifyMessage(e.target.value)}
+                placeholder="Write your message here..."
+                className="min-h-[140px] bg-background border-border resize-none"
+              />
+            </div>
+          </div>
+          <DialogFooter className="px-6 py-4 border-t border-border shrink-0 gap-2">
+            <Button variant="outline" onClick={() => setShowUnsuccessfulNotifyModal(false)}>Cancel</Button>
+            <Button
+              onClick={handleSendUnsuccessfulNotify}
+              disabled={
+                !unsuccessfulNotifySubject.trim() ||
+                !unsuccessfulNotifyMessage.trim() ||
+                (unsuccessfulRecipientMode === 'individual' && !selectedUnsuccessfulId)
+              }
+              className="bg-brand-green hover:bg-brand-green-mid text-white"
+            >
+              <Send className="h-4 w-4 mr-2" />
+              {unsuccessfulRecipientMode === 'all'
+                ? `Send to ${unsuccessfulResponses.filter(r => !notifiedUnsuccessfulIds.has(r.id)).length} Suppliers`
+                : 'Send Notification'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Next Step Modal */}
       <Dialog open={showNextStepModal} onOpenChange={setShowNextStepModal}>

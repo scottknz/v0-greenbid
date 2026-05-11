@@ -123,7 +123,7 @@ export default function MarketplaceDetailPage() {
       <div className="bg-white border-b border-border sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
           <Link
-            href="/marketplace"
+            href="/supplier/marketplace"
             className="flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />

@@ -3,21 +3,20 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
-import Image from 'next/image';
 import {
   ArrowLeft,
   FileText,
   Users,
   Scale,
   Trophy,
+  CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { RFPProgressBar } from '@/components/rfp/RFPProgressBar';
 
 // Import lifecycle components
-import { ResponsesTab } from '@/components/rfp/lifecycle/ResponsesTab';
+import { SubmissionsTab } from '@/components/rfp/lifecycle/SubmissionsTab';
 import { InterviewsTab } from '@/components/rfp/lifecycle/InterviewsTab';
 import { EvaluationTab } from '@/components/rfp/lifecycle/EvaluationTab';
 import { AwardTab } from '@/components/rfp/lifecycle/AwardTab';
@@ -53,13 +52,22 @@ const tenderData = {
   budget: 125000,
 };
 
-type LifecycleTab = 'responses' | 'interviews' | 'evaluation' | 'award';
+// RFP Lifecycle phases configuration
+const lifecyclePhases = [
+  { key: 'submissions', label: 'Submissions', icon: FileText },
+  { key: 'interviews', label: 'Interviews', icon: Users },
+  { key: 'evaluation', label: 'Evaluation', icon: Scale },
+  { key: 'award', label: 'Award', icon: Trophy },
+  { key: 'closed', label: 'Closed', icon: CheckCircle2 },
+] as const;
+
+type LifecycleTab = 'submissions' | 'interviews' | 'evaluation' | 'award';
 
 const phaseToTab: Record<RFPPhase, LifecycleTab> = {
-  draft: 'responses',
-  published: 'responses',
-  accepting_responses: 'responses',
-  response_review: 'responses',
+  draft: 'submissions',
+  published: 'submissions',
+  accepting_responses: 'submissions',
+  response_review: 'submissions',
   interviews_in_progress: 'interviews',
   evaluation: 'evaluation',
   final_selection: 'evaluation',
@@ -74,10 +82,10 @@ export default function TenderManagePage() {
   const rfpId = params.id as string;
 
   // State
-  const [activeTab, setActiveTab] = useState<LifecycleTab>('responses');
-  const [responses, setResponses] = useState<RFPResponse[]>(mockResponses);
+  const [activeTab, setActiveTab] = useState<LifecycleTab>('submissions');
+  const [currentPhase, setCurrentPhase] = useState<'submissions' | 'interviews' | 'evaluation' | 'award' | 'closed'>('submissions');
+  const [submissions, setSubmissions] = useState<RFPResponse[]>(mockResponses);
   const [interviews, setInterviews] = useState<RFPInterview[]>(mockInterviews);
-  const [selectedResponse, setSelectedResponse] = useState<RFPResponse | null>(null);
   const [award, setAward] = useState<RFPAward | undefined>(undefined);
   const [communications, setCommunications] = useState<PostAwardCommunication[]>([]);
 
@@ -85,32 +93,26 @@ export default function TenderManagePage() {
   const stats = mockLifecycleStats;
 
   // Handlers
-  const handleViewResponse = (response: RFPResponse) => {
-    setSelectedResponse(response);
-    // Could open a detail modal or navigate to detail page
-    console.log('[v0] View response:', response.supplierName);
-  };
-
-  const handleShortlist = (responseIds: string[]) => {
-    setResponses(prev =>
+  const handleShortlist = (submissionIds: string[]) => {
+    setSubmissions(prev =>
       prev.map(r =>
-        responseIds.includes(r.id)
+        submissionIds.includes(r.id)
           ? { ...r, status: 'shortlisted' as const, shortlistedAt: new Date().toISOString() }
           : r
       )
     );
-    console.log('[v0] Shortlisted responses:', responseIds);
+    console.log('[v0] Shortlisted submissions:', submissionIds);
   };
 
-  const handleRequestClarification = (responseId: string) => {
-    setResponses(prev =>
+  const handleRequestClarification = (submissionId: string) => {
+    setSubmissions(prev =>
       prev.map(r =>
-        r.id === responseId
+        r.id === submissionId
           ? { ...r, status: 'clarifications_requested' as const }
           : r
       )
     );
-    console.log('[v0] Requested clarification for:', responseId);
+    console.log('[v0] Requested clarification for:', submissionId);
   };
 
   const handleScheduleInterview = (interview: Partial<RFPInterview>) => {
@@ -173,24 +175,24 @@ export default function TenderManagePage() {
     console.log('[v0] Cancelled interview:', id);
   };
 
-  const handleTriageResponse = (responseId: string, action: 'consider' | 'reject' | 'follow_up') => {
-    const response = responses.find(r => r.id === responseId);
-    if (!response) return;
+  const handleTriageSubmission = (submissionId: string, action: 'consider' | 'reject' | 'follow_up') => {
+    const submission = submissions.find(r => r.id === submissionId);
+    if (!submission) return;
 
-    let newStatus: typeof response.status;
+    let newStatus: typeof submission.status;
     if (action === 'consider') {
       newStatus = 'shortlisted';
     } else if (action === 'reject') {
       newStatus = 'rejected';
     } else {
       // follow_up - keep as is but could track this in a separate field
-      newStatus = response.status;
+      newStatus = submission.status;
     }
 
-    setResponses(prev =>
-      prev.map(r => (r.id === responseId ? { ...r, status: newStatus } : r))
+    setSubmissions(prev =>
+      prev.map(r => (r.id === submissionId ? { ...r, status: newStatus } : r))
     );
-    console.log('[v0] Triaged response:', responseId, 'action:', action, 'new status:', newStatus);
+    console.log('[v0] Triaged submission:', submissionId, 'action:', action, 'new status:', newStatus);
   };
 
   const handleSaveScore = (responseId: string, criteriaId: string, score: number, comment: string) => {
@@ -198,11 +200,11 @@ export default function TenderManagePage() {
     // In real implementation, this would update the evaluation
   };
 
-  const handleFinalizeEvaluation = (responseId: string) => {
-    console.log('[v0] Finalized evaluation for:', responseId);
-    setResponses(prev =>
+  const handleFinalizeEvaluation = (submissionId: string) => {
+    console.log('[v0] Finalized evaluation for:', submissionId);
+    setSubmissions(prev =>
       prev.map(r =>
-        r.id === responseId
+        r.id === submissionId
           ? { ...r, status: 'evaluated' as const, evaluationStatus: 'complete' as const, evaluatedAt: new Date().toISOString() }
           : r
       )
@@ -213,16 +215,16 @@ export default function TenderManagePage() {
     console.log('[v0] Updated rankings:', rankings);
   };
 
-  const handleSelectWinner = (responseId: string, contractValue: number) => {
-    const response = responses.find(r => r.id === responseId);
-    if (!response) return;
+  const handleSelectWinner = (submissionId: string, contractValue: number) => {
+    const submission = submissions.find(r => r.id === submissionId);
+    if (!submission) return;
 
     const newAward: RFPAward = {
       id: `award-${Date.now()}`,
       rfpId,
-      awardedResponseId: responseId,
-      awardedSupplierId: response.supplierId,
-      awardedSupplierName: response.supplierName,
+      awardedResponseId: submissionId,
+      awardedSupplierId: submission.supplierId,
+      awardedSupplierName: submission.supplierName,
       status: 'pending',
       awardedAt: new Date().toISOString(),
       awardedBy: 'current-user',
@@ -254,13 +256,14 @@ export default function TenderManagePage() {
     };
 
     setAward(newAward);
-    setResponses(prev =>
+    setSubmissions(prev =>
       prev.map(r =>
-        r.id === responseId
+        r.id === submissionId
           ? { ...r, status: 'awarded' as const }
           : { ...r, status: 'rejected' as const }
       )
     );
+    setCurrentPhase('award');
     setActiveTab('award');
     console.log('[v0] Contract awarded:', newAward);
   };
@@ -285,13 +288,36 @@ export default function TenderManagePage() {
     setCommunications(prev => [...prev, newComm]);
 
     // Update award status based on notification type
+    let updatedAward = award;
     if (notification.notificationType === 'award_notification' && award) {
-      setAward({ ...award, awardMessageSent: true, awardMessageSentAt: new Date().toISOString() });
+      updatedAward = { ...award, awardMessageSent: true, awardMessageSentAt: new Date().toISOString() };
+      setAward(updatedAward);
     } else if (notification.notificationType === 'rejection_notification' && award) {
-      setAward({ ...award, rejectionMessagesSent: true, rejectionMessagesSentAt: new Date().toISOString() });
+      updatedAward = { ...award, rejectionMessagesSent: true, rejectionMessagesSentAt: new Date().toISOString() };
+      setAward(updatedAward);
+    }
+
+    // Advance to 'closed' when both award and rejection notifications have been sent
+    if (updatedAward?.awardMessageSent && updatedAward?.rejectionMessagesSent) {
+      setCurrentPhase('closed');
     }
 
     console.log('[v0] Sent notification:', newComm);
+  };
+
+  const handleUpdateAwardStatus = (status: RFPAward['status']) => {
+    if (!award) return;
+    setAward({ ...award, status });
+    // When supplier agrees to contract, update the awarded submission status too
+    if (status === 'contract_agreed') {
+      setSubmissions(prev =>
+        prev.map(r =>
+          r.id === award.awardedResponseId
+            ? { ...r, status: 'contract_agreed' as const }
+            : r
+        )
+      );
+    }
   };
 
   const handleAddNextStep = (step: { title: string; description: string; dueDate?: string }) => {
@@ -314,10 +340,10 @@ export default function TenderManagePage() {
 
   const tabs = [
     {
-      key: 'responses' as const,
-      label: 'Responses',
+      key: 'submissions' as const,
+      label: 'Submissions',
       icon: FileText,
-      count: responses.length,
+      count: submissions.length,
       description: 'Review supplier submissions',
     },
     {
@@ -331,7 +357,7 @@ export default function TenderManagePage() {
       key: 'evaluation' as const,
       label: 'Evaluation',
       icon: Scale,
-      count: responses.filter(r => r.evaluationStatus === 'complete').length,
+      count: submissions.filter(r => r.evaluationStatus === 'complete').length,
       description: 'Score and rank proposals',
     },
     {
@@ -345,9 +371,9 @@ export default function TenderManagePage() {
 
   // Progress calculation
   const progressSteps = [
-    { phase: 'responses', complete: responses.length > 0 },
+    { phase: 'submissions', complete: submissions.length > 0 },
     { phase: 'interviews', complete: interviews.some(i => i.status === 'completed') },
-    { phase: 'evaluation', complete: responses.some(r => r.evaluationStatus === 'complete') },
+    { phase: 'evaluation', complete: submissions.some(r => r.evaluationStatus === 'complete') },
     { phase: 'award', complete: !!award },
   ];
   const completedSteps = progressSteps.filter(s => s.complete).length;
@@ -355,19 +381,11 @@ export default function TenderManagePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header — matches RFP create flow */}
+      {/* Header */}
       <div className="border-b border-border bg-background">
         <div className="mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Image
-                src="/greenbid-logo-green.png"
-                alt="Greenbid"
-                width={100}
-                height={28}
-                className="h-7 w-auto"
-              />
-              <div className="h-6 w-px bg-border" />
               <Button
                 variant="ghost"
                 size="sm"
@@ -409,60 +427,43 @@ export default function TenderManagePage() {
         </div>
       </div>
 
-      {/* Progress Steps — matches RFP create flow */}
-      <div className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-7xl px-6 py-4">
-          <nav className="flex items-center justify-center gap-0">
-            {tabs.map((step, index) => {
-              const isActive = step.key === activeTab;
-              const stepIndex = tabs.findIndex(t => t.key === activeTab);
-              const isCompleted = index < stepIndex || progressSteps[index]?.complete;
-              const Icon = step.icon;
+      {/* RFP Lifecycle Progress Indicator */}
+      <RFPProgressBar
+        phases={lifecyclePhases}
+        currentIndex={lifecyclePhases.findIndex(p => p.key === currentPhase)}
+      />
+
+      {/* Tab Navigation */}
+      <div className="border-b border-border bg-background">
+        <div className="mx-auto max-w-7xl px-6">
+          <nav className="flex gap-6">
+            {tabs.map((tab) => {
+              const isActive = tab.key === activeTab;
+              const Icon = tab.icon;
               return (
-                <div key={step.key} className="flex items-center">
-                  <button
-                    onClick={() => setActiveTab(step.key)}
-                    className="flex items-center gap-2 group"
-                  >
-                    <div
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={cn(
+                    'flex items-center gap-2 py-3 border-b-2 transition-colors',
+                    isActive
+                      ? 'border-brand-green text-brand-green'
+                      : 'border-transparent text-text-muted hover:text-text-secondary'
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="text-sm font-medium">{tab.label}</span>
+                  {tab.count > 0 && (
+                    <span
                       className={cn(
-                        'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-brand-green text-white'
-                          : isCompleted
-                          ? 'bg-brand-green-light text-brand-green'
-                          : 'bg-surface-hover text-text-muted'
+                        'px-1.5 py-0.5 text-xs rounded-full',
+                        isActive ? 'bg-brand-green/10 text-brand-green' : 'bg-gray-100 text-gray-600'
                       )}
                     >
-                      {isCompleted && !isActive ? (
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <Icon className="h-4 w-4" />
-                      )}
-                    </div>
-                    <div className="text-left hidden sm:block">
-                      <p
-                        className={cn(
-                          'text-sm font-medium leading-tight',
-                          isActive ? 'text-text-primary' : 'text-text-muted group-hover:text-text-secondary'
-                        )}
-                      >
-                        {step.label}
-                      </p>
-                      <p className="text-xs text-text-muted leading-tight">{step.description}</p>
-                    </div>
-                  </button>
-                  {index < tabs.length - 1 && (
-                    <div
-                      className={cn(
-                        'mx-4 h-px w-12 sm:w-20 transition-colors',
-                        progressSteps[index]?.complete ? 'bg-brand-green' : 'bg-border'
-                      )}
-                    />
+                      {tab.count}
+                    </span>
                   )}
-                </div>
+                </button>
               );
             })}
           </nav>
@@ -473,18 +474,17 @@ export default function TenderManagePage() {
 
       {/* Tab Content */}
       <div className="max-w-7xl mx-auto px-6 py-6">
-        {activeTab === 'responses' && (
-          <ResponsesTab
+        {activeTab === 'submissions' && (
+          <SubmissionsTab
             rfpId={rfpId}
-            responses={responses}
-            onViewResponse={handleViewResponse}
+            submissions={submissions}
             onShortlist={handleShortlist}
             onRequestClarification={handleRequestClarification}
-            onScheduleInterview={(responseId) => {
+            onScheduleInterview={(submissionId) => {
               setActiveTab('interviews');
-              // Pre-select the response for interview scheduling
+              // Pre-select the submission for interview scheduling
             }}
-            onTriageResponse={handleTriageResponse}
+            onTriageSubmission={handleTriageSubmission}
           />
         )}
 
@@ -492,7 +492,7 @@ export default function TenderManagePage() {
           <InterviewsTab
             rfpId={rfpId}
             interviews={interviews}
-            responses={responses}
+            responses={submissions}
             onScheduleInterview={handleScheduleInterview}
             onUpdateInterview={handleUpdateInterview}
             onAddNote={handleAddNote}
@@ -503,7 +503,7 @@ export default function TenderManagePage() {
         {activeTab === 'evaluation' && (
           <EvaluationTab
             rfpId={rfpId}
-            responses={responses.filter(r => r.status === 'shortlisted' || r.status === 'evaluated' || r.status === 'finalist')}
+            responses={submissions.filter(r => r.status === 'shortlisted' || r.status === 'evaluated' || r.status === 'finalist')}
             criteria={mockEvaluationCriteria}
             evaluations={mockEvaluations}
             rankings={mockRankings}
@@ -518,14 +518,41 @@ export default function TenderManagePage() {
           <AwardTab
             rfpId={rfpId}
             rankings={mockRankings}
-            responses={responses}
+            responses={submissions}
             award={award}
             communications={communications}
             onSelectWinner={handleSelectWinner}
             onSendNotification={handleSendNotification}
             onAddNextStep={handleAddNextStep}
+            onUpdateAwardStatus={handleUpdateAwardStatus}
           />
         )}
+      </div>
+
+      {/* Continue Button Footer */}
+      <div className="border-t border-border bg-background">
+        <div className="mx-auto max-w-7xl px-6 py-4 flex justify-end">
+          <Button
+            onClick={() => {
+              const nextPhases: Record<LifecycleTab, LifecycleTab | string> = {
+                submissions: 'interviews',
+                interviews: 'evaluation',
+                evaluation: 'award',
+                award: 'closed',
+              };
+              const nextTab = nextPhases[activeTab];
+              if (nextTab === 'closed') {
+                router.push(`/buyer/tenders/${rfpId}`);
+              } else {
+                setActiveTab(nextTab as LifecycleTab);
+                setCurrentPhase(nextTab as any);
+              }
+            }}
+            className="bg-brand-green hover:bg-brand-green-dark text-white"
+          >
+            Continue
+          </Button>
+        </div>
       </div>
     </div>
   );

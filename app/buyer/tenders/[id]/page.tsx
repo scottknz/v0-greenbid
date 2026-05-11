@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -69,10 +70,16 @@ import {
   Globe,
   Lock,
   Zap,
+  CheckCircle2,
+  CircleDot,
+  Scale,
+  Trophy,
 } from "lucide-react"
 import { ApprovalRequestModal } from "@/components/approval/ApprovalRequestModal"
 import { ApprovalStatus } from "@/components/approval/ApprovalStatus"
 import { mockBuyerApprovalRequests } from "@/lib/mock-approvals"
+import { cn } from "@/lib/utils"
+import { RFPProgressBar } from "@/components/rfp/RFPProgressBar"
 import type { ApprovalRequest } from "@/types/approval"
 
 // Q&A Thread types
@@ -202,6 +209,8 @@ const submissionsData = [
     status: "under_review",
     keyContact: "John Smith",
     keyContactEmail: "john.smith@ecosupply.com",
+    keyContactPhone: "+1 (555) 123-4567",
+    companyAddress: "123 Green Street, San Francisco, CA 94102",
     proposedValue: 118500,
     totalHours: 240,
     completionDate: "Jun 30, 2026",
@@ -221,6 +230,27 @@ const submissionsData = [
       { name: "Certifications.pdf", size: "890 KB" },
       { name: "References.pdf", size: "156 KB" },
     ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "EcoSupply has completed over 50 sustainability projects for Fortune 500 companies, including comprehensive carbon footprint assessments, supply chain sustainability audits, and sustainability reporting implementations. Notable clients include Tesla, Patagonia, and Unilever." },
+      { question: "What certifications does your organization currently hold?", answer: "We hold ISO 14001:2015 Environmental Management, ISO 9001:2015 Quality Management, B Corp Certification (Score: 142), and are a certified Science Based Targets initiative (SBTi) partner." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We employ a three-tier verification process: automated data validation at collection, independent third-party audits, and continuous monitoring with real-time anomaly detection. All data is traceable to source documentation." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We facilitate multi-stakeholder workshops, conduct materiality assessments with both internal and external stakeholders, and provide regular progress reporting through dedicated dashboards and quarterly reviews." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "We propose a 6-week initial assessment phase: Weeks 1-2 for data gathering and stakeholder interviews, Weeks 3-4 for analysis and benchmarking, and Weeks 5-6 for developing recommendations and presenting findings." },
+    ],
+    communications: [
+      { id: "c1", date: "Mar 12, 2026", from: "John Smith", to: "Procurement Team", subject: "Clarification on sustainability requirements", message: "Could you please clarify the specific GHG scopes required for the carbon footprint assessment? We want to ensure our methodology aligns with your expectations.", type: "question" },
+      { id: "c2", date: "Mar 13, 2026", from: "Sarah Chen", to: "John Smith", subject: "RE: Clarification on sustainability requirements", message: "We require Scope 1, 2, and material Scope 3 categories. Please refer to the GHG Protocol Corporate Standard for methodology guidance.", type: "response" },
+      { id: "c3", date: "Mar 14, 2026", from: "John Smith", to: "Procurement Team", subject: "Thank you for clarification", message: "Thank you for the clarification. We will include all three scopes in our proposal with detailed methodology for each.", type: "message" },
+    ],
+    activityLog: [
+      { id: "a1", action: "Submission received", timestamp: "Mar 15, 2026 14:32", user: "System" },
+      { id: "a2", action: "Documents uploaded (5 files)", timestamp: "Mar 15, 2026 14:30", user: "John Smith" },
+      { id: "a3", action: "Questionnaire completed", timestamp: "Mar 15, 2026 14:25", user: "John Smith" },
+      { id: "a4", action: "Clarification response received", timestamp: "Mar 13, 2026 10:15", user: "Sarah Chen" },
+      { id: "a5", action: "Clarification question submitted", timestamp: "Mar 12, 2026 16:45", user: "John Smith" },
+      { id: "a6", action: "RFP documents accessed", timestamp: "Mar 10, 2026 09:00", user: "John Smith" },
+      { id: "a7", action: "Invitation accepted", timestamp: "Mar 8, 2026 11:30", user: "John Smith" },
+    ],
   },
   {
     id: "s2",
@@ -229,6 +259,8 @@ const submissionsData = [
     status: "evaluated",
     keyContact: "Emma Davis",
     keyContactEmail: "emma.davis@greenoffice.com",
+    keyContactPhone: "+1 (555) 234-5678",
+    companyAddress: "456 Eco Avenue, Portland, OR 97201",
     proposedValue: 112000,
     totalHours: 220,
     completionDate: "Jul 15, 2026",
@@ -247,6 +279,27 @@ const submissionsData = [
       { name: "Cost Breakdown.xlsx", size: "312 KB" },
       { name: "ISO Certificates.pdf", size: "1.1 MB" },
     ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "GreenOffice has delivered 35+ sustainability transformation projects across manufacturing, retail, and technology sectors. Our team has helped companies achieve average emissions reductions of 28% within the first year." },
+      { question: "What certifications does your organization currently hold?", answer: "ISO 14001:2015, ISO 50001:2018 Energy Management, CDP Supply Chain Member, GRI Certified Training Partner, and we maintain LEED AP credentials across our consulting team." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "We use industry-standard GHG Protocol methodologies with built-in validation rules. All data undergoes peer review and we maintain full audit trails. Our reporting platform integrates directly with client ERP systems to minimize manual data entry errors." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We implement a comprehensive engagement framework including executive briefings, department-level working sessions, employee awareness programs, and external stakeholder surveys. We believe sustainable change requires buy-in at all levels." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "Our accelerated assessment methodology delivers initial findings in 4 weeks: Week 1 for rapid data collection and system access, Weeks 2-3 for deep-dive analysis, and Week 4 for recommendations workshop and roadmap development." },
+    ],
+    communications: [
+      { id: "c1", date: "Mar 16, 2026", from: "Emma Davis", to: "Procurement Team", subject: "Budget flexibility inquiry", message: "We noticed the budget range specified. Is there flexibility for additional value-add services that exceed the initial scope?", type: "question" },
+      { id: "c2", date: "Mar 17, 2026", from: "Mark Johnson", to: "Emma Davis", subject: "RE: Budget flexibility inquiry", message: "We can consider proposals that exceed the stated budget if they demonstrate clear additional value. Please include any optional services separately in your pricing.", type: "response" },
+    ],
+    activityLog: [
+      { id: "a1", action: "Evaluation completed", timestamp: "Mar 22, 2026 16:00", user: "Evaluation Committee" },
+      { id: "a2", action: "Submission received", timestamp: "Mar 18, 2026 11:45", user: "System" },
+      { id: "a3", action: "Documents uploaded (4 files)", timestamp: "Mar 18, 2026 11:42", user: "Emma Davis" },
+      { id: "a4", action: "Questionnaire completed", timestamp: "Mar 18, 2026 11:30", user: "Emma Davis" },
+      { id: "a5", action: "Budget clarification received", timestamp: "Mar 17, 2026 09:30", user: "Mark Johnson" },
+      { id: "a6", action: "Budget inquiry submitted", timestamp: "Mar 16, 2026 14:20", user: "Emma Davis" },
+      { id: "a7", action: "RFP documents downloaded", timestamp: "Mar 14, 2026 10:00", user: "Emma Davis" },
+      { id: "a8", action: "Invitation accepted", timestamp: "Mar 12, 2026 08:45", user: "Emma Davis" },
+    ],
   },
   {
     id: "s3",
@@ -255,6 +308,8 @@ const submissionsData = [
     status: "under_review",
     keyContact: "Michael Brown",
     keyContactEmail: "m.brown@sustainablesolutions.com",
+    keyContactPhone: "+1 (555) 345-6789",
+    companyAddress: "789 Sustainability Blvd, Seattle, WA 98101",
     proposedValue: 135000,
     totalHours: 280,
     completionDate: "Aug 1, 2026",
@@ -274,6 +329,27 @@ const submissionsData = [
       { name: "Case Studies.pdf", size: "3.2 MB" },
       { name: "Team CVs.pdf", size: "2.4 MB" },
       { name: "Quality Certifications.pdf", size: "1.8 MB" },
+    ],
+    questionnaireResponses: [
+      { question: "Describe your company's experience with sustainability consulting projects in the last 5 years.", answer: "Sustainable Solutions Inc has been a leader in corporate sustainability for over 15 years, with 200+ completed projects. We specialize in complex, multi-site implementations and have particular expertise in Scope 3 emissions accounting and science-based target setting." },
+      { question: "What certifications does your organization currently hold?", answer: "We maintain ISO 14001, ISO 14064-1 (GHG verification), and are CDP Gold Partner. Our team includes 12 certified GHG Lead Verifiers and 8 SASB FSA credential holders. We're also an official SBTi consulting partner." },
+      { question: "How do you ensure data accuracy in your sustainability reporting?", answer: "Our proprietary SustainTrack platform provides automated data collection with 99.7% accuracy rates. We implement multi-level verification including AI-powered anomaly detection, cross-reference validation with utility data, and independent third-party limited assurance engagements." },
+      { question: "Describe your approach to stakeholder engagement in sustainability initiatives.", answer: "We deploy our proven 'Sustainability Champions' model, identifying and training internal advocates across departments. This is complemented by regular town halls, interactive sustainability dashboards, and gamified engagement programs that have achieved 85%+ employee participation rates." },
+      { question: "What is your proposed timeline for initial assessment and recommendations?", answer: "Given the comprehensive scope, we recommend an 8-week assessment: Weeks 1-3 for thorough data gathering across all value chain categories, Weeks 4-6 for detailed analysis and scenario modeling, and Weeks 7-8 for strategic recommendations and implementation roadmap with board-ready deliverables." },
+    ],
+    communications: [
+      { id: "c1", date: "Mar 19, 2026", from: "Michael Brown", to: "Procurement Team", subject: "Timeline flexibility question", message: "We noticed the aggressive timeline in the RFP. Is there any flexibility on the completion date if we can demonstrate superior methodology and outcomes?", type: "question" },
+      { id: "c2", date: "Mar 19, 2026", from: "Sarah Chen", to: "Michael Brown", subject: "RE: Timeline flexibility question", message: "We have some flexibility on the timeline for proposals that demonstrate exceptional value. Please note any timeline variations clearly in your proposal.", type: "response" },
+    ],
+    activityLog: [
+      { id: "a1", action: "Submission received", timestamp: "Mar 20, 2026 12:05", user: "System" },
+      { id: "a2", action: "Documents uploaded (6 files)", timestamp: "Mar 20, 2026 12:00", user: "Michael Brown" },
+      { id: "a3", action: "Questionnaire completed", timestamp: "Mar 20, 2026 11:50", user: "Michael Brown" },
+      { id: "a4", action: "Timeline clarification received", timestamp: "Mar 19, 2026 15:45", user: "Sarah Chen" },
+      { id: "a5", action: "Timeline inquiry submitted", timestamp: "Mar 19, 2026 10:30", user: "Michael Brown" },
+      { id: "a6", action: "Case studies uploaded", timestamp: "Mar 19, 2026 09:15", user: "Michael Brown" },
+      { id: "a7", action: "RFP documents reviewed", timestamp: "Mar 15, 2026 14:00", user: "Michael Brown" },
+      { id: "a8", action: "Invitation accepted", timestamp: "Mar 10, 2026 16:20", user: "Michael Brown" },
     ],
   },
   {
@@ -721,16 +797,44 @@ const globalSuppliersData = [
   { id: "g4", name: "SustainaPaper Ltd", contact: "Rachel Green", email: "rachel@sustainapaper.co.uk" },
 ]
 
-const tabs = [
-  { key: "overview", label: "Overview" },
-  { key: "team", label: "Team", count: teamMembersData.length },
-  { key: "documents", label: "Documents", count: documentsData.length },
-  { key: "submissions", label: "Submissions", count: tenderData.submissions },
-  { key: "qa", label: "Q&A", count: qaThreadsData.length },
-  { key: "criteria", label: "Scoring" },
-  { key: "results", label: "Results" },
-  { key: "activity", label: "Activity" },
-]
+// Determine visible tabs based on RFP status
+const getVisibleTabs = (status: string) => {
+  const allTabs = [
+    { key: "overview", label: "Overview" },
+    { key: "team", label: "Team", count: teamMembersData.length },
+    { key: "documents", label: "Documents", count: documentsData.length },
+    { key: "submissions", label: "Submissions", count: tenderData.submissions },
+    { key: "qa", label: "Q&A", count: qaThreadsData.length },
+    { key: "criteria", label: "Scoring" },
+    { key: "results", label: "Results" },
+    { key: "activity", label: "Activity" },
+  ]
+
+  // Draft/Preparation phase: editing phase before publishing
+  if (status === "draft") {
+    return allTabs.filter(t => ["overview", "team", "documents", "activity"].includes(t.key))
+  }
+
+  // Active/Accepting bids phase: waiting for supplier responses
+  if (status === "accepting_bids") {
+    return allTabs.filter(t => ["overview", "team", "submissions", "qa", "activity"].includes(t.key))
+  }
+
+  // Evaluation phase: reviewing and scoring submissions
+  if (status === "under_review" || status === "evaluated") {
+    return allTabs.filter(t => ["overview", "submissions", "criteria", "results", "activity"].includes(t.key))
+  }
+
+  // Completed phase: read-only results
+  if (status === "completed" || status === "awarded") {
+    return allTabs.filter(t => ["overview", "submissions", "results", "activity"].includes(t.key))
+  }
+
+  // Default: show all tabs
+  return allTabs
+}
+
+const tabs = getVisibleTabs(tenderData.status)
 
 export default function TenderDetailPage() {
   const params = useParams()
@@ -748,6 +852,11 @@ export default function TenderDetailPage() {
   const [showCancelConfirmation, setShowCancelConfirmation] = useState(false)
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [activeTab, setActiveTab] = useState("overview")
+  
+  // Reset tab if it becomes invalid after status change
+  if (!tabs.find(t => t.key === activeTab)) {
+    setActiveTab("overview")
+  }
   const [criteriaEditOpen, setCriteriaEditOpen] = useState(false)
   const [editableCriteria, setEditableCriteria] = useState(tenderData.evaluationCriteria)
   const [expandedCriteria, setExpandedCriteria] = useState<string[]>([])
@@ -811,7 +920,36 @@ export default function TenderDetailPage() {
       status: 'pending',
     }
     setCurrentApproval(newApproval)
-    console.log('[v0] Approval request sent:', newApproval)
+    setIsEditingRFP(false)
+    
+    // Create approval notification message thread
+    const approvalMessage = `Approval requested for RFP: ${tenderData.name}\n\n${data.message || 'No additional message provided.'}`
+    const threadId = `t${Date.now()}`
+    const newThread: QaThread & { approvalData?: { approvalId: string; itemId: string; itemTitle: string; status: 'pending' | 'approved' | 'rejected' } } = {
+      id: threadId,
+      subject: `Approval Requested: ${tenderData.name}`,
+      visibility: 'private' as const,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      participants: data.approverIds,
+      approvalData: {
+        approvalId: newApproval.id,
+        itemId: tenderData.id,
+        itemTitle: tenderData.name,
+        status: 'pending',
+      },
+      messages: [{
+        id: `m${Date.now()}`,
+        threadId: threadId,
+        senderId: 'user-sarah',
+        senderName: 'Sarah Chen',
+        senderType: 'buyer' as const,
+        content: approvalMessage,
+        attachments: [],
+        timestamp: new Date().toISOString(),
+      }],
+    }
+    setQaThreads(prev => [newThread, ...prev])
   }
 
   const toggleActivityRow = (id: string) => {
@@ -918,6 +1056,122 @@ export default function TenderDetailPage() {
   const [replyMessage, setReplyMessage] = useState("")
   const [replyAttachments, setReplyAttachments] = useState<{ name: string; size: string }[]>([])
   const [showGlobalSuppliers, setShowGlobalSuppliers] = useState(false)
+  
+  // Submission detail modal
+  const [submissionModalOpen, setSubmissionModalOpen] = useState(false)
+  const [selectedSubmission, setSelectedSubmission] = useState<typeof submissionsData[0] | null>(null)
+  const [submissionModalTab, setSubmissionModalTab] = useState<'overview' | 'documents' | 'questionnaire' | 'scores' | 'communications' | 'activity'>('overview')
+  const [submissionStatuses, setSubmissionStatuses] = useState<Record<string, string>>({})
+
+  const getSubmissionStatus = (submission: typeof submissionsData[0]) =>
+    submissionStatuses[submission.id] ?? submission.status
+
+  const handleSubmissionStatusChange = (submissionId: string, newStatus: string) => {
+    setSubmissionStatuses(prev => ({ ...prev, [submissionId]: newStatus }))
+  }
+
+  const handleOpenSubmission = (submission: typeof submissionsData[0]) => {
+    setSelectedSubmission(submission)
+    setSubmissionModalTab('overview')
+    setSubmissionModalOpen(true)
+  }
+
+  const handleDownloadSubmission = (submission: typeof submissionsData[0]) => {
+    // Build a plain-text summary of the full submission
+    const lines: string[] = []
+
+    lines.push(`SUBMISSION SUMMARY`)
+    lines.push(`==================`)
+    lines.push(`Supplier: ${submission.supplierName}`)
+    lines.push(`Submitted: ${submission.submittedDate}`)
+    lines.push(`Status: ${submission.status.replace('_', ' ')}`)
+    lines.push(``)
+
+    lines.push(`CONTACT INFORMATION`)
+    lines.push(`-------------------`)
+    lines.push(`Name: ${submission.keyContact}`)
+    lines.push(`Email: ${submission.keyContactEmail}`)
+    if (submission.keyContactPhone) lines.push(`Phone: ${submission.keyContactPhone}`)
+    if (submission.companyAddress) lines.push(`Address: ${submission.companyAddress}`)
+    lines.push(``)
+
+    lines.push(`PROPOSAL DETAILS`)
+    lines.push(`----------------`)
+    lines.push(`Proposed Value: $${submission.proposedValue.toLocaleString()}`)
+    if (submission.totalHours) lines.push(`Total Hours: ${submission.totalHours}`)
+    if (submission.completionDate) lines.push(`Completion Date: ${submission.completionDate}`)
+    if (submission.weightedScore) lines.push(`Overall Score: ${submission.weightedScore}/100`)
+    lines.push(``)
+
+    if (submission.scores) {
+      lines.push(`EVALUATION SCORES`)
+      lines.push(`-----------------`)
+      Object.entries(submission.scores).forEach(([criterion, score]) => {
+        lines.push(`${criterion.charAt(0).toUpperCase() + criterion.slice(1)}: ${score}/100`)
+      })
+      lines.push(``)
+    }
+
+    if (submission.questionnaireResponses && submission.questionnaireResponses.length > 0) {
+      lines.push(`QUESTIONNAIRE RESPONSES`)
+      lines.push(`-----------------------`)
+      submission.questionnaireResponses.forEach((qr, idx) => {
+        lines.push(`Q${idx + 1}: ${qr.question}`)
+        lines.push(`A: ${qr.answer}`)
+        lines.push(``)
+      })
+    }
+
+    if (submission.documents && submission.documents.length > 0) {
+      lines.push(`SUBMITTED DOCUMENTS`)
+      lines.push(`-------------------`)
+      submission.documents.forEach(doc => {
+        lines.push(`- ${doc.name} (${doc.size})`)
+      })
+      lines.push(``)
+    }
+
+    if (submission.communications && submission.communications.length > 0) {
+      lines.push(`COMMUNICATION HISTORY`)
+      lines.push(`---------------------`)
+      submission.communications.forEach((comm) => {
+        lines.push(`[${comm.date}] ${comm.type.toUpperCase()}: ${comm.subject}`)
+        lines.push(`From: ${comm.from} | To: ${comm.to}`)
+        lines.push(`${comm.message}`)
+        lines.push(``)
+      })
+    }
+
+    if (submission.activityLog && submission.activityLog.length > 0) {
+      lines.push(`ACTIVITY LOG`)
+      lines.push(`------------`)
+      submission.activityLog.forEach((activity) => {
+        lines.push(`[${activity.timestamp}] ${activity.action} (by ${activity.user})`)
+      })
+    }
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${submission.supplierName.replace(/\s+/g, '-')}-submission.txt`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  // RFP Lifecycle phases configuration
+  const lifecyclePhases = [
+    { key: 'draft', label: 'Preparation', icon: Pencil },
+    { key: 'accepting_bids', label: 'Accepting Bids', icon: FileText },
+    { key: 'under_review', label: 'Evaluation', icon: Scale },
+    { key: 'completed', label: 'Award', icon: Trophy },
+    { key: 'closed', label: 'Closed', icon: CheckCircle2 },
+  ] as const;
+
+  // Get current phase index based on RFP status
+  const currentPhaseIndex = lifecyclePhases.findIndex(p => p.key === tenderData.status) >= 0 
+    ? lifecyclePhases.findIndex(p => p.key === tenderData.status) 
+    : 0;
 
   // Q&A helpers
   const selectedThread = qaThreads.find(t => t.id === selectedThreadId)
@@ -1380,6 +1634,14 @@ export default function TenderDetailPage() {
                 {statusLabel}
               </Badge>
             </div>
+            {currentApproval?.status === 'pending' && (
+              <div className="flex items-center gap-1.5 pt-0.5">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                  Waiting for Approval
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-4 text-sm text-[#6B7280]">
               <span>{tenderData.referenceId}</span>
               <span className="text-[#D1D5DB]">|</span>
@@ -1457,6 +1719,9 @@ export default function TenderDetailPage() {
             </DropdownMenu>
           </div>
         </div>
+
+        {/* RFP Lifecycle Progress Indicator */}
+        <RFPProgressBar phases={lifecyclePhases} currentIndex={currentPhaseIndex} />
 
         {/* Save Notification */}
         {showSaveNotification && (
@@ -2461,7 +2726,7 @@ export default function TenderDetailPage() {
                             variant="outline" 
                             size="sm" 
                             className="h-7 px-3 text-xs border-[#E5E7EB]"
-                            onClick={() => router.push(`/buyer/tenders/${tenderData.id}/submissions/${submission.id}`)}
+                            onClick={() => handleOpenSubmission(submission)}
                           >
                             <ExternalLink className="size-3 mr-1" />
                             Open
@@ -3531,6 +3796,317 @@ export default function TenderDetailPage() {
         )}
 
       {/* Approval Modal */}
+      {/* Submission Detail Modal */}
+      <Dialog open={submissionModalOpen} onOpenChange={setSubmissionModalOpen}>
+        <DialogContent 
+          className="flex flex-col p-0 gap-0"
+          style={{ width: '1000px', maxWidth: '95vw', maxHeight: '85vh' }}
+        >
+          {selectedSubmission && (
+            <>
+              <DialogHeader className="px-6 pt-5 pb-4 border-b border-border pr-14">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <DialogTitle className="text-xl leading-snug">{selectedSubmission.supplierName}</DialogTitle>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <DialogDescription className="text-sm">
+                        Submitted {selectedSubmission.submittedDate}
+                      </DialogDescription>
+                      <SubmissionStatusBadge status={getSubmissionStatus(selectedSubmission)} />
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              {/* Tabs */}
+              <div className="border-b border-border px-6">
+                <div className="flex gap-8">
+                  {(['overview', 'questionnaire', 'documents', 'scores', 'communications', 'activity'] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setSubmissionModalTab(tab)}
+                      className={cn(
+                        'py-3 px-1 text-sm font-medium border-b-2 transition-colors',
+                        submissionModalTab === tab
+                          ? 'border-brand-green text-brand-green'
+                          : 'border-transparent text-text-secondary hover:text-text-primary'
+                      )}
+                    >
+                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tab Content */}
+              <div className="flex-1 overflow-y-auto px-6 py-4">
+                {/* Overview Tab */}
+                {submissionModalTab === 'overview' && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Contact Information</h4>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-text-muted">Name</p>
+                            <p className="font-medium text-text-primary">{selectedSubmission.keyContact}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-text-muted">Email</p>
+                            <p className="font-medium text-text-primary">{selectedSubmission.keyContactEmail}</p>
+                          </div>
+                          {selectedSubmission.keyContactPhone && (
+                            <div>
+                              <p className="text-xs text-text-muted">Phone</p>
+                              <p className="font-medium text-text-primary">{selectedSubmission.keyContactPhone}</p>
+                            </div>
+                          )}
+                          {selectedSubmission.companyAddress && (
+                            <div>
+                              <p className="text-xs text-text-muted">Address</p>
+                              <p className="font-medium text-text-primary">{selectedSubmission.companyAddress}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">Proposal Details</h4>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-text-muted">Proposed Value</p>
+                            <p className="font-medium text-text-primary">${selectedSubmission.proposedValue.toLocaleString()}</p>
+                          </div>
+                          {selectedSubmission.totalHours && (
+                            <div>
+                              <p className="text-xs text-text-muted">Total Hours</p>
+                              <p className="font-medium text-text-primary">{selectedSubmission.totalHours} hours</p>
+                            </div>
+                          )}
+                          {selectedSubmission.completionDate && (
+                            <div>
+                              <p className="text-xs text-text-muted">Completion Date</p>
+                              <p className="font-medium text-text-primary">{selectedSubmission.completionDate}</p>
+                            </div>
+                          )}
+                          {selectedSubmission.weightedScore && (
+                            <div>
+                              <p className="text-xs text-text-muted">Overall Score</p>
+                              <p className="font-medium text-text-primary">{selectedSubmission.weightedScore}/100</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Questionnaire Tab */}
+                {submissionModalTab === 'questionnaire' && (
+                  <div className="space-y-4">
+                    <div className="mb-4">
+                      <p className="text-sm text-text-muted mb-4">Responses to evaluation questions:</p>
+                    </div>
+                    {selectedSubmission.questionnaireResponses && selectedSubmission.questionnaireResponses.length > 0 ? (
+                      selectedSubmission.questionnaireResponses.map((qr, idx) => (
+                        <div key={idx} className="border border-border rounded-lg p-4">
+                          <p className="text-sm font-semibold text-text-primary mb-2">
+                            Q{idx + 1}: {qr.question}
+                          </p>
+                          <p className="text-sm text-text-secondary leading-relaxed">
+                            {qr.answer}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-text-muted text-center py-8">No questionnaire responses submitted</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Documents Tab */}
+                {submissionModalTab === 'documents' && (
+                  <div className="space-y-3">
+                    {selectedSubmission.documents && selectedSubmission.documents.length > 0 ? (
+                      selectedSubmission.documents.map((doc, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 bg-surface rounded border border-border hover:bg-surface-hover transition-colors">
+                          <div className="flex items-center gap-3">
+                            <FileText className="h-4 w-4 text-text-muted" />
+                            <div>
+                              <p className="text-sm font-medium text-text-primary">{doc.name}</p>
+                              <p className="text-xs text-text-muted">{doc.size}</p>
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" className="h-7 px-2">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-text-muted text-center py-8">No documents submitted</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Scores Tab */}
+                {submissionModalTab === 'scores' && (
+                  <div className="space-y-4">
+                    {selectedSubmission.scores && Object.entries(selectedSubmission.scores).length > 0 ? (
+                      <>
+                        {Object.entries(selectedSubmission.scores).map(([criterion, score]) => (
+                          <div key={criterion} className="space-y-1">
+                            <div className="flex justify-between items-center mb-1">
+                              <p className="text-sm font-medium text-text-primary">
+                                {criterion.charAt(0).toUpperCase() + criterion.slice(1)}
+                              </p>
+                              <p className="text-sm font-semibold text-brand-green">{score}/100</p>
+                            </div>
+                            <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
+                              <div 
+                                className="bg-brand-green h-full transition-all"
+                                style={{ width: `${score}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                        <div className="mt-6 pt-6 border-t border-border">
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm font-semibold text-text-primary">Weighted Score</p>
+                            <p className="text-2xl font-bold text-brand-green">{selectedSubmission.weightedScore}/100</p>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-text-muted text-center py-8">No scores available</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Communications Tab */}
+                {submissionModalTab === 'communications' && (
+                  <div className="space-y-4">
+                    {selectedSubmission.communications && selectedSubmission.communications.length > 0 ? (
+                      selectedSubmission.communications.map((comm) => (
+                        <div key={comm.id} className="border border-border rounded-lg p-4">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <p className="text-sm font-semibold text-text-primary">{comm.subject}</p>
+                              <p className="text-xs text-text-muted mt-0.5">
+                                {comm.from} &rarr; {comm.to}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className={cn(
+                                'text-xs',
+                                comm.type === 'question' && 'bg-blue-50 text-blue-700 border-blue-200',
+                                comm.type === 'response' && 'bg-green-50 text-green-700 border-green-200',
+                                comm.type === 'message' && 'bg-gray-50 text-gray-700 border-gray-200',
+                              )}>
+                                {comm.type.charAt(0).toUpperCase() + comm.type.slice(1)}
+                              </Badge>
+                              <span className="text-xs text-text-muted">{comm.date}</span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-text-secondary leading-relaxed">{comm.message}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-text-muted text-center py-8">No communications recorded</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Activity Tab */}
+                {submissionModalTab === 'activity' && (
+                  <div className="space-y-1">
+                    {selectedSubmission.activityLog && selectedSubmission.activityLog.length > 0 ? (
+                      <div className="relative">
+                        <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-border" />
+                        {selectedSubmission.activityLog.map((activity, idx) => (
+                          <div key={activity.id} className="relative flex items-start gap-4 py-2">
+                            <div className={cn(
+                              "relative z-10 w-4 h-4 rounded-full border-2 flex-shrink-0",
+                              idx === 0 ? "bg-brand-green border-brand-green" : "bg-background border-border"
+                            )} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-text-primary">{activity.action}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs text-text-muted">{activity.timestamp}</span>
+                                <span className="text-xs text-text-muted">by {activity.user}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-text-muted text-center py-8">No activity recorded</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 border-t border-border bg-surface space-y-3">
+                {/* Status actions */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs font-medium text-text-muted mr-1">Change status:</span>
+                  {(
+                    [
+                      { status: 'under_review', label: 'Under Review', className: 'border-amber-300 text-amber-700 hover:bg-amber-50' },
+                      { status: 'shortlisted',  label: 'Shortlist',     className: 'border-brand-green text-brand-green hover:bg-brand-green/10' },
+                      { status: 'evaluated',    label: 'Evaluated',     className: 'border-emerald-400 text-emerald-700 hover:bg-emerald-50' },
+                      { status: 'rejected',     label: 'Reject',        className: 'border-red-300 text-red-600 hover:bg-red-50' },
+                      { status: 'awarded',      label: 'Award',         className: 'border-brand-green text-brand-green hover:bg-brand-green/10' },
+                    ] as const
+                  ).map(({ status, label, className }) => {
+                    const isCurrent = getSubmissionStatus(selectedSubmission) === status
+                    return (
+                      <Button
+                        key={status}
+                        variant="outline"
+                        size="sm"
+                        disabled={isCurrent}
+                        className={cn('h-7 px-3 text-xs transition-colors', isCurrent ? 'opacity-40 cursor-not-allowed' : className)}
+                        onClick={() => handleSubmissionStatusChange(selectedSubmission.id, status)}
+                      >
+                        {label}
+                      </Button>
+                    )
+                  })}
+                </div>
+                {/* Secondary actions */}
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSubmissionModalOpen(false)}
+                  >
+                    Close
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => handleDownloadSubmission(selectedSubmission)}
+                    >
+                      <Download className="h-4 w-4" />
+                      Download Submission
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSubmissionModalOpen(false)
+                        router.push(`/buyer/tenders/${tenderData.id}/submissions/${selectedSubmission.id}`)
+                      }}
+                    >
+                      View Full Details
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <ApprovalRequestModal
         open={showApprovalModal}
         onOpenChange={setShowApprovalModal}
@@ -3548,10 +4124,12 @@ export default function TenderDetailPage() {
 
 function SubmissionStatusBadge({ status }: { status: string }) {
   const config: Record<string, { label: string; className: string }> = {
-    pending: { label: "Pending", className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
+    pending:      { label: "Pending",      className: "bg-[#F3F4F6] text-[#374151] border-[#E5E7EB]" },
     under_review: { label: "Under Review", className: "bg-amber-50 text-amber-700 border-amber-200" },
-    evaluated: { label: "Evaluated", className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
-    rejected: { label: "Rejected", className: "bg-red-50 text-red-700 border-red-200" },
+    evaluated:    { label: "Evaluated",    className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/20" },
+    shortlisted:  { label: "Shortlisted",  className: "bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/30" },
+    awarded:      { label: "Awarded",      className: "bg-[#ECFDF5] text-[#059669] border-[#059669]/30" },
+    rejected:     { label: "Rejected",     className: "bg-red-50 text-red-700 border-red-200" },
   }
 
   const { label, className } = config[status] || config.pending

@@ -1,3 +1,29 @@
+/**
+ * Mock RFP Lifecycle Data
+ * 
+ * This file contains all mock data for the RFP evaluation and lifecycle stages:
+ * - Responses: Supplier submissions/proposals for an RFP
+ * - Evaluations: Scoring and feedback for each response
+ * - Criteria: Evaluation criteria with weights and rubrics
+ * - Rankings: Ranked list of suppliers based on scores
+ * 
+ * Used by:
+ * - /buyer/tenders/[id]/manage - For viewing submissions and evaluations
+ * - /components/rfp/lifecycle/EvaluationTab.tsx - For scoring and comparison
+ * 
+ * DB Integration:
+ * Replace these arrays with API calls:
+ *   - /api/rfp/[id]/responses (GET)
+ *   - /api/rfp/[id]/evaluations (GET, POST)
+ *   - /api/rfp/[id]/criteria (GET)
+ * 
+ * Data Structure:
+ * - RFPResponse: One supplier's response to an RFP (price answers, question answers, attachments)
+ * - ProposalEvaluation: Scores and comments for each response (array of criterion scores)
+ * - EvaluationCriteria: Scoring rubrics with weights (0-100 scale)
+ * - SupplierRanking: Final ranked list with overall scores
+ */
+
 import type {
   RFPResponse,
   RFPInterview,
@@ -246,26 +272,32 @@ export const mockEvaluationCriteria: EvaluationCriteria[] = [
     rfpId: '1',
     name: 'Technical Capability',
     description: 'Ability to deliver technical requirements',
-    weight: 25,
+    weight: 20,
     maxScore: 10,
     rubric: '10: Exceeds all requirements\n8-9: Meets all requirements with some exceeding\n6-7: Meets most requirements\n4-5: Meets some requirements\n1-3: Does not meet requirements',
     order: 1,
     isRequired: true,
-    subcriteria: [
-      { id: 'sub-001', criteriaId: 'crit-001', name: 'Technical Approach', description: 'Quality of proposed technical solution', weight: 40, order: 1 },
-      { id: 'sub-002', criteriaId: 'crit-001', name: 'Team Experience', description: 'Relevant experience of proposed team', weight: 30, order: 2 },
-      { id: 'sub-003', criteriaId: 'crit-001', name: 'Innovation', description: 'Innovative approaches proposed', weight: 30, order: 3 },
-    ],
   },
   {
-    id: 'crit-002',
+    id: 'crit-006',
     rfpId: '1',
-    name: 'Price',
-    description: 'Value for money and pricing structure',
+    name: 'Content and Quality',
+    description: 'Quality and completeness of proposal content',
     weight: 20,
     maxScore: 10,
-    rubric: '10: Most competitive price\n8-9: Competitive price\n6-7: Average price\n4-5: Above average price\n1-3: Significantly above average',
+    rubric: '10: Exceptional quality, comprehensive and well-structured\n8-9: High quality, complete response\n6-7: Good quality, mostly complete\n4-5: Acceptable quality, missing some details\n1-3: Poor quality or incomplete',
     order: 2,
+    isRequired: true,
+  },
+  {
+    id: 'crit-004',
+    rfpId: '1',
+    name: 'Delivery and Timeline',
+    description: 'Ability to meet project timeline',
+    weight: 15,
+    maxScore: 10,
+    rubric: '10: Exceeds timeline requirements\n8-9: Meets timeline comfortably\n6-7: Meets timeline\n4-5: Tight timeline\n1-3: Unable to meet timeline',
+    order: 3,
     isRequired: true,
   },
   {
@@ -273,36 +305,32 @@ export const mockEvaluationCriteria: EvaluationCriteria[] = [
     rfpId: '1',
     name: 'Sustainability',
     description: 'Environmental and sustainability practices',
-    weight: 25,
-    maxScore: 10,
-    rubric: '10: Industry-leading sustainability\n8-9: Strong sustainability practices\n6-7: Good sustainability practices\n4-5: Basic sustainability\n1-3: Limited sustainability focus',
-    order: 3,
-    isRequired: true,
-    subcriteria: [
-      { id: 'sub-004', criteriaId: 'crit-003', name: 'Carbon Footprint', description: 'Emissions reduction approach', weight: 50, order: 1 },
-      { id: 'sub-005', criteriaId: 'crit-003', name: 'Certifications', description: 'Environmental certifications held', weight: 50, order: 2 },
-    ],
-  },
-  {
-    id: 'crit-004',
-    rfpId: '1',
-    name: 'Delivery & Timeline',
-    description: 'Ability to meet project timeline',
     weight: 15,
     maxScore: 10,
-    rubric: '10: Exceeds timeline requirements\n8-9: Meets timeline comfortably\n6-7: Meets timeline\n4-5: Tight timeline\n1-3: Unable to meet timeline',
+    rubric: '10: Industry-leading sustainability\n8-9: Strong sustainability practices\n6-7: Good sustainability practices\n4-5: Basic sustainability\n1-3: Limited sustainability focus',
     order: 4,
     isRequired: true,
   },
   {
     id: 'crit-005',
     rfpId: '1',
-    name: 'References & Track Record',
+    name: 'References and Track Record',
     description: 'Past performance and client references',
     weight: 15,
     maxScore: 10,
     rubric: '10: Exceptional references\n8-9: Strong references\n6-7: Good references\n4-5: Limited references\n1-3: Poor or no references',
     order: 5,
+    isRequired: true,
+  },
+  {
+    id: 'crit-002',
+    rfpId: '1',
+    name: 'Price',
+    description: 'Value for money and pricing structure',
+    weight: 15,
+    maxScore: 10,
+    rubric: '10: Most competitive price\n8-9: Competitive price\n6-7: Average price\n4-5: Above average price\n1-3: Significantly above average',
+    order: 6,
     isRequired: true,
   },
 ];
@@ -319,11 +347,12 @@ export const mockEvaluations: ProposalEvaluation[] = [
     supplierId: 'sup-001',
     supplierName: 'EcoSolutions Ltd',
     scores: [
-      { id: 'score-1', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-001', score: 9, maxScore: 10, comment: 'Excellent technical approach with innovative solutions', timestamp: '2026-05-05T09:00:00Z', isFinalized: true },
-      { id: 'score-2', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-002', score: 7, maxScore: 10, comment: 'Competitive but not the lowest price', timestamp: '2026-05-05T09:10:00Z', isFinalized: true },
-      { id: 'score-3', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-003', score: 9, maxScore: 10, comment: 'Strong sustainability credentials', timestamp: '2026-05-05T09:20:00Z', isFinalized: true },
-      { id: 'score-4', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-004', score: 8, maxScore: 10, comment: 'Reasonable timeline', timestamp: '2026-05-05T09:30:00Z', isFinalized: true },
-      { id: 'score-5', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-005', score: 8, maxScore: 10, comment: 'Good references from similar projects', timestamp: '2026-05-05T09:40:00Z', isFinalized: true },
+      { id: 'score-1', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-001', score: 9, maxScore: 10, comment: 'Excellent technical approach with strong team', timestamp: '2026-05-05T09:00:00Z', isFinalized: true },
+      { id: 'score-1b', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-006', score: 9, maxScore: 10, comment: 'Well-structured and comprehensive proposal', timestamp: '2026-05-05T09:05:00Z', isFinalized: true },
+      { id: 'score-2', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-004', score: 8, maxScore: 10, comment: 'Reasonable delivery timeline', timestamp: '2026-05-05T09:10:00Z', isFinalized: true },
+      { id: 'score-3', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-003', score: 9, maxScore: 10, comment: 'Strong sustainability credentials', timestamp: '2026-05-05T09:15:00Z', isFinalized: true },
+      { id: 'score-4', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-005', score: 8, maxScore: 10, comment: 'Good references from similar projects', timestamp: '2026-05-05T09:20:00Z', isFinalized: true },
+      { id: 'score-5', responseId: 'resp-001', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-002', score: 7, maxScore: 10, comment: 'Competitive but not the lowest price', timestamp: '2026-05-05T09:25:00Z', isFinalized: true },
     ],
     totalWeightedScore: 82,
     maxPossibleScore: 100,
@@ -345,10 +374,11 @@ export const mockEvaluations: ProposalEvaluation[] = [
     supplierName: 'GreenTech Industries',
     scores: [
       { id: 'score-6', responseId: 'resp-002', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-001', score: 8, maxScore: 10, comment: 'Good technical capability', timestamp: '2026-05-05T10:00:00Z', isFinalized: true },
-      { id: 'score-7', responseId: 'resp-002', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-002', score: 6, maxScore: 10, comment: 'Higher price point', timestamp: '2026-05-05T10:10:00Z', isFinalized: true },
-      { id: 'score-8', responseId: 'resp-002', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-003', score: 8, maxScore: 10, comment: 'Good sustainability focus', timestamp: '2026-05-05T10:20:00Z', isFinalized: true },
-      { id: 'score-9', responseId: 'resp-002', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-004', score: 9, maxScore: 10, comment: 'Fast delivery timeline', timestamp: '2026-05-05T10:30:00Z', isFinalized: true },
-      { id: 'score-10', responseId: 'resp-002', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-005', score: 7, maxScore: 10, comment: 'Solid references', timestamp: '2026-05-05T10:40:00Z', isFinalized: true },
+      { id: 'score-6b', responseId: 'resp-002', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-006', score: 8, maxScore: 10, comment: 'Clear and well-organized proposal', timestamp: '2026-05-05T10:05:00Z', isFinalized: true },
+      { id: 'score-7', responseId: 'resp-002', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-004', score: 9, maxScore: 10, comment: 'Fast delivery timeline', timestamp: '2026-05-05T10:10:00Z', isFinalized: true },
+      { id: 'score-8', responseId: 'resp-002', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-003', score: 8, maxScore: 10, comment: 'Good sustainability focus', timestamp: '2026-05-05T10:15:00Z', isFinalized: true },
+      { id: 'score-9', responseId: 'resp-002', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-005', score: 7, maxScore: 10, comment: 'Solid references', timestamp: '2026-05-05T10:20:00Z', isFinalized: true },
+      { id: 'score-10', responseId: 'resp-002', evaluatorId: 'user-1', evaluatorName: 'John Smith', criteriaId: 'crit-002', score: 6, maxScore: 10, comment: 'Higher price point', timestamp: '2026-05-05T10:25:00Z', isFinalized: true },
     ],
     totalWeightedScore: 78,
     maxPossibleScore: 100,
