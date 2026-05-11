@@ -6,6 +6,7 @@ import { TemplateSelector } from '@/components/rfp/TemplateSelector';
 import { ProjectSetupForm } from '@/components/rfp/ProjectSetupForm';
 import { RFPInterview } from '@/components/rfp/RFPInterview';
 import { SubmissionQuestionsStep } from '@/components/rfp/SubmissionQuestionsStep';
+import { RFPProgressBar } from '@/components/rfp/RFPProgressBar';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, Settings, MessageSquare, ClipboardList, Edit3 } from 'lucide-react';
 import { rfpTemplates, createRFPFromTemplate, saveRFP } from '@/lib/mock-rfp';
@@ -153,56 +154,7 @@ export default function CreateRFPPage() {
       </div>
 
       {/* Progress Steps */}
-      <div className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-4xl px-6 py-4">
-          <nav className="flex items-center justify-center gap-6">
-            {steps.map((step, index) => {
-              const isActive = index === currentStepIndex;
-              const isCompleted = index < currentStepIndex;
-              const Icon = step.icon;
-
-              return (
-                <div key={step.id} className="flex items-center gap-2">
-                  <div
-                    className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-brand-green text-white'
-                        : isCompleted
-                        ? 'bg-brand-green-light text-brand-green'
-                        : 'bg-surface-hover text-text-muted'
-                    )}
-                  >
-                    {isCompleted ? (
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      <Icon className="h-4 w-4" />
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      'text-sm font-medium hidden sm:block',
-                      isActive ? 'text-text-primary' : 'text-text-muted'
-                    )}
-                  >
-                    {step.label}
-                  </span>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={cn(
-                        'ml-2 h-px w-8 sm:w-12',
-                        isCompleted ? 'bg-brand-green' : 'bg-border'
-                      )}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </nav>
-        </div>
-      </div>
+      <RFPProgressBar phases={steps.map(s => ({ key: s.id, label: s.label, icon: s.icon }))} currentIndex={currentStepIndex} />
 
       {/* Content */}
       <div className="mx-auto max-w-4xl px-6 py-8">

@@ -78,6 +78,7 @@ import { ApprovalRequestModal } from "@/components/approval/ApprovalRequestModal
 import { ApprovalStatus } from "@/components/approval/ApprovalStatus"
 import { mockBuyerApprovalRequests } from "@/lib/mock-approvals"
 import { cn } from "@/lib/utils"
+import { RFPProgressBar } from "@/components/rfp/RFPProgressBar"
 import type { ApprovalRequest } from "@/types/approval"
 
 // Q&A Thread types
@@ -1511,56 +1512,7 @@ export default function TenderDetailPage() {
         </div>
 
         {/* RFP Lifecycle Progress Indicator */}
-        <div className="border-b border-border bg-surface">
-          <div className="mx-auto max-w-7xl px-6 py-4">
-            <nav className="flex items-center justify-start gap-4">
-              {lifecyclePhases.map((phase, index) => {
-                const isCompleted = index < currentPhaseIndex;
-                const isActive = index === currentPhaseIndex;
-                const Icon = phase.icon;
-
-                return (
-                  <div key={phase.key} className="flex items-center gap-2">
-                    <div
-                      className={cn(
-                        'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-brand-green text-white'
-                          : isCompleted
-                          ? 'bg-brand-green-light text-brand-green'
-                          : 'bg-surface-hover text-text-muted'
-                      )}
-                    >
-                      {isCompleted ? (
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <Icon className="h-4 w-4" />
-                      )}
-                    </div>
-                    <span
-                      className={cn(
-                        'text-sm font-medium',
-                        isActive ? 'text-text-primary' : 'text-text-muted'
-                      )}
-                    >
-                      {phase.label}
-                    </span>
-                    {index < lifecyclePhases.length - 1 && (
-                      <div
-                        className={cn(
-                          'ml-2 h-px w-8',
-                          isCompleted ? 'bg-brand-green' : 'bg-border'
-                        )}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+        <RFPProgressBar phases={lifecyclePhases} currentIndex={currentPhaseIndex} />
 
         {/* Save Notification */}
         {showSaveNotification && (
