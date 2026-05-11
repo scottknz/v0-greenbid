@@ -90,52 +90,25 @@ export function ApprovalRequestModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Item being approved */}
-          <div className="space-y-2">
-            <Label className="text-xs text-text-secondary uppercase tracking-wide">
-              {type === 'rfp_publication' ? 'RFP for Publication' : 'Proposal for Submission'}
-            </Label>
-            <div className="flex items-start gap-3 rounded-lg border border-[#E5E7EB] bg-gray-50 p-3">
-              <CheckCircle2 className="h-4 w-4 text-[#16A34A] mt-0.5 shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-text-primary">{itemTitle}</p>
-                <p className="text-xs text-text-secondary mt-0.5">ID: {itemId}</p>
-              </div>
-            </div>
-          </div>
+        {/* Item being approved — compact single row */}
+        <div className="flex items-center gap-3 rounded-lg border border-[#E5E7EB] bg-gray-50 px-3 py-2">
+          <CheckCircle2 className="h-4 w-4 text-[#16A34A] shrink-0" />
+          <span className="text-sm font-medium text-text-primary">{itemTitle}</span>
+          <span className="text-xs text-text-secondary ml-auto">ID: {itemId}</span>
+        </div>
 
-          {/* Approval mode selection */}
+        {/* Two-column layout for the main fields */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Left column: approver list */}
           <div className="space-y-2">
-            <Label htmlFor="approval-mode" className="text-sm font-medium">
-              Approval Required From
-            </Label>
-            <Select value={approvalMode} onValueChange={(v) => setApprovalMode(v as 'any' | 'all')}>
-              <SelectTrigger id="approval-mode" className="border-[#E5E7EB]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">Any Approver (first to approve)</SelectItem>
-                <SelectItem value="all">All Approvers (everyone must approve)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-text-secondary">
-              {approvalMode === 'any'
-                ? 'Request will be approved once any selected approver approves it.'
-                : 'Request must be approved by all selected approvers before proceeding.'}
-            </p>
-          </div>
-
-          {/* Approver selection */}
-          <div className="space-y-3">
             <Label className="text-sm font-medium">Select Approvers</Label>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
+            <div className="space-y-1.5 max-h-52 overflow-y-auto pr-0.5">
               {availableApprovers.length === 0 ? (
                 <div className="flex items-center justify-center py-6 text-center rounded-lg border border-dashed border-[#E5E7EB]">
                   <p className="text-sm text-text-secondary">No approvers available</p>
@@ -144,21 +117,20 @@ export function ApprovalRequestModal({
                 availableApprovers.map((approver) => (
                   <label
                     key={approver.id}
-                    className="flex items-start gap-3 rounded-lg border border-[#E5E7EB] p-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-3 rounded-lg border border-[#E5E7EB] px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
                   >
                     <Checkbox
                       checked={selectedApprovers.includes(approver.id)}
                       onCheckedChange={() => handleToggleApprover(approver.id)}
-                      className="mt-1"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-text-primary truncate">{approver.name}</p>
-                        <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+                        <Badge variant="secondary" className="text-[10px] h-5 px-1.5 shrink-0">
                           {approver.role}
                         </Badge>
                       </div>
-                      <p className="text-xs text-text-secondary flex items-center gap-1.5 mt-0.5">
+                      <p className="text-xs text-text-secondary flex items-center gap-1 mt-0.5">
                         <Mail className="h-3 w-3" />
                         {approver.email}
                       </p>
@@ -167,10 +139,9 @@ export function ApprovalRequestModal({
                 ))
               )}
             </div>
-
             {selectedApprovers.length > 0 && (
-              <div className="flex items-center gap-2 rounded-lg bg-[#F0FDF4] border border-[#16A34A]/20 p-2.5">
-                <CheckCircle2 className="h-4 w-4 text-[#16A34A] shrink-0" />
+              <div className="flex items-center gap-2 rounded-lg bg-[#F0FDF4] border border-[#16A34A]/20 px-2.5 py-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5 text-[#16A34A] shrink-0" />
                 <p className="text-xs text-[#166534]">
                   {selectedApprovers.length} {selectedApprovers.length === 1 ? 'approver' : 'approvers'} selected
                 </p>
@@ -178,31 +149,47 @@ export function ApprovalRequestModal({
             )}
           </div>
 
-          {/* Optional message */}
-          <div className="space-y-2">
-            <Label htmlFor="message" className="text-sm font-medium">
-              Message to Approvers (Optional)
-            </Label>
-            <Textarea
-              id="message"
-              placeholder="Add any context or notes for the approvers... e.g., 'All edits completed. Ready to publish.'"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="min-h-24 border-[#E5E7EB] resize-none"
-            />
-            <p className="text-xs text-text-secondary">
-              {message.length}/500 characters
-            </p>
-          </div>
+          {/* Right column: mode + message + info */}
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="approval-mode" className="text-sm font-medium">
+                Approval Required From
+              </Label>
+              <Select value={approvalMode} onValueChange={(v) => setApprovalMode(v as 'any' | 'all')}>
+                <SelectTrigger id="approval-mode" className="border-[#E5E7EB]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Any Approver (first to approve)</SelectItem>
+                  <SelectItem value="all">All Approvers (everyone must approve)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-text-secondary">
+                {approvalMode === 'any'
+                  ? 'Approved once any selected approver approves.'
+                  : 'All selected approvers must approve before proceeding.'}
+              </p>
+            </div>
 
-          {/* Info box */}
-          <div className="flex gap-2 rounded-lg bg-blue-50 border border-blue-200 p-3">
-            <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-xs text-blue-900 font-medium">Approval Process</p>
-              <p className="text-xs text-blue-800 mt-1">
-                Approvers will receive an email with a link to review and approve this {type === 'rfp_publication' ? 'RFP' : 'proposal'}.
-                {approvalMode === 'all' && ' All approvers must approve before proceeding.'}
+            <div className="space-y-1.5">
+              <Label htmlFor="message" className="text-sm font-medium">
+                Message to Approvers <span className="text-text-muted font-normal">(Optional)</span>
+              </Label>
+              <Textarea
+                id="message"
+                placeholder="Add context or notes for the approvers..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="h-24 border-[#E5E7EB] resize-none"
+              />
+              <p className="text-xs text-text-secondary">{message.length}/500 characters</p>
+            </div>
+
+            <div className="flex gap-2 rounded-lg bg-blue-50 border border-blue-200 p-2.5">
+              <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+              <p className="text-xs text-blue-800">
+                Approvers will receive an email to review this {type === 'rfp_publication' ? 'RFP' : 'proposal'}.
+                {approvalMode === 'all' && ' Everyone must approve before proceeding.'}
               </p>
             </div>
           </div>
